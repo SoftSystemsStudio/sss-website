@@ -106,6 +106,61 @@ export default function PrivacyPage() {
             .
           </p>
 
+          <h2 className="text-2xl font-semibold text-white mt-8">
+            Docklight Lo-Fi, and TikTok/YouTube
+          </h2>
+          <p>
+            Same as the section above &mdash; this isn&apos;t about you or anything you do on this
+            site. Docklight Lo-Fi is an ambient music channel I run (
+            <a
+              href="https://www.tiktok.com/@docklightlo-fi"
+              className="text-lime-400 hover:underline"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              @docklightlo-fi
+            </a>
+            ), and part of publishing it is automated. Both TikTok and YouTube require a public
+            privacy policy before they&apos;ll let an app like that connect to an account at all.
+          </p>
+          <p>
+            The automation authenticates as the @docklightlo-fi account itself, on each platform,
+            and asks for only what it needs to publish video there:
+          </p>
+          <ul className="list-disc pl-6 space-y-2">
+            <li>
+              <code className="text-lime-400">video.upload</code> &mdash; upload a video to the
+              account, as a draft
+            </li>
+            <li>
+              <code className="text-lime-400">video.publish</code> &mdash; post a video directly to
+              the account&apos;s own profile
+            </li>
+            <li>
+              <code className="text-lime-400">user.info.basic</code> &mdash; read the account&apos;s
+              own basic profile info (open id, display name, avatar), so the automation can confirm
+              which account it&apos;s about to post as before it does
+            </li>
+          </ul>
+          <p>
+            It never touches any account but that one, and it doesn&apos;t read, collect, or store
+            anything belonging to @docklightlo-fi&apos;s viewers, commenters, or followers.
+          </p>
+          <p>
+            You can see or revoke this connection from each platform&apos;s own settings &mdash; on
+            TikTok, under Settings and privacy &rarr; Security and login &rarr; Manage app
+            permissions; on YouTube/Google, from{' '}
+            <a
+              href="https://myaccount.google.com/permissions"
+              className="text-lime-400 hover:underline"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              myaccount.google.com/permissions
+            </a>
+            .
+          </p>
+
           <h2 className="text-2xl font-semibold text-white mt-8">Changes to this policy</h2>
           <p>
             If what this site or SSS Hub does with information changes, I&apos;ll update this page

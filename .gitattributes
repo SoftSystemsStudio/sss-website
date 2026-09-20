@@ -1,0 +1,24 @@
+# Normalize line endings to LF for every text file, regardless of the
+# checking-out platform's core.autocrlf setting. Without this, a Windows
+# clone with the common core.autocrlf=true default gets every tracked text
+# file converted to CRLF on checkout, while this repo's own .prettierrc sets
+# endOfLine: "lf" — eslint-plugin-prettier then reports every single line as
+# an error ("Delete `␍`"), 6000+ false findings on a completely clean
+# checkout with no real code issues.
+* text=auto eol=lf
+
+# Explicit binary markers — belt and suspenders on top of git's own
+# content-based binary detection, so these are never at risk of line-ending
+# conversion no matter how they're added.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary
+*.mp4 binary
+*.pdf binary

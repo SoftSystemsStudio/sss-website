@@ -5,7 +5,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Navbar, Footer, Section } from '@/components/ui';
 import { FadeIn, StaggerContainer } from '@/components/motion';
-import { ChatWidget } from '@softsystems/ui-components';
 import VoiceDemo from '@/components/VoiceDemo';
 import {
   OrganizationSchema,
@@ -21,7 +20,6 @@ import {
   RETAINER_RANGE,
   SERVICE_AREA_LABEL,
 } from '@/lib/business';
-import env from '@/lib/env';
 
 const InteractiveFAQ = dynamic(() => import('@/components/sentient/faq/InteractiveFAQ'), {
   ssr: false,
@@ -494,14 +492,11 @@ export default function Home() {
 
         <Footer />
 
-        <ChatWidget
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- false positive: ESLint cannot resolve @/ path alias
-          apiUrl={(env.NEXT_PUBLIC_API_URL || 'http://localhost:4000') + '/api/v1/public/chat'}
-          title="Chat With Us"
-          greeting="Hi! Ask me about website builds, retainers, or the AI receptionist demo!"
-          primaryColor="#a3e635"
-          position="bottom-right"
-        />
+        {/* Chat widget hidden 2026-09-25: its backend
+            (apps-agent-api-production.up.railway.app) no longer exists, so every
+            visitor got "I'm having trouble connecting". To bring it back, render
+            <ChatWidget apiUrl=...> from @softsystems/ui-components pointed at a
+            live chat endpoint. */}
 
         <style jsx global>{`
           @keyframes gradient {

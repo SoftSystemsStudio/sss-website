@@ -54,6 +54,18 @@ module.exports = {
   ignorePatterns: ['dist/', 'node_modules/', '.next/', 'coverage/', 'next-env.d.ts'],
   overrides: [
     {
+      // Type-check frontend files against the frontend's own tsconfig. The
+      // root tsconfig also includes packages/**, but has no "@/*" path alias,
+      // so when typescript-eslint used it every `@/...` import resolved to
+      // `any` and tripped the no-unsafe-* rules (the "path alias false
+      // positives" noted above). Verified 2026-09-25: page.tsx/terms lint
+      // clean with this, 14 warnings without.
+      files: ['packages/frontend/src/**/*.{ts,tsx}'],
+      parserOptions: {
+        project: ['./packages/frontend/tsconfig.json'],
+      },
+    },
+    {
       files: ['**/env.ts', '**/env/**/*.ts', '**/config/env*.ts'],
       rules: {
         'no-restricted-syntax': 'off',

@@ -76,7 +76,7 @@ export function LocalBusinessSchema() {
     description:
       'Website builds and an AI receptionist for local service businesses — serving Phenix City and Smiths Station, AL, and Columbus, GA.',
     priceRange: `${BUILD_FEE} / ${RETAINER_MIN}-${RETAINER_MAX} per month`,
-    areaServed: (SERVICE_AREA_CITIES as string[]).map((name: string) => ({
+    areaServed: SERVICE_AREA_CITIES.map((name: string) => ({
       '@type': 'City',
       name,
     })),

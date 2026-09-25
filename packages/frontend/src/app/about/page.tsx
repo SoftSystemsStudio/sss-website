@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Navbar, Footer, Section } from '@/components/ui';
 import { FadeIn, StaggerContainer } from '@/components/motion';
-import { BUILD_FEE, RETAINER_RANGE, SERVICE_AREA_LABEL } from '@/lib/business';
+import { BUILD_FEE, SERVICE_AREA_LABEL } from '@/lib/business';
 
 export const metadata: Metadata = {
   title: 'About',
@@ -38,7 +38,7 @@ const VALUES = [
   },
   {
     title: 'Transparent by Default',
-    description: `Clear pricing, no hidden fees. A ${BUILD_FEE} flat build fee, retainers from ${RETAINER_RANGE}. That's the whole price list.`,
+    description: `Clear pricing, no hidden fees. A ${BUILD_FEE} flat build fee, Care Plans at $150, $175 or $200 a month. That's the whole price list.`,
     emoji: '💎',
   },
 ];

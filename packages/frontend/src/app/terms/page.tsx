@@ -1,6 +1,12 @@
 import type { Metadata } from 'next';
 import { Navbar, Footer } from '@/components/ui';
-import { CONTACT_EMAIL } from '@/lib/business';
+import {
+  BUILD_FEE,
+  BUILD_ONLY_HOSTING_DAYS,
+  BUILD_REVISION_ROUNDS,
+  CARE_PLANS,
+  CONTACT_EMAIL,
+} from '@/lib/business';
 
 export const metadata: Metadata = {
   title: 'Terms of Service',
@@ -29,20 +35,42 @@ export default function TermsPage() {
           </p>
           <h2 className="text-2xl font-semibold text-white mt-8">Services</h2>
           <p>
-            We provide custom AI automation solutions, websites, and related software services. All
-            projects are scoped and priced individually.
+            We provide website builds, monthly website Care Plans, and AI receptionist services. The
+            website build and Care Plans have fixed prices, set out below. AI receptionist services
+            are quoted individually.
+          </p>
+          <h2 className="text-2xl font-semibold text-white mt-8">Website Build</h2>
+          <p>
+            A flat {BUILD_FEE} one-time fee. It includes a custom one-page website, the site copy,{' '}
+            {BUILD_REVISION_ROUNDS} rounds of revisions before launch, and launch on your domain.
+            You register the domain in your own name and pay its registration fee. Extra revision
+            rounds, additional pages, online booking or payments, e-commerce, logo design, and email
+            inboxes are not included, and are quoted before any work starts.
+          </p>
+          <h2 className="text-2xl font-semibold text-white mt-8">Care Plans</h2>
+          <p>
+            Optional monthly plans covering hosting, uptime monitoring, email support, and edits to
+            your site:{' '}
+            {CARE_PLANS.map((p) => `${p.name} ${p.price}/month (${p.editHours} hours)`).join(', ')}.
+            Unused hours do not roll over to the next month. Work beyond your plan&apos;s hours is
+            quoted before it starts.
+          </p>
+          <h2 className="text-2xl font-semibold text-white mt-8">Hosting Without a Care Plan</h2>
+          <p>
+            If you don&apos;t have a Care Plan, or cancel one, we hand over your site files and help
+            point your domain to the host of your choice. Your site stays on our hosting for{' '}
+            {BUILD_ONLY_HOSTING_DAYS} days after launch (or after cancellation) while you move it.
           </p>
           <h2 className="text-2xl font-semibold text-white mt-8">Payment Terms</h2>
           <ul className="list-disc pl-6 space-y-2">
             <li>The website build fee is due upfront before work begins</li>
-            <li>Retainer fees are billed at the beginning of each month</li>
+            <li>Care Plan fees are billed monthly in advance</li>
             <li>All payments are processed via Stripe</li>
-            <li>Refund terms are agreed on a per-project basis before work begins</li>
           </ul>
           <h2 className="text-2xl font-semibold text-white mt-8">Cancellation</h2>
           <p>
-            You may cancel a monthly retainer at any time. No refunds for partial months. The
-            website build fee is non-refundable once work has begun.
+            You may cancel a Care Plan at any time. No refunds for partial months. The website build
+            fee is non-refundable once work has begun.
           </p>
           <h2 className="text-2xl font-semibold text-white mt-8">Intellectual Property</h2>
           <p>

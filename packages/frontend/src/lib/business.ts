@@ -14,6 +14,24 @@ export const RETAINER_MIN = '$150';
 export const RETAINER_MAX = '$200';
 export const RETAINER_RANGE = '$150–$200/month';
 
+/**
+ * Care Plans (the monthly retainer). The plans include the same services and
+ * differ only in edit hours per month. Must match the Lead Tool's
+ * docs/SCOPE.md and lib/retainerPlans.ts, and the live Stripe products
+ * "Website Care — Essential / Plus / Premium" (decided 2026-09-25).
+ */
+export const CARE_PLANS = [
+  { name: 'Essential', price: '$150', editHours: 2 },
+  { name: 'Plus', price: '$175', editHours: 3 },
+  { name: 'Premium', price: '$200', editHours: 4 },
+] as const;
+
+/** Revision rounds included in the build, before launch. */
+export const BUILD_REVISION_ROUNDS = 2;
+
+/** How long a build-only site stays on our hosting after launch. */
+export const BUILD_ONLY_HOSTING_DAYS = 30;
+
 /** Service-area business — no street address is published (home-based). */
 export const SERVICE_AREA_CITIES = ['Phenix City, AL', 'Smiths Station, AL', 'Columbus, GA'];
 export const SERVICE_AREA_LABEL = 'Phenix City and Smiths Station, AL, and Columbus, GA';

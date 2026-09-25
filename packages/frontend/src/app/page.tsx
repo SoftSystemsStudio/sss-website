@@ -13,7 +13,14 @@ import {
   FAQSchema,
   WebSiteSchema,
 } from '@/components/StructuredData';
-import { BUILD_FEE, RETAINER_RANGE, SERVICE_AREA_LABEL } from '@/lib/business';
+import {
+  BUILD_FEE,
+  BUILD_ONLY_HOSTING_DAYS,
+  BUILD_REVISION_ROUNDS,
+  CARE_PLANS,
+  RETAINER_RANGE,
+  SERVICE_AREA_LABEL,
+} from '@/lib/business';
 import env from '@/lib/env';
 
 const InteractiveFAQ = dynamic(() => import('@/components/sentient/faq/InteractiveFAQ'), {
@@ -27,12 +34,15 @@ const NAV_ITEMS = [
   { label: 'About', href: '/about' },
 ];
 
+// Must match the Lead Tool's docs/SCOPE.md §1 — what the build actually ships.
 const WEBSITE_FEATURES = [
-  'Custom design built around your business and brand',
-  'Mobile-responsive, fast-loading',
-  'Contact / intake form wired straight to your email',
+  'A custom one-page site built around your business and brand',
+  'The words written for you — you review, you don’t have to write',
+  'Mobile-first and fast, with tap-to-call on phones',
+  'Contact form that emails you directly',
   'Basic on-page SEO',
-  'Launched and ready to go live',
+  `${BUILD_REVISION_ROUNDS} rounds of revisions before launch`,
+  'Launched on your own domain — registered in your name, so you own it',
 ];
 
 const PORTFOLIO_SITES = [
@@ -71,8 +81,17 @@ const FAQS = [
       "Yes — I use AI tools to move faster, but every site is personally designed and reviewed by me before it ships. It's just me; there's no team of designers behind the scenes.",
   },
   {
+    question: 'What’s included in revisions?',
+    answer: `The build includes ${BUILD_REVISION_ROUNDS} rounds of revisions before launch. A round is one list of everything you’d like changed — I make the changes and send the updated site back to you.`,
+  },
+  {
     question: 'What if I need changes after launch?',
-    answer: `A monthly retainer (${RETAINER_RANGE}) covers hosting, updates, and ongoing support after launch. Without a retainer, changes are quoted individually.`,
+    answer: `That’s what the Care Plans (${RETAINER_RANGE}) are for: hosting plus 2, 3 or 4 hours of edits a month, depending on the plan. Unused hours don’t roll over. Without a plan, changes are quoted before any work starts.`,
+  },
+  {
+    question: 'Who owns the domain?',
+    answer:
+      'You do. You register it in your own name (usually about $12 a year), and I connect it to your site and walk you through the setup.',
   },
   {
     question: 'Can I see examples of your work?',
@@ -81,7 +100,7 @@ const FAQS = [
   },
   {
     question: 'Do you offer hosting?',
-    answer: `Hosting is included with a retainer (${RETAINER_RANGE}). Without one, you're welcome to host the site wherever you like.`,
+    answer: `Hosting is included with every Care Plan (${RETAINER_RANGE}). Without one, I hand over your finished site files and help point your domain wherever you choose to host it. Your site stays live on my hosting for ${BUILD_ONLY_HOSTING_DAYS} days after launch while you move it.`,
   },
   {
     question: 'How much does the AI receptionist cost?',
@@ -219,7 +238,7 @@ export default function Home() {
                   <p className="text-sm text-gray-500 text-center mt-4">
                     Want ongoing updates after launch?{' '}
                     <a href="#retainer" className="text-lime-400 hover:underline">
-                      Retainers start at $150/month.
+                      Care Plans start at $150/month.
                     </a>
                   </p>
                 </div>
@@ -270,21 +289,39 @@ export default function Home() {
               <div className="max-w-3xl mx-auto text-center">
                 <h2 className="text-4xl md:text-5xl font-black text-white mb-4">Keep It Running</h2>
                 <p className="text-xl text-gray-300 mb-10">
-                  An optional monthly retainer covers hosting, updates, and ongoing support after
-                  launch.
+                  An optional monthly Care Plan covers hosting, updates, and support after launch.
+                  Every plan includes the same services — they differ only in how many hours of
+                  edits you get each month.
                 </p>
-                <div className="inline-block p-8 rounded-2xl border border-white/10 bg-white/5 backdrop-blur mb-8">
-                  <div className="text-4xl md:text-5xl font-black text-cyan-400 mb-2">
-                    {RETAINER_RANGE}
-                  </div>
-                  <p className="text-gray-400 text-sm">Priced to scope — $150/month to start</p>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+                  {CARE_PLANS.map((plan) => (
+                    <div
+                      key={plan.name}
+                      className="p-6 rounded-2xl border border-white/10 bg-white/5 backdrop-blur"
+                    >
+                      <div className="text-sm font-semibold uppercase tracking-wide text-gray-400 mb-2">
+                        {plan.name}
+                      </div>
+                      <div className="text-4xl font-black text-cyan-400">
+                        {plan.price}
+                        <span className="text-base font-normal text-gray-400">/month</span>
+                      </div>
+                      <p className="text-gray-300 text-sm mt-2">
+                        {plan.editHours} hours of edits a month
+                      </p>
+                    </div>
+                  ))}
                 </div>
+                <p className="text-gray-400 text-sm mb-10">
+                  Unused hours don&apos;t roll over. Anything beyond your hours is quoted before I
+                  start. Cancel anytime.
+                </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl mx-auto text-left mb-10">
                   {[
                     'Hosting & uptime monitoring',
                     'Content and text updates',
                     'Small design tweaks',
-                    'Priority email support',
+                    'Email support',
                   ].map((item) => (
                     <div key={item} className="flex items-start gap-3 text-gray-300 text-sm">
                       <span className="text-cyan-400 mt-0.5">✓</span>
@@ -296,7 +333,7 @@ export default function Home() {
                   href="/intake"
                   className="inline-block px-8 py-4 border-2 border-cyan-400/50 text-cyan-400 font-bold rounded-lg hover:bg-cyan-400/10 transition-all duration-300"
                 >
-                  Ask About a Retainer
+                  Ask About a Care Plan
                 </a>
               </div>
             </FadeIn>

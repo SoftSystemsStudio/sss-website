@@ -79,11 +79,20 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `HTTP ${response.status}`);
+        const errorData = (await response.json().catch(() => ({}))) as { message?: unknown };
+        throw new Error(
+          typeof errorData.message === 'string' && errorData.message
+            ? errorData.message
+            : `HTTP ${response.status}`,
+        );
       }
 
-      const data = await response.json();
+      const data = (await response.json()) as { reply?: unknown };
+      // A 200 without a text reply used to render an empty bubble; treat it
+      // as a failure so the user gets the friendly retry message instead.
+      if (typeof data.reply !== 'string' || !data.reply) {
+        throw new Error('The assistant returned an empty reply.');
+      }
       const assistantMessage: ChatMessage = {
         role: 'assistant',
         content: data.reply,
@@ -111,10 +120,13 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+  // onKeyDown, not the deprecated onKeyPress, which browsers no longer fire
+  // reliably for Enter; isComposing skips Enter that confirms an IME candidate.
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
       e.preventDefault();
-      sendMessage();
+      // sendMessage handles every failure itself, so its promise never rejects.
+      void sendMessage();
     }
   };
 
@@ -317,7 +329,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyPress={handleKeyPress}
+            onKeyDown={handleKeyDown}
             placeholder={placeholder}
             disabled={isLoading}
             style={{
@@ -333,7 +345,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({
             onBlur={(e) => (e.currentTarget.style.borderColor = '#d1d5db')}
           />
           <button
-            onClick={sendMessage}
+            onClick={() => void sendMessage()}
             disabled={isLoading || !input.trim()}
             style={{
               padding: '10px 20px',

@@ -71,3 +71,6 @@ gitleaks-report*.json
 
 # Root-level screenshots
 /*.png
+
+# TypeScript incremental build info
+*.tsbuildinfo

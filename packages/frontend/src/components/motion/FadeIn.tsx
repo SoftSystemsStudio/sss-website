@@ -1,7 +1,6 @@
 'use client';
 
-import React, { useRef } from 'react';
-import { motion, useInView, Variants } from 'framer-motion';
+import React from 'react';
 
 interface FadeInProps {
   children: React.ReactNode;
@@ -9,57 +8,44 @@ interface FadeInProps {
   delay?: number;
   duration?: number;
   direction?: 'up' | 'down' | 'left' | 'right' | 'none';
+  /** Kept for API compat; CSS animation always completes to visible. */
   once?: boolean;
   amount?: number;
 }
 
+/**
+ * Entrance animation via CSS only. Framer Motion + useInView previously left
+ * homepage sections stuck at opacity:0 when IntersectionObserver missed
+ * (overflow-x-hidden parents). CSS keyframes always finish at opacity:1.
+ */
 export default function FadeIn({
   children,
   className = '',
   delay = 0,
   duration = 0.6,
   direction = 'up',
-  once = true,
-  amount = 0.3,
 }: FadeInProps) {
-  const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once, amount });
-
-  const directions: Record<string, { x?: number; y?: number }> = {
-    up: { y: 30 },
-    down: { y: -30 },
-    left: { x: 30 },
-    right: { x: -30 },
-    none: {},
-  };
-
-  const variants: Variants = {
-    hidden: {
-      opacity: 0,
-      // eslint-disable-next-line security/detect-object-injection -- direction is a typed union, not user input
-      ...directions[direction],
-    },
-    visible: {
-      opacity: 1,
-      x: 0,
-      y: 0,
-      transition: {
-        duration,
-        delay,
-        ease: [0.25, 0.4, 0.25, 1],
-      },
-    },
-  };
+  const from =
+    direction === 'up'
+      ? 'translate3d(0, 24px, 0)'
+      : direction === 'down'
+        ? 'translate3d(0, -24px, 0)'
+        : direction === 'left'
+          ? 'translate3d(24px, 0, 0)'
+          : direction === 'right'
+            ? 'translate3d(-24px, 0, 0)'
+            : 'none';
 
   return (
-    <motion.div
-      ref={ref}
-      initial="hidden"
-      animate={isInView ? 'visible' : 'hidden'}
-      variants={variants}
+    <div
       className={className}
+      style={{
+        animation: `sss-fade-in ${duration}s cubic-bezier(0.25, 0.4, 0.25, 1) ${delay}s both`,
+        // Custom property consumed by the keyframes in globals.css
+        ['--sss-fade-from' as string]: from,
+      }}
     >
       {children}
-    </motion.div>
+    </div>
   );
 }

@@ -4,8 +4,9 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { BUILD_FEE, RETAINER_MIN, RETAINER_RANGE } from '@/lib/business';
 
-type ServiceInterest = 'website' | 'ai_receptionist' | 'complete_package';
+type ServiceInterest = 'website' | 'care_plan' | 'website_and_care';
 
 type FormState = {
   name: string;
@@ -14,7 +15,6 @@ type FormState = {
   phone: string;
   businessType: string;
   serviceInterest: ServiceInterest | '';
-  monthlyCallVolume: string;
   biggestChallenge: string;
   howDidYouHear: string;
 };
@@ -26,7 +26,6 @@ const initialForm: FormState = {
   phone: '',
   businessType: '',
   serviceInterest: '',
-  monthlyCallVolume: '',
   biggestChallenge: '',
   howDidYouHear: '',
 };
@@ -37,6 +36,8 @@ const BUSINESS_TYPES = [
   'Electrical',
   'Roofing',
   'Landscaping',
+  'Auto Repair',
+  'Coffee / Food Service',
   'Dental Practice',
   'Medical/Med Spa',
   'Legal Services',
@@ -44,32 +45,24 @@ const BUSINESS_TYPES = [
   'Other',
 ];
 
-const CALL_VOLUMES = [
-  'Less than 50 calls/month',
-  '50-100 calls/month',
-  '100-200 calls/month',
-  '200+ calls/month',
-  'Not sure',
-];
-
 const SERVICES = [
   {
     key: 'website' as ServiceInterest,
     name: 'Website Build',
-    price: '$997',
+    price: BUILD_FEE,
     description: 'Flat one-time build fee',
   },
   {
-    key: 'ai_receptionist' as ServiceInterest,
-    name: 'AI Receptionist',
-    price: 'Quote with build/retainer',
-    description: 'Try the free browser demo first',
+    key: 'care_plan' as ServiceInterest,
+    name: 'Care Plan',
+    price: RETAINER_RANGE,
+    description: 'Hosting and monthly edits after launch',
   },
   {
-    key: 'complete_package' as ServiceInterest,
-    name: 'Website + AI Receptionist',
-    price: 'Custom quote',
-    description: 'Bundle — pricing discussed on your call',
+    key: 'website_and_care' as ServiceInterest,
+    name: 'Website + Care Plan',
+    price: `${BUILD_FEE} + from ${RETAINER_MIN}/mo`,
+    description: 'Build plus ongoing support',
   },
 ];
 
@@ -167,7 +160,6 @@ export default function IntakeForm() {
 
   return (
     <div className="min-h-screen bg-[#050505] text-white">
-      {/* Header */}
       <header className="border-b border-white/10">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/" className="text-lg font-semibold">
@@ -180,7 +172,6 @@ export default function IntakeForm() {
       </header>
 
       <main className="max-w-4xl mx-auto px-4 py-12">
-        {/* Hero */}
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">Get Your Free Quote</h1>
           <p className="text-xl text-gray-400 max-w-2xl mx-auto">
@@ -189,9 +180,7 @@ export default function IntakeForm() {
           </p>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-8">
-          {/* Contact Info */}
           <section className="bg-white/5 border border-white/10 rounded-2xl p-6 md:p-8">
             <h2 className="text-xl font-semibold mb-6">Contact Information</h2>
             <div className="grid md:grid-cols-2 gap-6">
@@ -201,7 +190,7 @@ export default function IntakeForm() {
                   type="text"
                   value={form.name}
                   onChange={(e) => update('name', e.target.value)}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-purple-500 transition-colors"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-lime-400 transition-colors"
                   placeholder="John Smith"
                 />
               </div>
@@ -213,7 +202,7 @@ export default function IntakeForm() {
                   type="text"
                   value={form.businessName}
                   onChange={(e) => update('businessName', e.target.value)}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-purple-500 transition-colors"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-lime-400 transition-colors"
                   placeholder="Smith Plumbing LLC"
                 />
               </div>
@@ -223,7 +212,7 @@ export default function IntakeForm() {
                   type="email"
                   value={form.email}
                   onChange={(e) => update('email', e.target.value)}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-purple-500 transition-colors"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-lime-400 transition-colors"
                   placeholder="john@smithplumbing.com"
                 />
               </div>
@@ -233,93 +222,36 @@ export default function IntakeForm() {
                   type="tel"
                   value={form.phone}
                   onChange={(e) => update('phone', e.target.value)}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-purple-500 transition-colors"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-lime-400 transition-colors"
                   placeholder="(555) 123-4567"
                 />
               </div>
             </div>
-
-            {/* Voice demo pointer */}
-            <div className="mt-8 p-6 bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/30 rounded-xl">
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div>
-                  <h3 className="text-lg font-semibold mb-1 flex items-center gap-2">
-                    <svg
-                      className="w-5 h-5 text-purple-400"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                      />
-                    </svg>
-                    Want to hear our AI in action?
-                  </h3>
-                  <p className="text-sm text-gray-400">
-                    Try the live voice demo on our homepage — talk to it right in your browser, no
-                    phone number needed.
-                  </p>
-                </div>
-                <Link
-                  href="/#ai-receptionist"
-                  className="px-6 py-3 font-semibold rounded-lg transition-all whitespace-nowrap bg-purple-600 hover:bg-purple-700 text-white text-center"
-                >
-                  Try the Voice Demo
-                </Link>
-              </div>
-            </div>
           </section>
 
-          {/* Business Info */}
           <section className="bg-white/5 border border-white/10 rounded-2xl p-6 md:p-8">
             <h2 className="text-xl font-semibold mb-6">About Your Business</h2>
-            <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  What type of business do you run?
-                </label>
-                <select
-                  value={form.businessType}
-                  onChange={(e) => update('businessType', e.target.value)}
-                  className="w-full px-4 py-3 bg-[#1a1a1a] border border-white/10 rounded-lg focus:outline-none focus:border-purple-500 transition-colors text-white"
-                >
-                  <option value="" className="bg-[#1a1a1a] text-gray-400">
-                    Select your industry...
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                What type of business do you run?
+              </label>
+              <select
+                value={form.businessType}
+                onChange={(e) => update('businessType', e.target.value)}
+                className="w-full px-4 py-3 bg-[#1a1a1a] border border-white/10 rounded-lg focus:outline-none focus:border-lime-400 transition-colors text-white"
+              >
+                <option value="" className="bg-[#1a1a1a] text-gray-400">
+                  Select your industry...
+                </option>
+                {BUSINESS_TYPES.map((type) => (
+                  <option key={type} value={type} className="bg-[#1a1a1a] text-white">
+                    {type}
                   </option>
-                  {BUSINESS_TYPES.map((type) => (
-                    <option key={type} value={type} className="bg-[#1a1a1a] text-white">
-                      {type}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  How many phone calls do you get per month?
-                </label>
-                <select
-                  value={form.monthlyCallVolume}
-                  onChange={(e) => update('monthlyCallVolume', e.target.value)}
-                  className="w-full px-4 py-3 bg-[#1a1a1a] border border-white/10 rounded-lg focus:outline-none focus:border-purple-500 transition-colors text-white"
-                >
-                  <option value="" className="bg-[#1a1a1a] text-gray-400">
-                    Select call volume...
-                  </option>
-                  {CALL_VOLUMES.map((volume) => (
-                    <option key={volume} value={volume} className="bg-[#1a1a1a] text-white">
-                      {volume}
-                    </option>
-                  ))}
-                </select>
-              </div>
+                ))}
+              </select>
             </div>
           </section>
 
-          {/* Service Selection */}
           <section className="bg-white/5 border border-white/10 rounded-2xl p-6 md:p-8">
             <h2 className="text-xl font-semibold mb-6">What are you interested in? *</h2>
             <div className="grid md:grid-cols-3 gap-4">
@@ -332,12 +264,12 @@ export default function IntakeForm() {
                     onClick={() => update('serviceInterest', service.key)}
                     className={`p-6 rounded-xl border-2 text-left transition-all ${
                       isSelected
-                        ? 'border-purple-500 bg-purple-500/10'
+                        ? 'border-lime-400 bg-lime-400/10'
                         : 'border-white/10 hover:border-white/30'
                     }`}
                   >
                     <div className="font-semibold mb-1">{service.name}</div>
-                    <div className="text-purple-400 font-bold mb-2">{service.price}</div>
+                    <div className="text-lime-400 font-bold mb-2">{service.price}</div>
                     <div className="text-sm text-gray-400">{service.description}</div>
                   </button>
                 );
@@ -345,7 +277,6 @@ export default function IntakeForm() {
             </div>
           </section>
 
-          {/* Additional Info */}
           <section className="bg-white/5 border border-white/10 rounded-2xl p-6 md:p-8">
             <h2 className="text-xl font-semibold mb-6">Tell Us More</h2>
             <div className="space-y-6">
@@ -357,8 +288,8 @@ export default function IntakeForm() {
                   value={form.biggestChallenge}
                   onChange={(e) => update('biggestChallenge', e.target.value)}
                   rows={4}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-purple-500 transition-colors resize-none"
-                  placeholder="e.g., Missing calls when I'm on job sites, no professional website, spending too much time on the phone..."
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-lime-400 transition-colors resize-none"
+                  placeholder="e.g., No professional website, outdated site that doesn’t convert, need help keeping content current..."
                 />
               </div>
               <div>
@@ -369,26 +300,24 @@ export default function IntakeForm() {
                   type="text"
                   value={form.howDidYouHear}
                   onChange={(e) => update('howDidYouHear', e.target.value)}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-purple-500 transition-colors"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-lime-400 transition-colors"
                   placeholder="Google, referral, social media..."
                 />
               </div>
             </div>
           </section>
 
-          {/* Error Message */}
           {error && (
             <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400">
               {error}
             </div>
           )}
 
-          {/* Submit */}
           <div className="text-center">
             <button
               type="submit"
               disabled={loading}
-              className="px-8 py-4 bg-white text-black font-semibold rounded-xl hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-8 py-4 bg-lime-400 text-black font-semibold rounded-xl hover:bg-lime-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Submitting...' : 'Get My Free Quote'}
             </button>

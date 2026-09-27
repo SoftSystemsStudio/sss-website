@@ -137,12 +137,12 @@ export default function GreenBenchDemo() {
       style={{ fontFamily: 'var(--font-body)' }}
     >
       {/* ───────── DEMO BADGE ───────── */}
-      <div className="fixed top-20 md:top-4 right-4 z-[60] px-4 py-2 bg-[#B5502E] text-white text-xs font-bold rounded-full shadow-lg tracking-wider uppercase">
+      <div className="fixed top-20 md:top-4 right-4 z-[60] px-3 py-1.5 bg-[#B5502E] text-white text-xs font-bold rounded-full shadow-lg tracking-wider uppercase">
         Demo Site
       </div>
       <Link
         href="/#portfolio"
-        className="fixed top-20 md:top-4 left-4 z-[60] px-4 py-2 bg-white/70 backdrop-blur-md text-[#1C211B] text-sm font-medium rounded-lg hover:bg-white transition-all duration-300 shadow-sm"
+        className="fixed top-20 md:top-4 left-4 z-[60] px-3 py-1.5 bg-white/80 backdrop-blur-md text-[#1C211B] text-sm font-medium rounded-lg hover:bg-white transition-all duration-300 shadow-sm"
       >
         ← Back to Portfolio
       </Link>
@@ -215,7 +215,10 @@ export default function GreenBenchDemo() {
         </div>
 
         <div className="relative z-10 max-w-6xl mx-auto px-6 md:px-10 w-full text-white">
-          <p className="text-sm tracking-[0.15em] uppercase text-[#E8B08F] mb-4 font-semibold">
+          {/* Solid backing: this eyebrow sits over a live photo behind only a
+              thin scrim, so contrast depends on the photo. Measured soft
+              against the bundled yard photo (~1.5:1). Same pattern as the CTAs. */}
+          <p className="inline-block bg-black/90 backdrop-blur-sm px-3 py-1.5 rounded-full text-sm tracking-[0.15em] uppercase text-[#E8B08F] mb-4 font-semibold">
             Serving Phenix City & Smiths Station, AL, and Columbus, GA
           </p>
           <h1

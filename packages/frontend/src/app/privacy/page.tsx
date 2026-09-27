@@ -16,13 +16,13 @@ const NAV_ITEMS = [
 
 export default function PrivacyPage() {
   return (
-    <div className="antialiased min-h-screen bg-[#050505] text-gray-200">
-      <Navbar items={NAV_ITEMS} ctaLabel="Get a Quote" ctaHref="/intake" />
+    <div className="antialiased min-h-screen sss-paper text-brand-ink">
+      <Navbar items={NAV_ITEMS} ctaLabel="Get a Quote" ctaHref="/intake" variant="light" />
       <main className="max-w-3xl mx-auto px-4 py-24">
-        <h1 className="text-4xl font-bold text-white mb-8">Privacy Policy</h1>
-        <div className="prose prose-invert prose-gray max-w-none space-y-6 text-gray-300 leading-relaxed">
+        <h1 className="sss-display text-4xl font-extrabold text-brand-ink mb-8">Privacy Policy</h1>
+        <div className="prose prose-neutral max-w-none space-y-6 text-brand-ink-soft leading-relaxed">
           <p>
-            <strong className="text-white">Last updated:</strong> September 2026
+            <strong className="text-brand-ink">Last updated:</strong> September 2026
           </p>
           <p>
             I&apos;m Austin, and I built and run this site myself. Here&apos;s what actually happens
@@ -30,7 +30,7 @@ export default function PrivacyPage() {
             true.
           </p>
 
-          <h2 className="text-2xl font-semibold text-white mt-8">The contact form</h2>
+          <h2 className="sss-display text-2xl font-bold text-brand-ink mt-8">The contact form</h2>
           <p>
             When you fill out the intake form, your name, business name, email, phone number, and
             what you told me about your business get emailed straight to me, and to no one else. I
@@ -39,14 +39,16 @@ export default function PrivacyPage() {
             I don&apos;t sell it, rent it, or add you to a mailing list.
           </p>
 
-          <h2 className="text-2xl font-semibold text-white mt-8">Analytics and tracking</h2>
+          <h2 className="sss-display text-2xl font-bold text-brand-ink mt-8">
+            Analytics and tracking
+          </h2>
           <p>
             As of this writing, this site doesn&apos;t run Google Analytics or any other visitor
             tracking or advertising service. If that ever changes, this page will say so before it
             happens, not after.
           </p>
 
-          <h2 className="text-2xl font-semibold text-white mt-8">
+          <h2 className="sss-display text-2xl font-bold text-brand-ink mt-8">
             SSS Hub, and my own Google Calendar and Gmail
           </h2>
           <p>
@@ -106,7 +108,7 @@ export default function PrivacyPage() {
             .
           </p>
 
-          <h2 className="text-2xl font-semibold text-white mt-8">
+          <h2 className="sss-display text-2xl font-bold text-brand-ink mt-8">
             Docklight Lo-Fi, and TikTok/YouTube
           </h2>
           <p>
@@ -161,14 +163,16 @@ export default function PrivacyPage() {
             .
           </p>
 
-          <h2 className="text-2xl font-semibold text-white mt-8">Changes to this policy</h2>
+          <h2 className="sss-display text-2xl font-bold text-brand-ink mt-8">
+            Changes to this policy
+          </h2>
           <p>
             If what this site or SSS Hub does with information changes, I&apos;ll update this page
             to match &mdash; it&apos;s meant to describe what&apos;s actually true, not what was
             true when I first wrote it.
           </p>
 
-          <h2 className="text-2xl font-semibold text-white mt-8">Contact</h2>
+          <h2 className="sss-display text-2xl font-bold text-brand-ink mt-8">Contact</h2>
           <p>
             Questions about any of this? Email me at{' '}
             <a href={`mailto:${CONTACT_EMAIL}`} className="text-lime-400 hover:underline">

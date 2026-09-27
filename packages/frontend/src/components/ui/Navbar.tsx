@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import Button from './Button';
@@ -17,50 +17,87 @@ interface NavbarProps {
   ctaLabel?: string;
   ctaHref?: string;
   className?: string;
+  /** overMedia starts transparent on photo heroes, then switches to light after the hero */
+  variant?: 'light' | 'overMedia';
 }
 
 export default function Navbar({
   logo = '/images/soft-systems-logo.png',
-  brand = 'SOFT SYSTEMS',
+  brand = 'Soft Systems Studio',
   items = [],
   ctaLabel = 'Get Started',
   ctaHref = '/intake',
   className = '',
+  variant = 'light',
 }: NavbarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [overHero, setOverHero] = useState(variant === 'overMedia');
 
-  const toggleMobile = useCallback(() => setMobileOpen((prev) => !prev), []);
+  useEffect(() => {
+    if (variant !== 'overMedia') {
+      setOverHero(false);
+      return;
+    }
+
+    const hero = document.getElementById('site-hero');
+    if (!hero) {
+      setOverHero(false);
+      return;
+    }
+
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        // Stay in overMedia style while any meaningful slice of the hero is visible
+        setOverHero(entry.isIntersecting && entry.intersectionRatio > 0.15);
+      },
+      { threshold: [0, 0.15, 0.3, 0.6, 1] },
+    );
+    io.observe(hero);
+    return () => io.disconnect();
+  }, [variant]);
+
+  const overMedia = variant === 'overMedia' && overHero;
 
   return (
     <header
-      className={`sticky top-0 z-[100] backdrop-blur-lg bg-black/95 border-b border-white/10 shadow-lg ${className}`}
+      className={`sticky top-0 z-[100] border-b transition-colors duration-300 ${
+        overMedia
+          ? 'bg-brand-ink/40 backdrop-blur-md border-white/15 text-white'
+          : 'bg-brand-paper-elevated/95 backdrop-blur-md border-brand-ink/10 text-brand-ink'
+      } ${className}`}
     >
-      <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-        {/* Brand with Logo */}
-        <Link href="/" className="flex items-center gap-3">
+      <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
+        <Link href="/" className="flex items-center gap-3 min-w-0">
           {logo && (
             <Image
               src={logo}
               alt={brand}
               width={36}
               height={36}
-              className="h-9 w-9"
+              className="h-9 w-9 shrink-0"
               priority
               unoptimized
             />
           )}
-          <span className="font-bold text-xl tracking-tight text-white hidden sm:block">
+          <span
+            className={`sss-display font-semibold text-lg tracking-tight truncate ${
+              overMedia ? 'text-white' : 'text-brand-ink'
+            }`}
+          >
             {brand}
           </span>
         </Link>
 
-        {/* Desktop nav */}
-        <nav className="hidden md:flex items-center gap-8">
+        <nav className="hidden md:flex items-center gap-7">
           {items.map((item) => (
             <a
               key={item.href}
               href={item.href}
-              className="text-sm text-gray-400 hover:text-white transition focus:outline-none focus:ring-2 focus:ring-purple-500 rounded"
+              className={`text-sm font-medium transition-colors ${
+                overMedia
+                  ? 'text-white/80 hover:text-white'
+                  : 'text-brand-muted hover:text-brand-ink'
+              }`}
             >
               {item.label}
             </a>
@@ -70,19 +107,20 @@ export default function Navbar({
             href={ctaHref}
             variant="primary"
             size="sm"
-            className="ml-2 bg-white text-black hover:bg-gray-100"
+            className={overMedia ? '!bg-white !text-brand-ink hover:!bg-brand-lime-wash' : ''}
           >
             {ctaLabel}
           </Button>
         </nav>
 
-        {/* Mobile hamburger */}
         <button
           type="button"
           aria-label="Toggle navigation menu"
           aria-expanded={mobileOpen}
-          className="md:hidden p-2 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 rounded"
-          onClick={toggleMobile}
+          className={`md:hidden p-2 rounded-md ${
+            overMedia ? 'text-white/85 hover:text-white' : 'text-brand-muted hover:text-brand-ink'
+          }`}
+          onClick={() => setMobileOpen((v) => !v)}
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             {mobileOpen ? (
@@ -104,26 +142,27 @@ export default function Navbar({
         </button>
       </div>
 
-      {/* Mobile menu */}
       {mobileOpen && (
-        <nav className="md:hidden bg-[#050505] border-t border-white/5 px-6 py-4 space-y-4">
+        <nav
+          className={`md:hidden border-t px-6 py-4 space-y-4 ${
+            overMedia
+              ? 'bg-brand-ink/90 border-white/10'
+              : 'bg-brand-paper-elevated border-brand-ink/10'
+          }`}
+        >
           {items.map((item) => (
             <a
               key={item.href}
               href={item.href}
-              className="block text-gray-400 hover:text-white transition"
+              className={`block text-sm font-medium ${
+                overMedia ? 'text-white/85' : 'text-brand-muted hover:text-brand-ink'
+              }`}
               onClick={() => setMobileOpen(false)}
             >
               {item.label}
             </a>
           ))}
-          <Button
-            as="link"
-            href={ctaHref}
-            variant="primary"
-            size="md"
-            className="w-full justify-center bg-white text-black hover:bg-gray-100"
-          >
+          <Button as="link" href={ctaHref} variant="primary" size="md" className="w-full">
             {ctaLabel}
           </Button>
         </nav>

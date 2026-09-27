@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 
 export default function SignInPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#050505]">
+    <div className="flex min-h-screen items-center justify-center sss-paper">
       <SignIn
         appearance={{
           elements: {

@@ -28,76 +28,62 @@ export default function InteractiveFAQ({ faqs }: InteractiveFAQProps) {
 
   return (
     <div className="max-w-3xl mx-auto">
-      {/* Search Bar */}
       <div className="mb-8">
-        <div className="relative">
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search questions..."
-            className="w-full px-4 py-3 bg-black border-2 border-cyan-400/30 text-white font-mono placeholder-gray-500 focus:outline-none focus:border-cyan-400 transition-colors rounded-lg"
-          />
-          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-cyan-400/50 font-mono text-sm">
-            🔍
-          </span>
-        </div>
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="Search questions..."
+          className="w-full px-4 py-3 bg-white/70 border border-brand-ink/15 text-brand-ink placeholder:text-brand-muted/70 focus:outline-none focus:border-brand-lime rounded-md transition-colors"
+        />
         {searchTerm && (
-          <motion.p
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-xs text-gray-400 font-mono mt-2"
-          >
+          <p className="text-xs text-brand-muted mt-2">
             Found {filteredFaqs.length} result{filteredFaqs.length !== 1 ? 's' : ''}
-          </motion.p>
+          </p>
         )}
       </div>
 
-      {/* FAQ List */}
-      <div className="space-y-3">
+      <div className="space-y-2">
         {filteredFaqs.map((faq, index) => {
           const isOpen = openIndex === index;
           return (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
-              className={`border-2 rounded-lg overflow-hidden transition-all ${
+            <div
+              key={faq.question}
+              className={`border rounded-md overflow-hidden transition-colors ${
                 isOpen
-                  ? 'border-cyan-400 bg-cyan-400/5'
-                  : 'border-gray-800 bg-black hover:border-cyan-400/50'
+                  ? 'border-brand-lime bg-white'
+                  : 'border-brand-ink/10 bg-white/50 hover:border-brand-ink/25'
               }`}
             >
               <button
+                type="button"
                 onClick={() => toggleFaq(index)}
-                className="w-full px-6 py-4 flex items-center justify-between text-left group"
+                className="w-full px-5 py-4 flex items-center justify-between text-left gap-4"
               >
-                <div className="flex items-start gap-4 flex-1">
+                <div className="flex items-start gap-3 flex-1 min-w-0">
                   <span
-                    className={`text-xs font-mono mt-1 transition-colors ${
-                      isOpen ? 'text-cyan-400' : 'text-gray-600 group-hover:text-cyan-400'
+                    className={`text-xs font-semibold mt-1 tabular-nums ${
+                      isOpen ? 'text-brand-lime' : 'text-brand-muted'
                     }`}
                   >
                     {String(index + 1).padStart(2, '0')}
                   </span>
                   <h3
-                    className={`font-semibold text-lg transition-colors ${
-                      isOpen ? 'text-cyan-400' : 'text-white group-hover:text-cyan-400'
+                    className={`sss-display font-semibold text-lg leading-snug ${
+                      isOpen ? 'text-brand-ink' : 'text-brand-ink-soft'
                     }`}
                   >
                     {faq.question}
                   </h3>
                 </div>
-                <motion.div
+                <motion.span
                   animate={{ rotate: isOpen ? 180 : 0 }}
-                  transition={{ duration: 0.3 }}
-                  className={`text-2xl transition-colors ${
-                    isOpen ? 'text-cyan-400' : 'text-gray-600 group-hover:text-cyan-400'
-                  }`}
+                  transition={{ duration: 0.25 }}
+                  className="text-brand-muted shrink-0"
+                  aria-hidden
                 >
-                  ▼
-                </motion.div>
+                  ▾
+                </motion.span>
               </button>
 
               <AnimatePresence>
@@ -106,26 +92,22 @@ export default function InteractiveFAQ({ faqs }: InteractiveFAQProps) {
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: 'auto', opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.3 }}
+                    transition={{ duration: 0.25 }}
                     className="overflow-hidden"
                   >
-                    <div className="px-6 pb-6 pl-16">
-                      <div className="w-12 h-px bg-cyan-400/30 mb-4" />
-                      <p className="text-gray-300 leading-relaxed">{faq.answer}</p>
+                    <div className="px-5 pb-5 pl-12">
+                      <p className="text-brand-muted leading-relaxed">{faq.answer}</p>
                     </div>
                   </motion.div>
                 )}
               </AnimatePresence>
-            </motion.div>
+            </div>
           );
         })}
       </div>
 
       {filteredFaqs.length === 0 && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-12">
-          <div className="text-4xl mb-4">🤔</div>
-          <p className="text-gray-400 font-mono">No matching questions found</p>
-        </motion.div>
+        <p className="text-center py-12 text-brand-muted">No matching questions found</p>
       )}
     </div>
   );

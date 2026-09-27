@@ -1,52 +1,45 @@
-/* packages/frontend/src/styles/globals.css */
+/* Soft Systems Studio — studio paper design system */
 
-/* Import Premium Fonts - Inter for elegance, JetBrains Mono for labels */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
-
-/* Tailwind layers */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Design tokens - Brand Colors (Logo: Black, Gray, Lime) */
 :root {
-  --color-bg: #050505;
-  --color-bg-elevated: #111111;
-  --color-text: #F3F4F6;
-  --color-text-secondary: #D1D5DB;
-  --color-muted: #9CA3AF;
-  --color-border: rgba(255, 255, 255, 0.1);
-  --color-surface: rgba(255, 255, 255, 0.05);
-  --color-accent: #84CC16; /* Lime from logo */
-  --color-accent-hover: #A3E635;
-  --color-glow: #84CC16;
-  --font-display: 'Inter', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --color-bg: #e8ece4;
+  --color-bg-elevated: #f4f6f1;
+  --color-ink: #141814;
+  --color-ink-soft: #2a3129;
+  --color-muted: #5c655b;
+  --color-line: rgba(20, 24, 20, 0.12);
+  --color-accent: #5f8f14;
+  --color-accent-bright: #74a81c;
+  --color-accent-wash: #d7e6b0;
+  --font-display: var(--font-syne), ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--font-source-sans), ui-sans-serif, system-ui, sans-serif;
 }
 
-/* Global reset */
 *,
 *::before,
 *::after {
   box-sizing: border-box;
 }
 
-/* Global typography + background */
 html,
 body {
   margin: 0;
   padding: 0;
-  font-family: 'Inter', system-ui, sans-serif;
   min-height: 100%;
 }
 
-/* Deep Space Dark Background - Luxury AI Aesthetic */
 body {
-  color: var(--color-text);
-  background-color: #050505;
+  font-family: var(--font-body);
+  color: var(--color-ink);
+  background-color: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
-/* Optional: base link / button defaults to feel consistent */
 a {
   color: inherit;
   text-decoration: none;
@@ -56,34 +49,27 @@ button {
   font-family: inherit;
 }
 
-/* ============================================
-   Accessibility Enhancements
-   ============================================ */
-
-/* Visible focus outlines for keyboard navigation */
 :focus-visible {
-  outline: 2px solid #84CC16; /* lime accent */
-  outline-offset: 2px;
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
 }
 
-/* Skip link for screen readers - improved visibility */
 .skip-link {
   position: absolute;
   left: -9999px;
   z-index: 9999;
   padding: 1rem 1.5rem;
-  background: #84CC16;
-  color: #000000;
+  background: var(--color-accent);
+  color: #fff;
   font-weight: 600;
   border-radius: 0 0 0.5rem 0;
-  text-decoration: none;
 }
+
 .skip-link:focus {
   left: 0;
   top: 0;
 }
 
-/* Reduced motion: disable animations for users who prefer it */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -95,218 +81,77 @@ button {
   }
 }
 
-/* Improve text legibility on dark backgrounds */
-body {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* Soft paper grain — atmosphere without flat fill */
+.sss-paper {
+  background-color: var(--color-bg);
+  background-image:
+    radial-gradient(ellipse 80% 50% at 10% -10%, rgba(95, 143, 20, 0.12), transparent 55%),
+    radial-gradient(ellipse 60% 40% at 100% 0%, rgba(42, 49, 41, 0.06), transparent 50%),
+    linear-gradient(180deg, #eef1e9 0%, #e8ece4 40%, #e3e8de 100%);
 }
 
-/* Selection color - brand lime */
-::selection {
-  background-color: #84CC16;
-  color: #000000;
+.sss-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.03em;
 }
 
-/* Headers use Inter with tight tracking for elegance */
-@layer base {
-  h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-display) !important;
-    font-weight: 700 !important;
-    letter-spacing: -0.02em;
+/* Hero media slow drift */
+@keyframes sss-kenburns {
+  from {
+    transform: scale(1.05);
   }
-
-  h1 {
-    font-weight: 800 !important;
-    letter-spacing: -0.03em;
+  to {
+    transform: scale(1.12);
   }
 }
 
-/* Monospace only for code/labels */
-code,
-pre,
-kbd,
-samp,
-.font-mono {
-  font-family: var(--font-mono);
+.sss-kenburns {
+  animation: sss-kenburns 18s ease-out forwards;
 }
 
-/* ============================================
-   Glassmorphism Cards - Bento Grid Style
-   ============================================ */
-.glass-card {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 1rem;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-}
-
-.glass-card:hover {
-  border-color: rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.08);
-}
-
-/* ============================================
-   Ambient Glow Effects (Subtle, brand lime)
-   ============================================ */
-.glow-orb {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(100px);
-  opacity: 0.1;
-  pointer-events: none;
-}
-
-.glow-lime {
-  background: radial-gradient(circle, rgba(132, 204, 22, 0.4) 0%, transparent 70%);
-}
-
-/* Hero glow behind text - subtle lime */
-.hero-glow {
-  position: absolute;
-  width: 500px;
-  height: 500px;
-  background: radial-gradient(circle, rgba(132, 204, 22, 0.15) 0%, transparent 70%);
-  filter: blur(80px);
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* ============================================
-   Text Utilities
-   ============================================ */
-.text-gradient {
-  background: linear-gradient(135deg, #FFFFFF 0%, #D1D5DB 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.text-gradient-lime {
-  background: linear-gradient(135deg, #A3E635 0%, #84CC16 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Legacy - keeping for backwards compatibility */
-.text-gradient-purple {
-  background: linear-gradient(135deg, #A3E635 0%, #84CC16 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* ============================================
-   Section Styles
-   ============================================ */
-.section-dark {
-  background-color: #0A0A0A;
-}
-
-.section-elevated {
-  background-color: #111111;
-}
-
-/* Subtle section divider */
-.section-divider {
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-/* ============================================
-   Tech Stack / Terminal Styling
-   ============================================ */
-.terminal-deps {
-  background-color: rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(0, 255, 65, 0.3);
-  color: #00ff41;
-  font-family: var(--font-mono);
-  padding: 24px;
-  border-radius: 12px;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-.terminal-deps .highlight {
-  color: #00ff41;
-}
-
-/* ============================================
-   Animation Utilities
-   ============================================ */
-@keyframes blink {
-  0%, 50% { opacity: 1; }
-  51%, 100% { opacity: 0; }
-}
-
-.blink-cursor {
-  animation: blink 1s step-end infinite;
-}
-
-@keyframes pulse-glow {
-  0%, 100% { opacity: 0.2; }
-  50% { opacity: 0.4; }
-}
-
-.animate-pulse-glow {
-  animation: pulse-glow 4s ease-in-out infinite;
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
-}
-
-.animate-float {
-  animation: float 6s ease-in-out infinite;
-}
-
-/* ============================================
-   Mobile Responsiveness Improvements
-   ============================================ */
-@media (max-width: 640px) {
-  /* Ensure touch targets are at least 44px */
-  button,
-  a[href],
-  input,
-  select,
-  textarea {
-    min-height: 44px;
+@keyframes sss-rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 28px, 0);
   }
-
-  /* Improve text readability on mobile */
-  body {
-    font-size: 16px; /* Prevent zoom on iOS */
-  }
-
-  /* Reduce heavy animations on mobile */
-  .hero-glow {
-    width: 300px;
-    height: 300px;
-    opacity: 0.08;
-  }
-
-  /* Better spacing for mobile */
-  .glass-card {
-    padding: 1rem;
+  to {
+    opacity: 1;
+    transform: none;
   }
 }
 
-/* High contrast mode support */
-@media (prefers-contrast: high) {
-  .glass-card {
-    border-width: 2px;
-  }
+.sss-rise {
+  animation: sss-rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
 
-  :focus-visible {
-    outline-width: 3px;
+.sss-rise-delay-1 {
+  animation-delay: 0.12s;
+}
+.sss-rise-delay-2 {
+  animation-delay: 0.24s;
+}
+.sss-rise-delay-3 {
+  animation-delay: 0.36s;
+}
+.sss-rise-delay-4 {
+  animation-delay: 0.48s;
+}
+
+@keyframes sss-draw-line {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
   }
 }
 
-/* Entrance animation used by FadeIn / StaggerContainer.
-   Ends at opacity:1 so content cannot get stuck invisible. */
+.sss-draw-line {
+  transform-origin: left center;
+  animation: sss-draw-line 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.3s both;
+}
+
+/* FadeIn / StaggerContainer keyframes */
 @keyframes sss-fade-in {
   from {
     opacity: 0;
@@ -319,6 +164,10 @@ samp,
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .sss-kenburns {
+    animation: none;
+  }
+
   @keyframes sss-fade-in {
     from {
       opacity: 1;
@@ -328,5 +177,19 @@ samp,
       opacity: 1;
       transform: none;
     }
+  }
+}
+
+@media (max-width: 640px) {
+  button,
+  a[href],
+  input,
+  select,
+  textarea {
+    min-height: 44px;
+  }
+
+  body {
+    font-size: 16px;
   }
 }

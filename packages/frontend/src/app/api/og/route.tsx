@@ -6,8 +6,8 @@ export const runtime = 'edge';
 export function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const title = searchParams.get('title') || 'Never Miss Another $400 Job Again';
-    const subtitle = searchParams.get('subtitle') || 'AI Receptionist for Local Service Businesses';
+    const title = searchParams.get('title') || 'Soft Systems Studio';
+    const subtitle = searchParams.get('subtitle') || 'Websites for Local Businesses';
 
     return new ImageResponse(
       <div
@@ -22,7 +22,6 @@ export function GET(req: NextRequest) {
           padding: '40px 80px',
         }}
       >
-        {/* Background glow effect */}
         <div
           style={{
             position: 'absolute',
@@ -37,28 +36,6 @@ export function GET(req: NextRequest) {
           }}
         />
 
-        {/* Logo placeholder - SS initials */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginBottom: '40px',
-          }}
-        >
-          <div
-            style={{
-              fontSize: '48px',
-              fontWeight: 'bold',
-              color: '#9CA3AF',
-              letterSpacing: '-0.05em',
-            }}
-          >
-            SOFT SYSTEMS
-          </div>
-        </div>
-
-        {/* Main title */}
         <div
           style={{
             display: 'flex',
@@ -90,7 +67,6 @@ export function GET(req: NextRequest) {
           </div>
         </div>
 
-        {/* Bottom tagline */}
         <div
           style={{
             position: 'absolute',
@@ -102,11 +78,11 @@ export function GET(req: NextRequest) {
             fontSize: '24px',
           }}
         >
-          <span>24/7 AI Phone Answering</span>
+          <span>$997 flat build</span>
           <span style={{ color: '#374151' }}>•</span>
-          <span>Bilingual Support</span>
+          <span>Care Plans from $150/mo</span>
           <span style={{ color: '#374151' }}>•</span>
-          <span>30-Day Guarantee</span>
+          <span>Phenix City · Columbus</span>
         </div>
       </div>,
       {

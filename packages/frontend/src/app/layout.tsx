@@ -14,22 +14,20 @@ const spaceGrotesk = Space_Grotesk({
 export const metadata: Metadata = {
   metadataBase: new URL('https://softsystemsstudiollc.com'),
   title: {
-    default: 'Soft Systems Studio — Websites & AI Receptionist for Local Businesses',
+    default: 'Soft Systems Studio — Websites for Local Businesses',
     template: '%s | Soft Systems Studio',
   },
   description:
-    'A flat $997 website build and a browser-based AI receptionist demo for service businesses in Phenix City & Smiths Station, AL, and Columbus, GA. Retainers from $150/month.',
+    'A flat $997 website build for service businesses in Phenix City & Smiths Station, AL, and Columbus, GA. Care Plans from $150/month.',
   keywords: [
     'website design Phenix City AL',
-    'AI receptionist for small business',
     'web designer Columbus GA',
     'local business website builder',
-    'AI phone answering demo',
     'Smiths Station AL web design',
     'service business website',
     'affordable website build',
-    'AI voice assistant demo',
     'website retainer plan',
+    'website care plan',
   ],
   authors: [{ name: 'Soft Systems Studio LLC' }],
   creator: 'Soft Systems Studio LLC',
@@ -39,23 +37,23 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: 'https://softsystemsstudiollc.com',
     siteName: 'Soft Systems Studio',
-    title: 'Websites & AI Receptionist for Local Businesses | Soft Systems Studio',
+    title: 'Websites for Local Businesses | Soft Systems Studio',
     description:
-      'A flat $997 website build and a browser-based AI receptionist demo for service businesses near Phenix City, AL and Columbus, GA.',
+      'A flat $997 website build for service businesses near Phenix City, AL and Columbus, GA. Care Plans from $150/month.',
     images: [
       {
         url: '/api/og',
         width: 1200,
         height: 630,
-        alt: 'Soft Systems Studio - Websites & AI Receptionist for Local Businesses',
+        alt: 'Soft Systems Studio - Websites for Local Businesses',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Websites & AI Receptionist for Local Businesses | Soft Systems Studio',
+    title: 'Websites for Local Businesses | Soft Systems Studio',
     description:
-      'A flat $997 website build and a browser-based AI receptionist demo for local service businesses.',
+      'A flat $997 website build for local service businesses. Care Plans from $150/month.',
     images: ['/api/og'],
   },
   robots: {

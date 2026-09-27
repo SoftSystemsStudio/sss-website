@@ -126,12 +126,12 @@ export default function IronwoodAutoDemo() {
       style={{ fontFamily: 'var(--font-display)' }}
     >
       {/* ───────── DEMO BADGE ───────── */}
-      <div className="fixed top-20 right-4 z-[60] px-4 py-2 bg-[#16181B] text-[#F7F6F2] text-xs font-semibold rounded-full shadow-lg tracking-wide uppercase">
+      <div className="fixed top-20 md:top-4 right-4 z-[60] px-3 py-1.5 bg-[#16181B] text-[#F7F6F2] text-xs font-semibold rounded-full shadow-lg tracking-wide uppercase">
         Demo Site
       </div>
       <Link
         href="/#portfolio"
-        className="fixed top-20 left-4 z-[60] px-4 py-2 bg-white/80 backdrop-blur-md text-[#16181B] text-sm font-medium rounded-full border border-[#DEDAD1] hover:border-[#24425C]/40 transition-colors duration-300"
+        className="fixed top-20 md:top-4 left-4 z-[60] px-3 py-1.5 bg-white/80 backdrop-blur-md text-[#16181B] text-sm font-medium rounded-full border border-[#DEDAD1] hover:border-[#24425C]/40 transition-colors duration-300"
       >
         ← Back to Portfolio
       </Link>
@@ -196,60 +196,48 @@ export default function IronwoodAutoDemo() {
       </nav>
 
       {/* ───────── HERO ───────── */}
-      <section className="relative min-h-[100dvh] flex items-center pt-20 lg:pt-24 pb-20">
-        <div className="max-w-6xl mx-auto px-6 md:px-10 w-full grid grid-cols-1 lg:grid-cols-[1.05fr_1fr] gap-14 lg:gap-20 items-center">
-          <div>
-            <p
-              className="text-xs uppercase tracking-[0.14em] text-[#6B6F72] mb-6"
-              style={{ fontFamily: 'var(--font-mono)' }}
-            >
-              Family-owned in Phenix City since 2009
-            </p>
-            <h1 className="text-5xl sm:text-6xl md:text-7xl leading-[1.02] tracking-tight font-extrabold mb-7">
-              Honest work,
-              <br />
-              plainly explained.
-            </h1>
-            <p className="text-lg text-[#565B60] max-w-md mb-9 leading-relaxed">
-              We show you the worn part, quote it straight, and finish most repairs the same day you
-              bring it in.
-            </p>
-            <div className="flex flex-wrap gap-4">
-              <a
-                href={PHONE_HREF}
-                className="px-7 py-4 bg-[#24425C] text-white font-semibold rounded-full hover:bg-[#16283A] transition-colors"
-              >
-                Call {PHONE}
-              </a>
-              <a
-                href="#services"
-                className="px-7 py-4 border border-[#16181B]/20 text-[#16181B] font-semibold rounded-full hover:border-[#16181B]/45 transition-colors"
-              >
-                See our services
-              </a>
-            </div>
-          </div>
+      <section className="relative min-h-[100dvh] flex items-end pt-24 pb-16 md:pb-24">
+        <div className="absolute inset-0">
+          <Image
+            src="/images/demo/ironwood-auto/hero-shop.jpg"
+            alt="Clean, well-lit auto repair bay with a car raised on a lift"
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0E1012] via-[#0E1012]/55 to-[#0E1012]/20" />
+        </div>
 
-          <div className="relative">
-            <div className="relative aspect-[4/5] sm:aspect-[5/4] lg:aspect-[4/5] rounded-2xl overflow-hidden bg-[#EFEDE6]">
-              <Image
-                src="/images/demo/ironwood-auto/hero-shop.jpg"
-                alt="Clean, well-lit auto repair bay with a car raised on a lift"
-                fill
-                priority
-                sizes="(min-width: 1024px) 40vw, 90vw"
-                className="object-cover"
-              />
-            </div>
-            <div className="hidden sm:block absolute -bottom-8 -left-8 w-36 h-36 md:w-44 md:h-44 rounded-2xl overflow-hidden border-4 border-[#F7F6F2] shadow-xl">
-              <Image
-                src="/images/demo/ironwood-auto/hands-detail.jpg"
-                alt="Mechanic's hands at work under the hood"
-                fill
-                sizes="180px"
-                className="object-cover"
-              />
-            </div>
+        <div className="relative z-10 max-w-6xl mx-auto px-6 md:px-10 w-full text-white">
+          <p
+            className="inline-block bg-black/90 backdrop-blur-sm px-3 py-1.5 rounded-full text-xs uppercase tracking-[0.14em] text-[#C5D0DA] mb-5 font-semibold"
+            style={{ fontFamily: 'var(--font-mono)' }}
+          >
+            Family-owned in Phenix City since 2009
+          </p>
+          <h1 className="text-5xl sm:text-6xl md:text-7xl leading-[1.02] tracking-tight font-extrabold mb-6 max-w-2xl">
+            Honest work,
+            <br />
+            plainly explained.
+          </h1>
+          <p className="text-lg text-[#D5D8DC] max-w-md mb-8 leading-relaxed">
+            We show you the worn part, quote it straight, and finish most repairs the same day you
+            bring it in.
+          </p>
+          <div className="flex flex-wrap gap-4">
+            <a
+              href={PHONE_HREF}
+              className="px-7 py-4 bg-[#24425C] text-white font-semibold rounded-full hover:bg-[#16283A] transition-colors"
+            >
+              Call {PHONE}
+            </a>
+            <a
+              href="#services"
+              className="px-7 py-4 border border-white/40 bg-black/40 backdrop-blur-sm text-white font-semibold rounded-full hover:border-white/70 transition-colors"
+            >
+              See our services
+            </a>
           </div>
         </div>
       </section>

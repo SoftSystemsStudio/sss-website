@@ -35,9 +35,8 @@ export default function TermsPage() {
           </p>
           <h2 className="text-2xl font-semibold text-white mt-8">Services</h2>
           <p>
-            We provide website builds, monthly website Care Plans, and AI receptionist services. The
-            website build and Care Plans have fixed prices, set out below. AI receptionist services
-            are quoted individually.
+            We provide website builds and monthly website Care Plans. Both have fixed prices, set
+            out below.
           </p>
           <h2 className="text-2xl font-semibold text-white mt-8">Website Build</h2>
           <p>

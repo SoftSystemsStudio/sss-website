@@ -16,73 +16,71 @@ export function GET(req: NextRequest) {
           width: '100%',
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: '#050505',
-          padding: '40px 80px',
+          justifyContent: 'flex-end',
+          backgroundColor: '#e8ece4',
+          padding: '64px 72px',
+          position: 'relative',
         }}
       >
         <div
           style={{
             position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            width: '600px',
-            height: '600px',
-            borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(132, 204, 22, 0.15) 0%, transparent 70%)',
-            filter: 'blur(60px)',
+            inset: 0,
+            background:
+              'radial-gradient(ellipse 70% 50% at 0% 0%, rgba(95,143,20,0.18), transparent 55%)',
           }}
         />
-
+        <div
+          style={{
+            position: 'absolute',
+            top: 64,
+            left: 72,
+            fontSize: 28,
+            fontWeight: 700,
+            color: '#5f8f14',
+            letterSpacing: '0.12em',
+            textTransform: 'uppercase',
+          }}
+        >
+          Soft Systems Studio
+        </div>
         <div
           style={{
             display: 'flex',
             flexDirection: 'column',
-            alignItems: 'center',
-            textAlign: 'center',
+            maxWidth: 900,
+            position: 'relative',
           }}
         >
           <div
             style={{
-              fontSize: '72px',
-              fontWeight: 'bold',
-              color: '#FFFFFF',
-              lineHeight: 1.1,
-              marginBottom: '16px',
-              maxWidth: '900px',
+              fontSize: 72,
+              fontWeight: 800,
+              color: '#141814',
+              lineHeight: 1.05,
+              letterSpacing: '-0.03em',
+              marginBottom: 16,
             }}
           >
             {title}
           </div>
-          <div
-            style={{
-              fontSize: '32px',
-              color: '#84CC16',
-              marginTop: '16px',
-            }}
-          >
-            {subtitle}
-          </div>
+          <div style={{ width: 96, height: 6, backgroundColor: '#5f8f14', marginBottom: 24 }} />
+          <div style={{ fontSize: 32, color: '#5c655b' }}>{subtitle}</div>
         </div>
-
         <div
           style={{
             position: 'absolute',
-            bottom: '40px',
+            bottom: 48,
+            right: 72,
             display: 'flex',
-            alignItems: 'center',
-            gap: '32px',
-            color: '#6B7280',
-            fontSize: '24px',
+            gap: 24,
+            color: '#5c655b',
+            fontSize: 22,
           }}
         >
           <span>$997 flat build</span>
-          <span style={{ color: '#374151' }}>•</span>
+          <span>·</span>
           <span>Care Plans from $150/mo</span>
-          <span style={{ color: '#374151' }}>•</span>
-          <span>Phenix City · Columbus</span>
         </div>
       </div>,
       {

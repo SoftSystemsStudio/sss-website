@@ -32,7 +32,6 @@ const NAV_ITEMS = [
   { label: 'About', href: '/about' },
 ];
 
-// Must match the Lead Tool's docs/SCOPE.md §1 — what the build actually ships.
 const WEBSITE_FEATURES = [
   'A custom one-page site built around your business and brand',
   'The words written for you — you review, you don’t have to write',
@@ -114,229 +113,252 @@ export default function Home() {
       <WebSiteSchema />
       <FAQSchema faqs={FAQS} />
 
-      <div className="fixed inset-0 bg-gradient-to-br from-black via-gray-900 to-black opacity-90 pointer-events-none" />
-      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-lime-900/20 via-transparent to-transparent pointer-events-none" />
-
-      <Navbar
-        items={NAV_ITEMS}
-        ctaLabel="Get a Quote"
-        ctaHref="/intake"
-        brand="Soft Systems Studio"
-      />
-
-      <div className="antialiased min-h-screen bg-black text-gray-100 selection:bg-lime-400 selection:text-black overflow-x-hidden">
+      <div className="min-h-screen text-brand-ink">
         <a
           href="#main-content"
-          className="skip-link sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:bg-white focus:text-black focus:px-4 focus:py-2 focus:rounded"
+          className="skip-link sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50"
         >
           Skip to main content
         </a>
 
-        <main id="main-content" className="relative z-10">
-          {/* Hero — brand first; one headline, one line of support, one CTA group */}
-          <Section className="pt-28 pb-28 md:pt-36 md:pb-36">
-            <FadeIn>
-              <div className="max-w-4xl mx-auto text-center">
-                <h1 className="text-5xl sm:text-6xl md:text-7xl font-black text-white mb-5 leading-[1.05] tracking-tight">
-                  Soft Systems
-                  <br />
-                  <span className="bg-gradient-to-r from-lime-400 via-cyan-400 to-lime-300 text-transparent bg-clip-text animate-gradient">
-                    Studio
-                  </span>
-                </h1>
-                <p className="text-xl md:text-2xl text-gray-200 font-medium mb-4">
-                  Websites for local businesses.
-                </p>
-                <p className="text-base md:text-lg text-gray-400 leading-relaxed mb-10 max-w-2xl mx-auto font-light">
-                  A flat {BUILD_FEE} website build for service businesses in {SERVICE_AREA_LABEL}.
-                  Optional Care Plans from {RETAINER_MIN}/month.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <a
-                    href="/intake"
-                    className="group relative inline-block px-8 py-4 bg-lime-400 text-black font-bold text-lg rounded-lg overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-lime-400/40"
-                  >
-                    <span className="relative z-10">Get a Quote</span>
-                    <div className="absolute inset-0 bg-gradient-to-r from-lime-300 to-cyan-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  </a>
-                  <a
-                    href="#portfolio"
-                    className="inline-block px-8 py-4 border-2 border-lime-400/50 text-lime-400 font-bold text-lg rounded-lg hover:bg-lime-400/10 transition-all duration-300"
-                  >
-                    See the Work →
-                  </a>
-                </div>
+        <Navbar
+          items={NAV_ITEMS}
+          ctaLabel="Get a Quote"
+          ctaHref="/intake"
+          brand="Soft Systems Studio"
+          variant="light"
+        />
+
+        <main id="main-content">
+          {/* Full-bleed photo hero — brand first, one composition */}
+          <section
+            id="site-hero"
+            className="relative min-h-[calc(100dvh-4.5rem)] flex items-end overflow-hidden"
+          >
+            <div className="absolute inset-0">
+              <Image
+                src="/images/demo/green-bench/hero-yard.jpg"
+                alt="Landscaped yard for a local service business"
+                fill
+                priority
+                sizes="100vw"
+                className="object-cover sss-kenburns"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-brand-ink via-brand-ink/55 to-brand-ink/25" />
+            </div>
+
+            <div className="relative z-10 w-full max-w-6xl mx-auto px-6 pb-16 pt-32 md:pb-24 md:pt-40 text-white">
+              <h1 className="sss-display sss-rise text-5xl sm:text-6xl md:text-8xl font-extrabold leading-[0.95] tracking-tight max-w-4xl">
+                Soft Systems
+                <br />
+                Studio
+              </h1>
+              <div className="sss-rise sss-rise-delay-1 mt-6 h-1 w-24 bg-brand-lime-bright sss-draw-line" />
+              <p className="sss-rise sss-rise-delay-2 mt-6 text-xl md:text-2xl font-medium text-white/95 max-w-xl">
+                Websites for local businesses.
+              </p>
+              <p className="sss-rise sss-rise-delay-3 mt-3 text-base md:text-lg text-white/70 max-w-xl leading-relaxed">
+                A flat {BUILD_FEE} build for service businesses in {SERVICE_AREA_LABEL}. Care Plans
+                from {RETAINER_MIN}/month.
+              </p>
+              <div className="sss-rise sss-rise-delay-4 mt-8 flex flex-col sm:flex-row gap-3">
+                <a
+                  href="/intake"
+                  className="inline-flex items-center justify-center px-7 py-3.5 bg-white text-brand-ink font-semibold rounded-md hover:bg-brand-lime-wash transition-colors"
+                >
+                  Get a Quote
+                </a>
+                <a
+                  href="#portfolio"
+                  className="inline-flex items-center justify-center px-7 py-3.5 border border-white/50 bg-black/40 backdrop-blur-sm text-white font-semibold rounded-md hover:border-white transition-colors"
+                >
+                  See the Work
+                </a>
               </div>
-            </FadeIn>
-          </Section>
+            </div>
+          </section>
 
           {/* Website Build */}
-          <Section id="website" className="py-24 relative">
-            <div className="absolute inset-0 bg-gradient-to-br from-lime-900/10 via-transparent to-cyan-900/10 pointer-events-none" />
-
+          <Section id="website" className="sss-paper">
             <FadeIn>
-              <div className="text-center mb-16">
-                <h2 className="text-4xl md:text-5xl font-black text-white mb-4">
-                  One Website Build. One Price.
-                </h2>
-                <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-                  {BUILD_FEE} flat. No tiers, no upsells disguised as &quot;packages.&quot;
-                  Everything a local service business needs to launch a professional site.
-                </p>
-              </div>
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-brand-lime mb-4">
+                Website Build
+              </p>
+              <h2 className="sss-display text-4xl md:text-5xl font-extrabold text-brand-ink max-w-2xl leading-tight">
+                One build. One price. {BUILD_FEE}.
+              </h2>
+              <p className="mt-5 text-lg text-brand-muted max-w-2xl leading-relaxed">
+                No tiers, no package ladders. Everything a local service business needs to launch a
+                professional site.
+              </p>
             </FadeIn>
 
-            <FadeIn className="max-w-2xl mx-auto relative z-10">
-              <div className="relative p-8 md:p-10 rounded-2xl border border-lime-400/40 bg-white/5 backdrop-blur">
-                <div className="absolute inset-0 bg-gradient-to-br from-lime-400/10 to-cyan-400/10 opacity-50 rounded-2xl" />
-                <div className="relative z-10">
-                  <div className="flex items-baseline gap-2 mb-6">
-                    <span className="text-5xl font-black text-lime-400">{BUILD_FEE}</span>
-                    <span className="text-gray-400">one-time</span>
-                  </div>
-                  <ul className="space-y-3 mb-8">
-                    {WEBSITE_FEATURES.map((feature) => (
-                      <li key={feature} className="text-gray-300 flex items-start gap-3">
-                        <span className="text-lime-400 mt-0.5">✓</span>
-                        <span>{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
+            <div className="mt-14 grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-12 lg:gap-16 items-start">
+              <FadeIn>
+                <ul className="space-y-4">
+                  {WEBSITE_FEATURES.map((feature) => (
+                    <li
+                      key={feature}
+                      className="flex items-start gap-3 text-brand-ink-soft border-t border-brand-ink/10 pt-4 first:border-0 first:pt-0"
+                    >
+                      <span
+                        className="mt-1.5 h-2 w-2 shrink-0 rounded-sm bg-brand-lime"
+                        aria-hidden
+                      />
+                      <span>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              </FadeIn>
+
+              <FadeIn delay={0.1}>
+                <div className="bg-brand-ink text-brand-paper-elevated p-8 md:p-10 rounded-md">
+                  <p className="text-sm uppercase tracking-[0.16em] text-white/50 mb-3">Flat fee</p>
+                  <p className="sss-display text-5xl font-extrabold text-white">
+                    {BUILD_FEE}
+                    <span className="block text-base font-medium text-white/55 mt-2 tracking-normal">
+                      one-time
+                    </span>
+                  </p>
                   <a
                     href="/intake"
-                    className="block text-center px-6 py-3 rounded-lg font-bold bg-lime-400 text-black hover:bg-lime-300 hover:scale-105 transition-all duration-300"
+                    className="mt-8 inline-flex w-full items-center justify-center px-6 py-3.5 bg-brand-lime text-white font-semibold rounded-md hover:bg-brand-lime-bright transition-colors"
                   >
                     Get Started
                   </a>
-                  <p className="text-sm text-gray-500 text-center mt-4">
-                    Want ongoing updates after launch?{' '}
-                    <a href="#retainer" className="text-lime-400 hover:underline">
-                      Care Plans start at {RETAINER_MIN}/month.
+                  <p className="mt-4 text-sm text-white/50">
+                    Need updates after launch?{' '}
+                    <a
+                      href="#retainer"
+                      className="text-brand-lime-wash underline-offset-2 hover:underline"
+                    >
+                      Care Plans from {RETAINER_MIN}/mo
                     </a>
+                    .
                   </p>
                 </div>
-              </div>
-            </FadeIn>
+              </FadeIn>
+            </div>
 
             <FadeIn>
-              <div className="max-w-4xl mx-auto text-center mt-20">
-                <h3 className="text-2xl font-bold text-white mb-8">How It Works</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                  <div className="p-6">
-                    <div className="w-12 h-12 rounded-full bg-lime-400/10 border-2 border-lime-400 flex items-center justify-center text-lime-400 font-black text-xl mb-4 mx-auto">
-                      1
-                    </div>
-                    <h4 className="font-bold text-white mb-2">Quick Intake</h4>
-                    <p className="text-gray-400 text-sm">
-                      Tell me about your business, brand, and goals in a short form
+              <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10">
+                {[
+                  {
+                    n: '01',
+                    title: 'Quick Intake',
+                    body: 'Tell me about your business, brand, and goals in a short form.',
+                  },
+                  {
+                    n: '02',
+                    title: 'I Build It',
+                    body: 'I design and build the site myself, using AI to move fast.',
+                  },
+                  {
+                    n: '03',
+                    title: 'You Launch',
+                    body: 'Approve the final result, go live, and start getting customers.',
+                  },
+                ].map((step) => (
+                  <div key={step.n} className="border-t-2 border-brand-lime pt-6">
+                    <p className="sss-display text-sm font-semibold text-brand-lime tracking-wide">
+                      {step.n}
                     </p>
+                    <h3 className="sss-display mt-2 text-xl font-bold text-brand-ink">
+                      {step.title}
+                    </h3>
+                    <p className="mt-2 text-brand-muted text-sm leading-relaxed">{step.body}</p>
                   </div>
-                  <div className="p-6">
-                    <div className="w-12 h-12 rounded-full bg-cyan-400/10 border-2 border-cyan-400 flex items-center justify-center text-cyan-400 font-black text-xl mb-4 mx-auto">
-                      2
-                    </div>
-                    <h4 className="font-bold text-white mb-2">I Build It</h4>
-                    <p className="text-gray-400 text-sm">
-                      I design and build the site myself, using AI to move fast
-                    </p>
-                  </div>
-                  <div className="p-6">
-                    <div className="w-12 h-12 rounded-full bg-lime-400/10 border-2 border-lime-400 flex items-center justify-center text-lime-400 font-black text-xl mb-4 mx-auto">
-                      3
-                    </div>
-                    <h4 className="font-bold text-white mb-2">You Launch</h4>
-                    <p className="text-gray-400 text-sm">
-                      Approve the final result, go live, and start getting customers
-                    </p>
-                  </div>
-                </div>
+                ))}
               </div>
             </FadeIn>
           </Section>
 
           {/* Care Plans */}
-          <Section id="retainer" className="py-24 relative">
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-cyan-900/5 to-transparent pointer-events-none" />
+          <Section id="retainer" className="bg-brand-paper-elevated">
             <FadeIn>
-              <div className="max-w-3xl mx-auto text-center">
-                <h2 className="text-4xl md:text-5xl font-black text-white mb-4">Keep It Running</h2>
-                <p className="text-xl text-gray-300 mb-10">
-                  An optional monthly Care Plan covers hosting, updates, and support after launch.
-                  Every plan includes the same services — they differ only in how many hours of
-                  edits you get each month.
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-                  {CARE_PLANS.map((plan) => (
-                    <div
-                      key={plan.name}
-                      className="p-6 rounded-2xl border border-white/10 bg-white/5 backdrop-blur"
-                    >
-                      <div className="text-sm font-semibold uppercase tracking-wide text-gray-400 mb-2">
-                        {plan.name}
-                      </div>
-                      <div className="text-4xl font-black text-cyan-400">
-                        {plan.price}
-                        <span className="text-base font-normal text-gray-400">/month</span>
-                      </div>
-                      <p className="text-gray-300 text-sm mt-2">
-                        {plan.editHours} hours of edits a month
-                      </p>
-                    </div>
-                  ))}
-                </div>
-                <p className="text-gray-400 text-sm mb-10">
-                  Unused hours don&apos;t roll over. Anything beyond your hours is quoted before I
-                  start. Cancel anytime.
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl mx-auto text-left mb-10">
-                  {[
-                    'Hosting & uptime monitoring',
-                    'Content and text updates',
-                    'Small design tweaks',
-                    'Email support',
-                  ].map((item) => (
-                    <div key={item} className="flex items-start gap-3 text-gray-300 text-sm">
-                      <span className="text-cyan-400 mt-0.5">✓</span>
-                      <span>{item}</span>
-                    </div>
-                  ))}
-                </div>
-                <a
-                  href="/intake"
-                  className="inline-block px-8 py-4 border-2 border-cyan-400/50 text-cyan-400 font-bold rounded-lg hover:bg-cyan-400/10 transition-all duration-300"
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-brand-lime mb-4">
+                Care Plans
+              </p>
+              <h2 className="sss-display text-4xl md:text-5xl font-extrabold text-brand-ink max-w-2xl leading-tight">
+                Keep it running after launch.
+              </h2>
+              <p className="mt-5 text-lg text-brand-muted max-w-2xl leading-relaxed">
+                Optional monthly plans for hosting, updates, and support. Same services on every
+                plan — they differ only in edit hours.
+              </p>
+            </FadeIn>
+
+            <StaggerContainer className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {CARE_PLANS.map((plan) => (
+                <div
+                  key={plan.name}
+                  className="border border-brand-ink/10 bg-white/60 p-6 rounded-md"
                 >
-                  Ask About a Care Plan
-                </a>
-              </div>
+                  <p className="text-sm font-semibold uppercase tracking-wide text-brand-muted">
+                    {plan.name}
+                  </p>
+                  <p className="sss-display mt-3 text-4xl font-extrabold text-brand-ink">
+                    {plan.price}
+                    <span className="text-base font-medium text-brand-muted">/mo</span>
+                  </p>
+                  <p className="mt-2 text-sm text-brand-muted">
+                    {plan.editHours} hours of edits a month
+                  </p>
+                </div>
+              ))}
+            </StaggerContainer>
+
+            <FadeIn>
+              <ul className="mt-10 grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl text-sm text-brand-ink-soft">
+                {[
+                  'Hosting & uptime monitoring',
+                  'Content and text updates',
+                  'Small design tweaks',
+                  'Email support',
+                ].map((item) => (
+                  <li key={item} className="flex items-start gap-2">
+                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 bg-brand-lime" aria-hidden />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-6 text-sm text-brand-muted max-w-xl">
+                Unused hours don&apos;t roll over. Work beyond your hours is quoted first. Cancel
+                anytime.
+              </p>
+              <a
+                href="/intake"
+                className="mt-8 inline-flex px-7 py-3.5 border border-brand-ink/20 text-brand-ink font-semibold rounded-md hover:border-brand-lime hover:text-brand-lime transition-colors"
+              >
+                Ask About a Care Plan
+              </a>
             </FadeIn>
           </Section>
 
-          {/* Portfolio */}
-          <Section id="portfolio" className="py-24 relative">
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-lime-900/5 to-transparent pointer-events-none" />
-
+          {/* Portfolio — interactive previews (cards OK) */}
+          <Section id="portfolio" className="sss-paper">
             <FadeIn>
-              <div className="text-center mb-16">
-                <h2 className="text-4xl md:text-5xl font-black text-white mb-4">
-                  See What I Can Build
-                </h2>
-                <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-                  Soft Systems Studio is a new studio — I don&apos;t have real client sites to show
-                  yet, so these three demos are what I&apos;ve built to show what&apos;s possible.
-                  Clearly labeled, not real businesses.{' '}
-                  <Link href="/about" className="text-lime-400 hover:underline">
-                    Read my story →
-                  </Link>
-                </p>
-              </div>
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-brand-lime mb-4">
+                Portfolio
+              </p>
+              <h2 className="sss-display text-4xl md:text-5xl font-extrabold text-brand-ink max-w-2xl leading-tight">
+                See what I can build.
+              </h2>
+              <p className="mt-5 text-lg text-brand-muted max-w-2xl leading-relaxed">
+                Soft Systems Studio is new — these three demos show what&apos;s possible. Clearly
+                labeled, not real businesses.{' '}
+                <Link href="/about" className="text-brand-lime font-semibold hover:underline">
+                  Read my story
+                </Link>
+              </p>
             </FadeIn>
 
-            <StaggerContainer className="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10">
+            <StaggerContainer className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
               {PORTFOLIO_SITES.map((site) => (
                 <Link
                   key={site.name}
                   href={site.url}
-                  className="group relative rounded-2xl border border-white/10 bg-white/5 overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-lime-400/10 block"
+                  className="group block overflow-hidden rounded-md border border-brand-ink/10 bg-white/50 hover:border-brand-lime/50 transition-colors"
                 >
                   <div className="relative aspect-[4/3] overflow-hidden">
                     <Image
@@ -344,70 +366,57 @@ export default function Home() {
                       alt={`${site.name} demo site preview`}
                       fill
                       sizes="(min-width: 768px) 33vw, 100vw"
-                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      className="object-cover transition-transform duration-700 group-hover:scale-105"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
-                    <div className="absolute bottom-4 left-4 right-4">
-                      <div className="text-xs font-medium text-gray-300 mb-1">{site.type}</div>
-                      <h3 className="text-xl font-bold text-white group-hover:text-lime-400 transition">
-                        {site.name}
-                      </h3>
+                    <div className="absolute inset-0 bg-gradient-to-t from-brand-ink/70 via-transparent to-transparent" />
+                    <div className="absolute bottom-4 left-4 right-4 text-white">
+                      <p className="text-xs font-medium uppercase tracking-wide text-white/75">
+                        {site.type}
+                      </p>
+                      <h3 className="sss-display text-xl font-bold mt-1">{site.name}</h3>
                     </div>
                   </div>
-                  <div className="p-6">
-                    <p className="text-gray-300 text-sm">{site.description}</p>
+                  <div className="p-5">
+                    <p className="text-sm text-brand-muted leading-relaxed">{site.description}</p>
+                    <p className="mt-3 text-sm font-semibold text-brand-lime group-hover:underline">
+                      View demo →
+                    </p>
                   </div>
                 </Link>
               ))}
             </StaggerContainer>
-
-            <FadeIn className="text-center mt-12">
-              <p className="text-gray-400 mb-6">
-                Click any example to explore a live demo. Your site will be custom-designed for your
-                brand.
-              </p>
-              <a
-                href="/intake"
-                className="inline-block px-8 py-4 bg-lime-400 text-black font-bold rounded-lg hover:bg-lime-300 transition-all duration-300 hover:scale-105"
-              >
-                Start Your Project
-              </a>
-            </FadeIn>
           </Section>
 
           {/* FAQ */}
-          <Section id="faq" className="py-24 relative">
+          <Section id="faq" className="bg-brand-paper-elevated">
             <FadeIn>
-              <h2 className="text-4xl md:text-5xl font-black text-white text-center mb-16">
+              <h2 className="sss-display text-4xl md:text-5xl font-extrabold text-brand-ink text-center mb-12">
                 Questions?
               </h2>
             </FadeIn>
-            <div className="max-w-3xl mx-auto">
-              <InteractiveFAQ faqs={FAQS} />
-            </div>
+            <InteractiveFAQ faqs={FAQS} />
           </Section>
 
           {/* Final CTA */}
-          <Section className="py-28 relative">
-            <div className="absolute inset-0 bg-gradient-to-br from-lime-900/20 via-transparent to-cyan-900/20 pointer-events-none" />
+          <Section className="bg-brand-ink text-white">
             <FadeIn>
-              <div className="max-w-3xl mx-auto text-center relative z-10">
-                <h2 className="text-4xl md:text-5xl font-black text-white mb-6">
-                  Ready to Build Something Great?
+              <div className="max-w-3xl">
+                <h2 className="sss-display text-4xl md:text-5xl font-extrabold leading-tight">
+                  Ready when you are.
                 </h2>
-                <p className="text-xl text-gray-300 mb-10">
+                <p className="mt-5 text-lg text-white/65 max-w-xl">
                   Get a quote for a {BUILD_FEE} website build — or browse the demos first.
                 </p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <div className="mt-8 flex flex-col sm:flex-row gap-3">
                   <a
                     href="/intake"
-                    className="inline-block px-10 py-5 bg-lime-400 text-black font-bold text-lg rounded-lg hover:bg-lime-300 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-lime-400/40"
+                    className="inline-flex items-center justify-center px-8 py-3.5 bg-brand-lime text-white font-semibold rounded-md hover:bg-brand-lime-bright transition-colors"
                   >
                     Get a Quote
                   </a>
                   <a
                     href="#portfolio"
-                    className="inline-block px-10 py-5 border-2 border-white/20 text-white font-bold text-lg rounded-lg hover:bg-white/10 transition-all duration-300"
+                    className="inline-flex items-center justify-center px-8 py-3.5 border border-white/25 text-white font-semibold rounded-md hover:border-white/50 transition-colors"
                   >
                     See the Demos
                   </a>
@@ -418,28 +427,6 @@ export default function Home() {
         </main>
 
         <Footer />
-
-        {/* Chat widget and AI receptionist demo are unwired for now.
-            Chat: backend no longer exists.
-            VoiceDemo /api/livekit-token: kept in the repo; re-enable when ready. */}
-
-        <style jsx global>{`
-          @keyframes gradient {
-            0% {
-              background-position: 0% 50%;
-            }
-            50% {
-              background-position: 100% 50%;
-            }
-            100% {
-              background-position: 0% 50%;
-            }
-          }
-          .animate-gradient {
-            background-size: 200% 200%;
-            animation: gradient 3s ease infinite;
-          }
-        `}</style>
       </div>
     </>
   );

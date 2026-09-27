@@ -1,14 +1,22 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
-import { Space_Grotesk } from 'next/font/google';
+import { Syne, Source_Sans_3 } from 'next/font/google';
 import '../styles/globals.css';
 import { AppProviders } from './providers';
 import { GoogleAnalytics } from '@/components/GoogleAnalytics';
 
-const spaceGrotesk = Space_Grotesk({
+const syne = Syne({
   subsets: ['latin'],
   display: 'swap',
-  variable: '--font-space-grotesk',
+  variable: '--font-syne',
+  weight: ['500', '600', '700', '800'],
+});
+
+const sourceSans = Source_Sans_3({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-source-sans',
+  weight: ['400', '500', '600', '700'],
 });
 
 export const metadata: Metadata = {
@@ -71,8 +79,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={spaceGrotesk.variable}>
-      <body className="antialiased min-h-screen bg-[#050505] text-gray-200 selection:bg-lime-400 selection:text-black">
+    <html lang="en" className={`${syne.variable} ${sourceSans.variable}`}>
+      <body className="antialiased min-h-screen sss-paper text-brand-ink selection:bg-brand-lime-wash selection:text-brand-ink">
         <AppProviders>
           <Suspense>
             <GoogleAnalytics />

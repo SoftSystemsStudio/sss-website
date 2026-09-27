@@ -66,6 +66,9 @@ const SERVICES = [
   },
 ];
 
+const fieldClass =
+  'w-full px-4 py-3 bg-white border border-brand-ink/15 rounded-md focus:outline-none focus:border-brand-lime transition-colors text-brand-ink placeholder:text-brand-muted/60';
+
 export default function IntakeForm() {
   const [form, setForm] = useState<FormState>(initialForm);
   const [loading, setLoading] = useState(false);
@@ -121,35 +124,23 @@ export default function IntakeForm() {
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-[#050505] text-white flex items-center justify-center px-4">
+      <div className="min-h-screen sss-paper text-brand-ink flex items-center justify-center px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="max-w-md text-center"
         >
-          <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg
-              className="w-8 h-8 text-green-400"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
+          <div className="w-14 h-14 bg-brand-lime/15 text-brand-lime rounded-md flex items-center justify-center mx-auto mb-6 text-2xl font-bold">
+            ✓
           </div>
-          <h1 className="text-3xl font-bold mb-4">Thank You!</h1>
-          <p className="text-gray-400 mb-6">
+          <h1 className="sss-display text-3xl font-extrabold mb-4">Thank You!</h1>
+          <p className="text-brand-muted mb-6">
             We&apos;ve received your request. You&apos;ll hear from us within 24 hours to schedule a
             quick call and discuss your project.
           </p>
           <Link
             href="/"
-            className="inline-block px-6 py-3 bg-white text-black font-semibold rounded-lg hover:bg-gray-100 transition-colors"
+            className="inline-flex px-6 py-3 bg-brand-lime text-white font-semibold rounded-md hover:bg-brand-lime-bright transition-colors"
           >
             Back to Home
           </Link>
@@ -159,102 +150,109 @@ export default function IntakeForm() {
   }
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white">
-      <header className="border-b border-white/10">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="text-lg font-semibold">
+    <div className="min-h-screen sss-paper text-brand-ink">
+      <header className="border-b border-brand-ink/10 bg-brand-paper-elevated/90 backdrop-blur-md">
+        <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
+          <Link href="/" className="sss-display text-lg font-semibold">
             Soft Systems Studio
           </Link>
-          <Link href="/" className="text-sm text-gray-400 hover:text-white transition-colors">
+          <Link
+            href="/"
+            className="text-sm text-brand-muted hover:text-brand-ink transition-colors"
+          >
             &larr; Back to site
           </Link>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-12">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Get Your Free Quote</h1>
-          <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+      <main className="max-w-3xl mx-auto px-4 py-12 md:py-16">
+        <div className="mb-12">
+          <h1 className="sss-display text-4xl md:text-5xl font-extrabold mb-3">
+            Get Your Free Quote
+          </h1>
+          <p className="text-lg text-brand-muted max-w-xl">
             Tell us about your business and we&apos;ll get back to you within 24 hours with a custom
             quote.
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-8">
-          <section className="bg-white/5 border border-white/10 rounded-2xl p-6 md:p-8">
-            <h2 className="text-xl font-semibold mb-6">Contact Information</h2>
-            <div className="grid md:grid-cols-2 gap-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <section className="bg-white/60 border border-brand-ink/10 rounded-md p-6 md:p-8">
+            <h2 className="sss-display text-xl font-bold mb-6">Contact Information</h2>
+            <div className="grid md:grid-cols-2 gap-5">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Your Name *</label>
+                <label className="block text-sm font-medium text-brand-ink-soft mb-2">
+                  Your Name *
+                </label>
                 <input
                   type="text"
                   value={form.name}
                   onChange={(e) => update('name', e.target.value)}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-lime-400 transition-colors"
+                  className={fieldClass}
                   placeholder="John Smith"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-brand-ink-soft mb-2">
                   Business Name *
                 </label>
                 <input
                   type="text"
                   value={form.businessName}
                   onChange={(e) => update('businessName', e.target.value)}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-lime-400 transition-colors"
+                  className={fieldClass}
                   placeholder="Smith Plumbing LLC"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Email *</label>
+                <label className="block text-sm font-medium text-brand-ink-soft mb-2">
+                  Email *
+                </label>
                 <input
                   type="email"
                   value={form.email}
                   onChange={(e) => update('email', e.target.value)}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-lime-400 transition-colors"
+                  className={fieldClass}
                   placeholder="john@smithplumbing.com"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Phone *</label>
+                <label className="block text-sm font-medium text-brand-ink-soft mb-2">
+                  Phone *
+                </label>
                 <input
                   type="tel"
                   value={form.phone}
                   onChange={(e) => update('phone', e.target.value)}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-lime-400 transition-colors"
+                  className={fieldClass}
                   placeholder="(555) 123-4567"
                 />
               </div>
             </div>
           </section>
 
-          <section className="bg-white/5 border border-white/10 rounded-2xl p-6 md:p-8">
-            <h2 className="text-xl font-semibold mb-6">About Your Business</h2>
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                What type of business do you run?
-              </label>
-              <select
-                value={form.businessType}
-                onChange={(e) => update('businessType', e.target.value)}
-                className="w-full px-4 py-3 bg-[#1a1a1a] border border-white/10 rounded-lg focus:outline-none focus:border-lime-400 transition-colors text-white"
-              >
-                <option value="" className="bg-[#1a1a1a] text-gray-400">
-                  Select your industry...
+          <section className="bg-white/60 border border-brand-ink/10 rounded-md p-6 md:p-8">
+            <h2 className="sss-display text-xl font-bold mb-6">About Your Business</h2>
+            <label className="block text-sm font-medium text-brand-ink-soft mb-2">
+              What type of business do you run?
+            </label>
+            <select
+              value={form.businessType}
+              onChange={(e) => update('businessType', e.target.value)}
+              className={fieldClass}
+            >
+              <option value="">Select your industry...</option>
+              {BUSINESS_TYPES.map((type) => (
+                <option key={type} value={type}>
+                  {type}
                 </option>
-                {BUSINESS_TYPES.map((type) => (
-                  <option key={type} value={type} className="bg-[#1a1a1a] text-white">
-                    {type}
-                  </option>
-                ))}
-              </select>
-            </div>
+              ))}
+            </select>
           </section>
 
-          <section className="bg-white/5 border border-white/10 rounded-2xl p-6 md:p-8">
-            <h2 className="text-xl font-semibold mb-6">What are you interested in? *</h2>
-            <div className="grid md:grid-cols-3 gap-4">
+          <section className="bg-white/60 border border-brand-ink/10 rounded-md p-6 md:p-8">
+            <h2 className="sss-display text-xl font-bold mb-6">What are you interested in? *</h2>
+            <div className="grid md:grid-cols-3 gap-3">
               {SERVICES.map((service) => {
                 const isSelected = form.serviceInterest === service.key;
                 return (
@@ -262,45 +260,45 @@ export default function IntakeForm() {
                     key={service.key}
                     type="button"
                     onClick={() => update('serviceInterest', service.key)}
-                    className={`p-6 rounded-xl border-2 text-left transition-all ${
+                    className={`p-5 rounded-md border-2 text-left transition-colors ${
                       isSelected
-                        ? 'border-lime-400 bg-lime-400/10'
-                        : 'border-white/10 hover:border-white/30'
+                        ? 'border-brand-lime bg-brand-lime-wash/40'
+                        : 'border-brand-ink/10 hover:border-brand-ink/25 bg-white/40'
                     }`}
                   >
                     <div className="font-semibold mb-1">{service.name}</div>
-                    <div className="text-lime-400 font-bold mb-2">{service.price}</div>
-                    <div className="text-sm text-gray-400">{service.description}</div>
+                    <div className="text-brand-lime font-bold mb-1">{service.price}</div>
+                    <div className="text-sm text-brand-muted">{service.description}</div>
                   </button>
                 );
               })}
             </div>
           </section>
 
-          <section className="bg-white/5 border border-white/10 rounded-2xl p-6 md:p-8">
-            <h2 className="text-xl font-semibold mb-6">Tell Us More</h2>
-            <div className="space-y-6">
+          <section className="bg-white/60 border border-brand-ink/10 rounded-md p-6 md:p-8">
+            <h2 className="sss-display text-xl font-bold mb-6">Tell Us More</h2>
+            <div className="space-y-5">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-brand-ink-soft mb-2">
                   What&apos;s your biggest challenge right now?
                 </label>
                 <textarea
                   value={form.biggestChallenge}
                   onChange={(e) => update('biggestChallenge', e.target.value)}
                   rows={4}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-lime-400 transition-colors resize-none"
+                  className={`${fieldClass} resize-none`}
                   placeholder="e.g., No professional website, outdated site that doesn’t convert, need help keeping content current..."
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-brand-ink-soft mb-2">
                   How did you hear about us?
                 </label>
                 <input
                   type="text"
                   value={form.howDidYouHear}
                   onChange={(e) => update('howDidYouHear', e.target.value)}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-lime-400 transition-colors"
+                  className={fieldClass}
                   placeholder="Google, referral, social media..."
                 />
               </div>
@@ -308,20 +306,20 @@ export default function IntakeForm() {
           </section>
 
           {error && (
-            <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400">
+            <div className="p-4 bg-red-50 border border-red-200 rounded-md text-red-700">
               {error}
             </div>
           )}
 
-          <div className="text-center">
+          <div className="text-center pt-2">
             <button
               type="submit"
               disabled={loading}
-              className="px-8 py-4 bg-lime-400 text-black font-semibold rounded-xl hover:bg-lime-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-8 py-4 bg-brand-lime text-white font-semibold rounded-md hover:bg-brand-lime-bright transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Submitting...' : 'Get My Free Quote'}
             </button>
-            <p className="mt-4 text-sm text-gray-500">
+            <p className="mt-4 text-sm text-brand-muted">
               We&apos;ll respond within 24 hours. No spam, ever.
             </p>
           </div>

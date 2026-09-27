@@ -43,13 +43,13 @@ const sizeClasses: Record<ButtonSize, string> = {
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary:
-    'bg-[#c0ff6b] text-black font-semibold shadow-lg shadow-[#c0ff6b]/30 hover:bg-[#d4ff8f] hover:shadow-[#c0ff6b]/50 focus:ring-2 focus:ring-[#c0ff6b] focus:ring-offset-2 focus:ring-offset-black',
+    'bg-brand-lime text-white font-semibold hover:bg-brand-lime-bright focus:ring-2 focus:ring-brand-lime focus:ring-offset-2 focus:ring-offset-brand-paper',
   secondary:
-    'bg-[#656565] text-[#d5d5d5] font-medium hover:bg-[#7a7a7a] focus:ring-2 focus:ring-[#656565] focus:ring-offset-2 focus:ring-offset-black',
+    'bg-brand-ink text-brand-paper-elevated font-medium hover:bg-brand-ink-soft focus:ring-2 focus:ring-brand-ink focus:ring-offset-2 focus:ring-offset-brand-paper',
   ghost:
-    'border border-[#656565] text-[#d5d5d5] font-medium hover:border-[#c0ff6b] hover:text-[#c0ff6b] focus:ring-2 focus:ring-[#656565] focus:ring-offset-2 focus:ring-offset-black',
+    'border border-brand-ink/20 text-brand-ink font-medium hover:border-brand-ink hover:bg-brand-ink/5 focus:ring-2 focus:ring-brand-ink/30',
   outline:
-    'border border-[#656565] text-[#d5d5d5] font-medium bg-transparent hover:border-[#c0ff6b] hover:text-[#c0ff6b] focus:ring-2 focus:ring-[#c0ff6b] focus:ring-offset-2 focus:ring-offset-black',
+    'border border-brand-ink/25 text-brand-ink font-medium bg-transparent hover:border-brand-lime hover:text-brand-lime focus:ring-2 focus:ring-brand-lime',
 };
 
 export default function Button({
@@ -61,7 +61,7 @@ export default function Button({
   ...props
 }: ButtonProps) {
   const baseClasses =
-    'inline-flex items-center justify-center rounded-full transition-all duration-200 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed';
+    'inline-flex items-center justify-center rounded-md transition-colors duration-200 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed';
   // eslint-disable-next-line security/detect-object-injection -- size and variant are typed unions, not user input
   const classes = `${baseClasses} ${sizeClasses[size]} ${variantClasses[variant]} ${className}`;
 

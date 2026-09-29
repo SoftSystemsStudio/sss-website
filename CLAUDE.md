@@ -121,6 +121,7 @@ Native `fetch()` + Next.js API routes. No React Query, SWR, or tRPC.
 - 3D/heavy components: Use `dynamic()` with `ssr: false`
 - Forms: HTML forms + Zod validation on API routes
 - Auth: Clerk via `@clerk/nextjs`
+- New public pages must be added to `isPublicRoute` in `src/middleware.ts`. On Vercel (where `CLERK_SECRET_KEY` is set) Clerk rewrites any unlisted route to a 404 for signed-out visitors; locally, without the key, the middleware is a no-op, so the page works in dev and silently 404s in production.
 
 ---
 

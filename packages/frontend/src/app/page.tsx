@@ -4,7 +4,8 @@ import { Navbar, Footer, Section, Button } from '@/components/ui';
 import Faq from '@/components/Faq';
 import QuoteCta from '@/components/QuoteCta';
 import ShowcaseParallax from '@/components/ShowcaseParallax';
-import { ConceptShot, PhoneFrame } from '@/components/DeviceFrames';
+import ConceptCard from '@/components/ConceptCard';
+import { PhoneFrame } from '@/components/DeviceFrames';
 import { CONCEPTS } from '@/lib/concepts';
 import {
   OrganizationSchema,
@@ -218,39 +219,9 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="mt-14 flex flex-col gap-16 lg:mt-20 lg:gap-20">
-            {CONCEPTS.map((concept, index) => (
-              <article
-                key={concept.href}
-                className={`reveal group grid gap-8 lg:items-center lg:gap-16 ${index % 2 === 1 ? 'lg:grid-cols-[5fr_7fr]' : 'lg:grid-cols-[7fr_5fr]'}`}
-              >
-                <div className={index % 2 === 1 ? 'lg:order-last' : ''}>
-                  <ConceptShot concept={concept} />
-                </div>
-                <div className="flex flex-col">
-                  <p className={EYEBROW}>Concept · {concept.type}</p>
-                  <h3 className="mt-3 font-serif text-[40px] leading-none sm:text-[50px]">
-                    {concept.name}
-                  </h3>
-                  <p className="mt-7 text-sm font-bold">The problem</p>
-                  <p className="mt-1.5 text-[17px] leading-[1.55] text-ink-soft sm:text-lg">
-                    {concept.problem}
-                  </p>
-                  <p className="mt-5 text-sm font-bold">The design</p>
-                  <p className="mt-1.5 text-[17px] leading-[1.55] text-ink-soft sm:text-lg">
-                    {concept.design}
-                  </p>
-                  <Link
-                    href={concept.href}
-                    className="link-underline mt-7 self-start font-semibold"
-                  >
-                    Open the concept<span className="sr-only">: {concept.name}</span>{' '}
-                    <span className="nudge" aria-hidden="true">
-                      →
-                    </span>
-                  </Link>
-                </div>
-              </article>
+          <div className="mt-14 grid gap-6 md:grid-cols-2 lg:mt-20 lg:gap-8">
+            {CONCEPTS.map((concept) => (
+              <ConceptCard key={concept.slug} concept={concept} className="reveal" />
             ))}
           </div>
         </Section>

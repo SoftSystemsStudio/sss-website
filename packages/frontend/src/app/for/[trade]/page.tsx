@@ -4,7 +4,8 @@ import { notFound } from 'next/navigation';
 import { Navbar, Footer, Section, Button } from '@/components/ui';
 import QuoteCta from '@/components/QuoteCta';
 import ShowcaseParallax from '@/components/ShowcaseParallax';
-import { ConceptShot, PhoneFrame } from '@/components/DeviceFrames';
+import ConceptCard from '@/components/ConceptCard';
+import { PhoneFrame } from '@/components/DeviceFrames';
 import { getConcept } from '@/lib/concepts';
 import { TRADES, getTrade, quoteHref } from '@/lib/trades';
 import { BUILD_FEE, HOME_BASE, RETAINER_MIN, WEBSITE_FEATURES } from '@/lib/business';
@@ -117,30 +118,13 @@ export default async function TradePage({ params }: { params: Promise<{ trade: s
 
         {/* The concept */}
         <Section className="bg-limestone py-20 lg:py-[120px]">
-          <article className="reveal group grid gap-10 lg:grid-cols-[7fr_5fr] lg:items-center lg:gap-16">
-            <ConceptShot concept={concept} />
-            <div className="flex flex-col">
-              <p className={EYEBROW}>Concept · {concept.type}</p>
-              <h2 className="mt-3 font-serif text-[40px] leading-none sm:text-[50px]">
-                {concept.name}
-              </h2>
-              <p className="mt-5 text-[17px] leading-relaxed text-ink-soft">
-                A concept site I designed and built for an invented business, to show what this
-                looks like in practice. Yours would be built around your business, your photos and
-                your customers.
-              </p>
-              <p className="mt-6 text-sm font-bold">The problem</p>
-              <p className="mt-1.5 text-[17px] leading-[1.55] text-ink-soft">{concept.problem}</p>
-              <p className="mt-5 text-sm font-bold">The design</p>
-              <p className="mt-1.5 text-[17px] leading-[1.55] text-ink-soft">{concept.design}</p>
-              <Link href={concept.href} className="link-underline mt-7 self-start font-semibold">
-                Open the concept<span className="sr-only">: {concept.name}</span>{' '}
-                <span className="nudge" aria-hidden="true">
-                  →
-                </span>
-              </Link>
-            </div>
-          </article>
+          <ConceptCard concept={concept} wide heading="h2" className="reveal">
+            <p className="mt-4 text-[17px] leading-relaxed text-ink-soft">
+              A concept site I designed and built for an invented business, to show what this looks
+              like in practice. Yours would be built around your business, your photos and your
+              customers.
+            </p>
+          </ConceptCard>
         </Section>
 
         {/* Price */}

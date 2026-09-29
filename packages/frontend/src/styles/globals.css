@@ -137,6 +137,15 @@ body {
   padding-bottom: 3px;
 }
 
+/* Concept screenshots (ConceptCard): the window is a size container, so the
+   pan below lands on the capture's bottom edge whatever shape the window is */
+.concept-frame {
+  container-type: size;
+}
+.concept-pan {
+  --pan: calc(100cqh - 100%);
+}
+
 @media (prefers-reduced-motion: no-preference) {
   /* Page-load entrance: add .rise and set --rise-delay per element */
   .rise {

@@ -29,6 +29,17 @@ export const CARE_PLANS = [
 /** Revision rounds included in the build, before launch. */
 export const BUILD_REVISION_ROUNDS = 2;
 
+/** What the build ships. Must match the Lead Tool's docs/SCOPE.md §1. */
+export const WEBSITE_FEATURES = [
+  'A custom one-page site built around your business and brand',
+  'The words written for you — you review, you don’t have to write',
+  'Mobile-first and fast, with tap-to-call on phones',
+  'Contact form that emails you directly',
+  'Basic on-page SEO',
+  `${BUILD_REVISION_ROUNDS} rounds of revisions before launch`,
+  'Launched on your own domain — registered in your name, so you own it',
+];
+
 /** How long a build-only site stays on our hosting after launch. */
 export const BUILD_ONLY_HOSTING_DAYS = 30;
 

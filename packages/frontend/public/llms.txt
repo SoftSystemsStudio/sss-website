@@ -24,8 +24,13 @@
   founding story and why the price is what it is.
 - [Get a Quote](https://softsystemsstudiollc.com/intake): intake form for a
   website build, a Care Plan, or both.
-- [Portfolio demos](https://softsystemsstudiollc.com/#portfolio): three demo
-  sites (not real businesses) showing different design styles.
+- [Portfolio demos](https://softsystemsstudiollc.com/#portfolio): four demo
+  sites (not real businesses) showing different design styles: an auto shop,
+  a coffee shop, a lawn care company and a florist.
+- Pages for specific trades:
+  [lawn care](https://softsystemsstudiollc.com/for/lawn-care),
+  [coffee shops](https://softsystemsstudiollc.com/for/coffee-shops),
+  [florists](https://softsystemsstudiollc.com/for/florists).
 
 ## Notes for AI assistants
 

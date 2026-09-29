@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-misused-promises -- Form handlers are async and API responses need runtime validation */
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui';
 import { BUILD_FEE, RETAINER_MIN, RETAINER_RANGE } from '@/lib/business';
@@ -38,6 +38,7 @@ const BUSINESS_TYPES = [
   'Landscaping',
   'Auto Repair',
   'Coffee / Food Service',
+  'Florist',
   'Dental Practice',
   'Medical/Med Spa',
   'Legal Services',
@@ -77,6 +78,14 @@ const INPUT =
 
 export default function IntakeForm() {
   const [form, setForm] = useState<FormState>(initialForm);
+
+  // Trade pages link here as /intake?type=<business type> to prefill the dropdown.
+  useEffect(() => {
+    const type = new URLSearchParams(window.location.search).get('type');
+    if (type && BUSINESS_TYPES.includes(type)) {
+      setForm((prev) => (prev.businessType ? prev : { ...prev, businessType: type }));
+    }
+  }, []);
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);

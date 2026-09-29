@@ -4,6 +4,8 @@ import { Navbar, Footer, Section, Button } from '@/components/ui';
 import Faq from '@/components/Faq';
 import QuoteCta from '@/components/QuoteCta';
 import ShowcaseParallax from '@/components/ShowcaseParallax';
+import { ConceptShot, PhoneFrame } from '@/components/DeviceFrames';
+import { CONCEPTS } from '@/lib/concepts';
 import {
   OrganizationSchema,
   LocalBusinessSchema,
@@ -19,50 +21,8 @@ import {
   HOME_BASE,
   RETAINER_RANGE,
   SERVICE_AREA_LABEL,
+  WEBSITE_FEATURES,
 } from '@/lib/business';
-
-// Must match the Lead Tool's docs/SCOPE.md §1 — what the build actually ships.
-const WEBSITE_FEATURES = [
-  'A custom one-page site built around your business and brand',
-  'The words written for you — you review, you don’t have to write',
-  'Mobile-first and fast, with tap-to-call on phones',
-  'Contact form that emails you directly',
-  'Basic on-page SEO',
-  `${BUILD_REVISION_ROUNDS} rounds of revisions before launch`,
-  'Launched on your own domain — registered in your name, so you own it',
-];
-
-// Screenshots in public/images/work/ are captured from the /demo/* pages.
-const CONCEPTS = [
-  {
-    name: 'Ironwood Auto & Tire',
-    type: 'Auto repair',
-    href: '/demo/ironwood-auto',
-    image: '/images/work/ironwood-auto-full.jpg',
-    problem:
-      'People find a repair shop on their phone, often standing next to a car that won’t start.',
-    design:
-      'The phone number sits above the fold, a call bar follows you down the page, and services scan in seconds.',
-  },
-  {
-    name: 'Kettle & Grain Coffee Co.',
-    type: 'Coffee shop',
-    href: '/demo/kettle-and-grain',
-    image: '/images/work/kettle-and-grain-full.jpg',
-    problem: 'A coffee shop sells a room, not an emergency. Urgency would feel wrong.',
-    design:
-      'Big, quiet photography, a menu you can actually read, and hours and directions one tap away.',
-  },
-  {
-    name: 'Green Bench Lawn & Landscape',
-    type: 'Lawn & landscape',
-    href: '/demo/green-bench',
-    image: '/images/work/green-bench-full.jpg',
-    problem: 'Lawn care is judged by finished yards, and the work changes with the seasons.',
-    design:
-      'Recent work leads the page, services are grouped by season, and asking for a quote takes one tap.',
-  },
-];
 
 const STEPS = [
   {
@@ -106,7 +66,7 @@ const FAQS = [
   {
     question: 'Can I see examples of your work?',
     answer:
-      "The concept sites above are my work: three sites I designed and built for invented businesses, each clearly labeled as a concept. Soft Systems Studio is new, so there aren't client sites to show yet.",
+      "The concept sites above are my work: sites I designed and built for invented businesses, each clearly labeled as a concept. Soft Systems Studio is new, so there aren't client sites to show yet.",
   },
   {
     question: 'Do you offer hosting?',
@@ -118,58 +78,10 @@ const FAQS = [
   },
 ];
 
-// The concept captures are 1440×2700; the frame shows a 16:9 window onto the
-// top. Panning by this much (of the image's own height) lands on its bottom.
-const CONCEPT_PAN = `-${Math.round((1 - 9 / 16 / (2700 / 1440)) * 100)}%`;
-
 const EYEBROW =
   'text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-muted sm:text-[13px]';
 const SECTION_TITLE =
   'font-serif text-[48px] leading-[0.98] tracking-[-0.015em] sm:text-[64px] lg:text-[76px]';
-
-function BrowserFrame({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="concept-frame overflow-hidden rounded-md bg-white shadow-[0_30px_60px_-36px_rgba(23,49,43,0.5)] transition-[transform,box-shadow] duration-500 group-hover:-translate-y-1 group-hover:shadow-[0_40px_70px_-36px_rgba(23,49,43,0.6)]">
-      <div
-        className="flex h-8 items-center gap-[7px] border-b border-[#E3E5DE] px-3.5"
-        aria-hidden="true"
-      >
-        <span className="h-[9px] w-[9px] rounded-full bg-[#CDD1C7]" />
-        <span className="h-[9px] w-[9px] rounded-full bg-[#CDD1C7]" />
-        <span className="h-[9px] w-[9px] rounded-full bg-[#CDD1C7]" />
-      </div>
-      {children}
-    </div>
-  );
-}
-
-function PhoneFrame({
-  src,
-  alt,
-  eager = false,
-  depth = 16,
-}: {
-  src: string;
-  alt: string;
-  eager?: boolean;
-  depth?: number;
-}) {
-  return (
-    <div
-      className="parallax relative aspect-[220/468] overflow-hidden rounded-[40px] border-8 border-ink bg-ink shadow-[0_40px_70px_-30px_rgba(23,49,43,0.5)]"
-      style={{ '--depth': depth } as React.CSSProperties}
-    >
-      <Image
-        src={src}
-        alt={alt}
-        fill
-        sizes="220px"
-        className="rounded-[32px] object-cover object-top"
-        loading={eager ? 'eager' : 'lazy'}
-      />
-    </div>
-  );
-}
 
 /** The hero stage: the three concept sites on a laptop-width browser and two phones. */
 function Showcase() {
@@ -313,19 +225,7 @@ export default function Home() {
                 className={`reveal group grid gap-8 lg:items-center lg:gap-16 ${index % 2 === 1 ? 'lg:grid-cols-[5fr_7fr]' : 'lg:grid-cols-[7fr_5fr]'}`}
               >
                 <div className={index % 2 === 1 ? 'lg:order-last' : ''}>
-                  <BrowserFrame>
-                    <div className="relative aspect-[16/9] overflow-hidden">
-                      <Image
-                        src={concept.image}
-                        alt={`The ${concept.name} concept site`}
-                        width={1440}
-                        height={2700}
-                        sizes="(min-width: 1440px) 740px, (min-width: 1024px) 55vw, 100vw"
-                        className="concept-pan block h-auto w-full"
-                        style={{ '--pan': CONCEPT_PAN } as React.CSSProperties}
-                      />
-                    </div>
-                  </BrowserFrame>
+                  <ConceptShot concept={concept} />
                 </div>
                 <div className="flex flex-col">
                   <p className={EYEBROW}>Concept · {concept.type}</p>

@@ -68,7 +68,7 @@ body {
 @media (max-width: 640px) {
   /* Ensure touch targets are at least 44px */
   button,
-  a[href],
+  a[href]:not(.link-underline),
   input,
   select,
   textarea {
@@ -119,8 +119,17 @@ body {
    ============================================ */
 
 .link-underline {
+  position: relative;
   background: linear-gradient(currentColor, currentColor) 0 100% / 100% 1.5px no-repeat;
   padding-bottom: 3px;
+}
+
+/* Underlined text links stay text-height (so the underline hugs the words)
+   but keep a finger-sized hit area */
+.link-underline::after {
+  content: '';
+  position: absolute;
+  inset: -12px -6px;
 }
 
 .nav-link {

@@ -176,11 +176,11 @@ export default function IntakeForm() {
       </header>
 
       <main className="mx-auto max-w-3xl px-5 pb-24 pt-12 sm:px-8 sm:pt-16">
-        <p className={EYEBROW}>Get a quote</p>
-        <h1 className="mt-5 font-serif text-[52px] leading-[0.92] tracking-[-0.015em] sm:text-[72px]">
+        <p className={`rise ${EYEBROW}`}>Get a quote</p>
+        <h1 className="rise mt-5 font-serif text-[52px] [--rise-delay:0.1s] leading-[0.92] tracking-[-0.015em] sm:text-[72px]">
           Tell me about <em>your business.</em>
         </h1>
-        <p className="mt-6 text-lg leading-relaxed text-ink-soft sm:text-xl">
+        <p className="rise mt-6 text-lg leading-relaxed text-ink-soft [--rise-delay:0.2s] sm:text-xl">
           About five minutes. I reply within 24 hours, then we set up a short call.
         </p>
 

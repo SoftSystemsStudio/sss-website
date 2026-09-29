@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { SERVICE_AREA_LABEL, BUSINESS_PHONE, CONTACT_EMAIL } from '@/lib/business';
+import { HOME_BASE, BUSINESS_PHONE, CONTACT_EMAIL } from '@/lib/business';
 
 const FOOTER_NAV = [
   { label: 'Work', href: '/#portfolio' },
@@ -19,7 +19,7 @@ export default function Footer() {
               Soft Systems Studio
             </Link>
             <p className="text-[15px] leading-relaxed">
-              Websites for local businesses in {SERVICE_AREA_LABEL}.
+              Websites for local businesses, wherever they are. Based in {HOME_BASE}.
               {BUSINESS_PHONE && (
                 <>
                   {' '}
@@ -37,7 +37,7 @@ export default function Footer() {
             </p>
             <a
               href={`mailto:${CONTACT_EMAIL}`}
-              className="text-[15px] text-paper underline underline-offset-4"
+              className="link-underline self-start text-[15px] text-paper"
             >
               {CONTACT_EMAIL}
             </a>
@@ -47,7 +47,7 @@ export default function Footer() {
             className="flex flex-wrap gap-x-8 gap-y-3 text-[15px] font-medium"
           >
             {FOOTER_NAV.map((item) => (
-              <Link key={item.href} href={item.href} className="text-paper hover:text-on-ink">
+              <Link key={item.href} href={item.href} className="nav-link text-paper">
                 {item.label}
               </Link>
             ))}

@@ -1,9 +1,9 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Navbar, Footer, Section, Button } from '@/components/ui';
-import { FadeIn } from '@/components/motion';
 import Faq from '@/components/Faq';
 import QuoteCta from '@/components/QuoteCta';
+import ShowcaseParallax from '@/components/ShowcaseParallax';
 import {
   OrganizationSchema,
   LocalBusinessSchema,
@@ -16,6 +16,7 @@ import {
   BUILD_REVISION_ROUNDS,
   CARE_PLANS,
   CONTACT_EMAIL,
+  HOME_BASE,
   RETAINER_RANGE,
   SERVICE_AREA_LABEL,
 } from '@/lib/business';
@@ -37,7 +38,7 @@ const CONCEPTS = [
     name: 'Ironwood Auto & Tire',
     type: 'Auto repair',
     href: '/demo/ironwood-auto',
-    image: '/images/work/ironwood-auto-desktop.jpg',
+    image: '/images/work/ironwood-auto-full.jpg',
     problem:
       'People find a repair shop on their phone, often standing next to a car that won’t start.',
     design:
@@ -47,7 +48,7 @@ const CONCEPTS = [
     name: 'Kettle & Grain Coffee Co.',
     type: 'Coffee shop',
     href: '/demo/kettle-and-grain',
-    image: '/images/work/kettle-and-grain-desktop.jpg',
+    image: '/images/work/kettle-and-grain-full.jpg',
     problem: 'A coffee shop sells a room, not an emergency. Urgency would feel wrong.',
     design:
       'Big, quiet photography, a menu you can actually read, and hours and directions one tap away.',
@@ -56,7 +57,7 @@ const CONCEPTS = [
     name: 'Green Bench Lawn & Landscape',
     type: 'Lawn & landscape',
     href: '/demo/green-bench',
-    image: '/images/work/green-bench-desktop.jpg',
+    image: '/images/work/green-bench-full.jpg',
     problem: 'Lawn care is judged by finished yards, and the work changes with the seasons.',
     design:
       'Recent work leads the page, services are grouped by season, and asking for a quote takes one tap.',
@@ -113,9 +114,13 @@ const FAQS = [
   },
   {
     question: 'Where are you located, and who do you work with?',
-    answer: `Based near Phenix City, Alabama. I work with local service businesses in ${SERVICE_AREA_LABEL} — and remotely with businesses outside that area.`,
+    answer: `Based near ${HOME_BASE}. I work with local businesses anywhere — everything runs by phone, email and video call. If you're around ${SERVICE_AREA_LABEL}, we can also meet in person.`,
   },
 ];
+
+// The concept captures are 1440×2700; the frame shows a 16:9 window onto the
+// top. Panning by this much (of the image's own height) lands on its bottom.
+const CONCEPT_PAN = `-${Math.round((1 - 9 / 16 / (2700 / 1440)) * 100)}%`;
 
 const EYEBROW =
   'text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-muted sm:text-[13px]';
@@ -124,7 +129,7 @@ const SECTION_TITLE =
 
 function BrowserFrame({ children }: { children: React.ReactNode }) {
   return (
-    <div className="overflow-hidden rounded-md bg-white shadow-[0_30px_60px_-36px_rgba(23,49,43,0.5)]">
+    <div className="concept-frame overflow-hidden rounded-md bg-white shadow-[0_30px_60px_-36px_rgba(23,49,43,0.5)] transition-[transform,box-shadow] duration-500 group-hover:-translate-y-1 group-hover:shadow-[0_40px_70px_-36px_rgba(23,49,43,0.6)]">
       <div
         className="flex h-8 items-center gap-[7px] border-b border-[#E3E5DE] px-3.5"
         aria-hidden="true"
@@ -138,9 +143,22 @@ function BrowserFrame({ children }: { children: React.ReactNode }) {
   );
 }
 
-function PhoneFrame({ src, alt, eager = false }: { src: string; alt: string; eager?: boolean }) {
+function PhoneFrame({
+  src,
+  alt,
+  eager = false,
+  depth = 16,
+}: {
+  src: string;
+  alt: string;
+  eager?: boolean;
+  depth?: number;
+}) {
   return (
-    <div className="relative aspect-[220/468] overflow-hidden rounded-[40px] border-8 border-ink bg-ink shadow-[0_40px_70px_-30px_rgba(23,49,43,0.5)]">
+    <div
+      className="parallax relative aspect-[220/468] overflow-hidden rounded-[40px] border-8 border-ink bg-ink shadow-[0_40px_70px_-30px_rgba(23,49,43,0.5)]"
+      style={{ '--depth': depth } as React.CSSProperties}
+    >
       <Image
         src={src}
         alt={alt}
@@ -156,14 +174,14 @@ function PhoneFrame({ src, alt, eager = false }: { src: string; alt: string; eag
 /** The hero stage: the three concept sites on a laptop-width browser and two phones. */
 function Showcase() {
   return (
-    <div className="relative mt-10 h-[360px] overflow-hidden rounded-md bg-limestone sm:h-[460px] lg:mt-14 lg:h-[580px]">
+    <ShowcaseParallax className="rise relative mt-10 h-[360px] overflow-hidden rounded-md bg-limestone [--rise-delay:0.45s] sm:h-[460px] lg:mt-14 lg:h-[580px]">
       <p className="absolute left-4 top-4 z-30 rounded-full bg-paper px-3.5 py-2 text-[13px] font-medium text-ink-soft sm:left-6 sm:top-6">
         Concept sites
         <span className="hidden sm:inline"> · the businesses are invented, the design is real</span>
       </p>
 
       {/* Phone-sized screens: one phone, centred */}
-      <div className="absolute left-1/2 top-[72px] z-20 w-[200px] -translate-x-1/2 md:hidden">
+      <div className="rise absolute left-1/2 top-[72px] z-20 w-[200px] -translate-x-1/2 [--rise-delay:0.65s] md:hidden">
         <PhoneFrame
           src="/images/work/ironwood-auto-mobile.jpg"
           alt="The Ironwood Auto & Tire concept site on a phone"
@@ -172,8 +190,8 @@ function Showcase() {
       </div>
 
       {/* Tablet and up: the browser, plus phones either side */}
-      <div className="absolute left-[4%] top-[76px] z-10 hidden w-[70%] md:block lg:left-1/2 lg:w-[64%] lg:-translate-x-1/2">
-        <div className="overflow-hidden rounded-[10px] bg-white shadow-[0_40px_80px_-30px_rgba(23,49,43,0.4)]">
+      <div className="rise absolute left-[4%] top-[76px] z-10 hidden w-[70%] [--rise-delay:0.6s] md:block lg:left-1/2 lg:w-[64%] lg:-translate-x-1/2">
+        <div className="parallax overflow-hidden rounded-[10px] bg-white shadow-[0_40px_80px_-30px_rgba(23,49,43,0.4)] [--depth:-8]">
           <div
             className="flex h-9 items-center gap-[7px] border-b border-[#E3E5DE] px-3.5"
             aria-hidden="true"
@@ -198,19 +216,20 @@ function Showcase() {
           </div>
         </div>
       </div>
-      <div className="absolute left-[6.25%] top-[150px] z-20 hidden w-[17%] max-w-[220px] lg:block">
+      <div className="rise absolute left-[6.25%] top-[150px] z-20 hidden w-[17%] max-w-[220px] [--rise-delay:0.75s] lg:block">
         <PhoneFrame
           src="/images/work/kettle-and-grain-mobile.jpg"
           alt="The Kettle & Grain Coffee concept site on a phone"
         />
       </div>
-      <div className="absolute right-[4%] top-[110px] z-20 hidden w-[24%] max-w-[220px] md:block lg:right-[6.25%] lg:w-[17%]">
+      <div className="rise absolute right-[4%] top-[110px] z-20 hidden w-[24%] max-w-[220px] [--rise-delay:0.85s] md:block lg:right-[6.25%] lg:w-[17%]">
         <PhoneFrame
           src="/images/work/green-bench-mobile.jpg"
           alt="The Green Bench Lawn & Landscape concept site on a phone"
+          depth={22}
         />
       </div>
-    </div>
+    </ShowcaseParallax>
   );
 }
 
@@ -231,57 +250,53 @@ export default function Home() {
       <main id="main-content">
         {/* Hero */}
         <Section className="pb-10 pt-8 sm:pt-12 lg:pt-14">
-          <FadeIn duration={0.7}>
-            <p className={EYEBROW}>
-              <span className="hidden sm:inline">Web design · </span>Phenix City · Smiths Station ·
-              Columbus
+          <p className={`rise ${EYEBROW}`}>
+            <span className="hidden sm:inline">Websites for local businesses · </span>Based in
+            Phenix City, AL
+          </p>
+          <h1 className="rise mt-5 font-serif text-[56px] leading-[0.92] tracking-[-0.015em] sm:mt-8 sm:text-[72px] md:text-[88px] lg:text-[108px] xl:text-[132px] [--rise-delay:0.1s]">
+            You built the business. <br className="hidden sm:inline" />
+            <em>
+              I’ll build the <span className="marker marker-draw">website.</span>
+            </em>
+          </h1>
+          <div className="rise mt-6 flex flex-col gap-6 [--rise-delay:0.3s] lg:mt-10 lg:flex-row lg:items-end lg:justify-between">
+            <p className="max-w-[600px] text-[17px] leading-[1.55] text-ink-soft sm:text-[21px]">
+              Custom websites for local businesses anywhere, designed and written by me, Austin, for
+              one flat price of {BUILD_FEE}.
             </p>
-            <h1 className="mt-5 font-serif text-[56px] leading-[0.92] tracking-[-0.015em] sm:mt-8 sm:text-[72px] md:text-[88px] lg:text-[108px] xl:text-[132px]">
-              You built the business. <br className="hidden sm:inline" />
-              <em>
-                I’ll build the <span className="marker">website.</span>
-              </em>
-            </h1>
-            <div className="mt-6 flex flex-col gap-6 lg:mt-10 lg:flex-row lg:items-end lg:justify-between">
-              <p className="max-w-[600px] text-[17px] leading-[1.55] text-ink-soft sm:text-[21px]">
-                Custom websites for local service businesses, designed and written by me, Austin,
-                for one flat price of {BUILD_FEE}.
-              </p>
-              <div className="grid grid-cols-2 gap-2.5 sm:flex sm:items-center sm:gap-8">
-                <Button
-                  as="link"
-                  href="/intake"
-                  variant="primary"
-                  size="lg"
-                  className="max-sm:h-[54px] max-sm:px-0"
-                >
-                  Get a quote
-                </Button>
-                <Link
-                  href="#portfolio"
-                  className="inline-flex h-[54px] items-center justify-center rounded border-[1.5px] border-ink font-semibold text-ink sm:order-first sm:h-auto sm:border-0 sm:text-[17px] sm:underline sm:underline-offset-[6px] sm:hover:text-ink-soft"
-                >
-                  See the work
-                </Link>
-              </div>
+            <div className="grid grid-cols-2 gap-2.5 sm:flex sm:items-center sm:gap-8">
+              <Button
+                as="link"
+                href="/intake"
+                variant="primary"
+                size="lg"
+                className="max-sm:h-[54px] max-sm:px-0"
+              >
+                Get a quote
+              </Button>
+              <Link
+                href="#portfolio"
+                className="inline-flex h-[54px] items-center justify-center rounded border-[1.5px] border-ink font-semibold text-ink sm:order-first sm:h-auto sm:border-0 sm:text-[17px] sm:underline sm:underline-offset-[6px] sm:hover:text-ink-soft"
+              >
+                See the work
+              </Link>
             </div>
-          </FadeIn>
-          <FadeIn delay={0.15} duration={0.8}>
-            <Showcase />
-          </FadeIn>
+          </div>
+          <Showcase />
         </Section>
 
         {/* Where */}
         <Section>
-          <p className="border-y border-line py-7 text-center font-serif text-2xl italic leading-snug tracking-[-0.01em] sm:py-10 sm:text-[30px] lg:text-[34px]">
-            Serving Phenix City and Smiths Station, Alabama, and Columbus, Georgia, just across the
-            river.
+          <p className="reveal border-y border-line py-7 text-center font-serif text-2xl italic leading-snug tracking-[-0.01em] sm:py-10 sm:text-[30px] lg:text-[34px]">
+            Based in {HOME_BASE}. Working with local businesses from the next street over to the
+            next state over.
           </p>
         </Section>
 
         {/* Work */}
         <Section id="portfolio" className="scroll-mt-16 py-20 lg:scroll-mt-[88px] lg:py-[120px]">
-          <div className="grid gap-6 lg:grid-cols-[7fr_5fr] lg:items-end lg:gap-[72px]">
+          <div className="reveal grid gap-6 lg:grid-cols-[7fr_5fr] lg:items-end lg:gap-[72px]">
             <h2 className={SECTION_TITLE}>
               Concept work. <em className="text-ink-muted">Invented businesses, real design.</em>
             </h2>
@@ -295,17 +310,19 @@ export default function Home() {
             {CONCEPTS.map((concept, index) => (
               <article
                 key={concept.href}
-                className={`grid gap-8 lg:items-center lg:gap-16 ${index % 2 === 1 ? 'lg:grid-cols-[5fr_7fr]' : 'lg:grid-cols-[7fr_5fr]'}`}
+                className={`reveal group grid gap-8 lg:items-center lg:gap-16 ${index % 2 === 1 ? 'lg:grid-cols-[5fr_7fr]' : 'lg:grid-cols-[7fr_5fr]'}`}
               >
                 <div className={index % 2 === 1 ? 'lg:order-last' : ''}>
                   <BrowserFrame>
-                    <div className="relative aspect-[16/9]">
+                    <div className="relative aspect-[16/9] overflow-hidden">
                       <Image
                         src={concept.image}
                         alt={`The ${concept.name} concept site`}
-                        fill
+                        width={1440}
+                        height={2700}
                         sizes="(min-width: 1440px) 740px, (min-width: 1024px) 55vw, 100vw"
-                        className="object-cover object-top"
+                        className="concept-pan block h-auto w-full"
+                        style={{ '--pan': CONCEPT_PAN } as React.CSSProperties}
                       />
                     </div>
                   </BrowserFrame>
@@ -325,9 +342,12 @@ export default function Home() {
                   </p>
                   <Link
                     href={concept.href}
-                    className="mt-7 self-start font-semibold underline underline-offset-[6px] hover:text-ink-soft"
+                    className="link-underline mt-7 self-start font-semibold"
                   >
-                    Open the concept<span className="sr-only">: {concept.name}</span>
+                    Open the concept<span className="sr-only">: {concept.name}</span>{' '}
+                    <span className="nudge" aria-hidden="true">
+                      →
+                    </span>
                   </Link>
                 </div>
               </article>
@@ -342,7 +362,7 @@ export default function Home() {
           innerClassName="grid gap-20 lg:grid-cols-2 lg:gap-28"
         >
           <h2 className="sr-only">Pricing</h2>
-          <div>
+          <div className="reveal">
             <p className={EYEBROW}>The build</p>
             <p className="mt-5 font-serif text-[128px] leading-[0.82] tracking-[-0.03em] sm:text-[200px]">
               {BUILD_FEE}
@@ -360,7 +380,7 @@ export default function Home() {
             </ul>
           </div>
 
-          <div>
+          <div className="reveal">
             <p className={EYEBROW}>After launch</p>
             <h3 className={`mt-5 ${SECTION_TITLE}`}>Care Plans</h3>
             <p className="mt-6 text-[17px] leading-relaxed text-ink-soft sm:text-lg">
@@ -394,10 +414,10 @@ export default function Home() {
 
         {/* Process */}
         <Section id="process" className="scroll-mt-16 py-20 lg:scroll-mt-[88px] lg:py-[120px]">
-          <h2 className={SECTION_TITLE}>How it goes</h2>
+          <h2 className={`reveal ${SECTION_TITLE}`}>How it goes</h2>
           <ol className="mt-12 grid gap-10 md:grid-cols-3 lg:mt-14 lg:gap-14">
             {STEPS.map((step, index) => (
-              <li key={step.title} className="border-t border-ink pt-6">
+              <li key={step.title} className="reveal border-t border-ink pt-6">
                 <span
                   className="block font-serif text-[64px] italic leading-none"
                   aria-hidden="true"
@@ -417,14 +437,15 @@ export default function Home() {
           className="scroll-mt-16 border-t border-line-soft py-20 lg:scroll-mt-[88px] lg:py-[120px]"
           innerClassName="grid gap-12 lg:grid-cols-[7fr_5fr] lg:items-center lg:gap-24"
         >
-          <div>
+          <div className="reveal">
             <p className={EYEBROW}>Who you’ll work with</p>
             <h2 className="mt-5 font-serif text-[64px] leading-[0.95] tracking-[-0.015em] sm:text-[96px]">
               Hi, I’m <em>Austin.</em>
             </h2>
             <p className="mt-8 text-lg leading-relaxed text-ink-soft sm:text-[21px]">
-              Soft Systems Studio is one person: me. I live near Phenix City and build websites for
-              the businesses around here.
+              Soft Systems Studio is one person: me. I’m based near {HOME_BASE} and build websites
+              for local businesses anywhere. We work by phone, email and video, so it doesn’t matter
+              how far away you are.
             </p>
             <p className="mt-5 text-lg leading-relaxed text-ink-soft sm:text-[21px]">
               It’s a new studio, so I charge for the work itself, not for a reputation I haven’t
@@ -433,11 +454,12 @@ export default function Home() {
             </p>
             <p className="mt-8 font-serif text-[26px] italic text-ink-soft">— Austin Hodges</p>
           </div>
-          <div className="rounded-md bg-limestone p-7 sm:p-10">
+          <div className="reveal rounded-md bg-limestone p-7 sm:p-10">
             <dl>
               {[
-                ['Based', 'Near Phenix City, Alabama'],
-                ['Works with', `Local service businesses in ${SERVICE_AREA_LABEL}, and remotely`],
+                ['Based', `Near ${HOME_BASE}`],
+                ['Works with', 'Local businesses anywhere, by phone, email and video'],
+                ['In person', `Around ${SERVICE_AREA_LABEL}`],
                 ['You talk to', 'Austin, from the first call to launch day'],
                 ['Replies', 'Within 24 hours'],
               ].map(([term, detail]) => (
@@ -453,20 +475,17 @@ export default function Home() {
                   Email
                 </dt>
                 <dd className="mt-1 text-[17px]">
-                  <a
-                    href={`mailto:${CONTACT_EMAIL}`}
-                    className="break-all underline underline-offset-4"
-                  >
+                  <a href={`mailto:${CONTACT_EMAIL}`} className="link-underline break-all">
                     {CONTACT_EMAIL}
                   </a>
                 </dd>
               </div>
             </dl>
-            <Link
-              href="/about"
-              className="mt-8 inline-block font-semibold underline underline-offset-[6px] hover:text-ink-soft"
-            >
-              More about the studio
+            <Link href="/about" className="link-underline mt-8 inline-block font-semibold">
+              More about the studio{' '}
+              <span className="nudge" aria-hidden="true">
+                →
+              </span>
             </Link>
           </div>
         </Section>
@@ -477,13 +496,15 @@ export default function Home() {
           className="scroll-mt-16 pb-24 lg:scroll-mt-[88px] lg:pb-[120px]"
           innerClassName="grid gap-10 lg:grid-cols-[4fr_8fr] lg:gap-16"
         >
-          <div>
+          <div className="reveal">
             <h2 className={SECTION_TITLE}>Questions</h2>
             <p className="mt-5 max-w-xs text-[17px] leading-relaxed text-ink-soft">
               Something not covered here? Ask it in the quote form or by email.
             </p>
           </div>
-          <Faq faqs={FAQS} />
+          <div className="reveal">
+            <Faq faqs={FAQS} />
+          </div>
         </Section>
 
         <QuoteCta />

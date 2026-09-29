@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Navbar, Footer, Section } from '@/components/ui';
 import QuoteCta from '@/components/QuoteCta';
-import { BUILD_FEE, CARE_PLANS, RETAINER_MIN, SERVICE_AREA_LABEL } from '@/lib/business';
+import { BUILD_FEE, CARE_PLANS, HOME_BASE, RETAINER_MIN } from '@/lib/business';
 
 export const metadata: Metadata = {
   title: 'About',
@@ -45,15 +45,15 @@ export default function AboutPage() {
 
       <main id="main-content">
         <Section className="pb-16 pt-12 sm:pt-16 lg:pb-24 lg:pt-20">
-          <p className={EYEBROW}>About the studio</p>
-          <h1 className="mt-5 font-serif text-[56px] leading-[0.92] tracking-[-0.015em] sm:mt-8 sm:text-[80px] lg:text-[108px]">
+          <p className={`rise ${EYEBROW}`}>About the studio</p>
+          <h1 className="rise mt-5 font-serif text-[56px] [--rise-delay:0.1s] leading-[0.92] tracking-[-0.015em] sm:mt-8 sm:text-[80px] lg:text-[108px]">
             A new studio. <br className="hidden sm:inline" />
             <em>Honest pricing.</em>
           </h1>
-          <p className="mt-8 max-w-3xl text-lg leading-relaxed text-ink-soft sm:text-[21px]">
-            I’m Austin Hodges. I started Soft Systems Studio in 2026 to build websites for the
-            service businesses in {SERVICE_AREA_LABEL}. It’s just me: I design, write, build and
-            support every site myself.
+          <p className="rise mt-8 max-w-3xl text-lg leading-relaxed text-ink-soft [--rise-delay:0.25s] sm:text-[21px]">
+            I’m Austin Hodges. I started Soft Systems Studio in 2026 to build websites for local
+            businesses. I’m based near {HOME_BASE} and work with businesses anywhere. It’s just me:
+            I design, write, build and support every site myself.
           </p>
         </Section>
 
@@ -61,8 +61,8 @@ export default function AboutPage() {
           className="border-t border-line-soft py-20 lg:py-[120px]"
           innerClassName="grid gap-8 lg:grid-cols-[4fr_8fr] lg:gap-16"
         >
-          <h2 className={`${EYEBROW} lg:pt-3`}>Why it’s {BUILD_FEE}</h2>
-          <div>
+          <h2 className={`reveal ${EYEBROW} lg:pt-3`}>Why it’s {BUILD_FEE}</h2>
+          <div className="reveal">
             <p className="font-serif text-[30px] leading-[1.2] tracking-[-0.01em] sm:text-[40px]">
               I charge for the work itself, not for a reputation I haven’t built yet.
             </p>
@@ -91,12 +91,12 @@ export default function AboutPage() {
         </Section>
 
         <Section className="bg-limestone py-20 lg:py-[120px]">
-          <h2 className="font-serif text-[48px] leading-[0.98] tracking-[-0.015em] sm:text-[64px] lg:text-[76px]">
+          <h2 className="reveal font-serif text-[48px] leading-[0.98] tracking-[-0.015em] sm:text-[64px] lg:text-[76px]">
             How I work
           </h2>
           <div className="mt-12 grid gap-10 md:grid-cols-2 md:gap-x-14 lg:mt-14">
             {HOW_I_WORK.map((item) => (
-              <div key={item.title} className="border-t border-ink pt-6">
+              <div key={item.title} className="reveal border-t border-ink pt-6">
                 <h3 className="font-serif text-[32px] leading-tight">{item.title}</h3>
                 <p className="mt-3 text-[17px] leading-relaxed text-ink-soft">{item.body}</p>
               </div>
@@ -105,10 +105,10 @@ export default function AboutPage() {
         </Section>
 
         <Section className="py-20 lg:py-[120px]">
-          <h2 className="font-serif text-[48px] leading-[0.98] tracking-[-0.015em] sm:text-[64px] lg:text-[76px]">
+          <h2 className="reveal font-serif text-[48px] leading-[0.98] tracking-[-0.015em] sm:text-[64px] lg:text-[76px]">
             What I do
           </h2>
-          <div className="mt-12 border-t border-ink lg:mt-14">
+          <div className="reveal mt-12 border-t border-ink lg:mt-14">
             {[
               {
                 name: 'Website build',
@@ -128,7 +128,10 @@ export default function AboutPage() {
                   {service.name}
                 </span>
                 <span className="text-[17px] text-ink-soft">
-                  {service.detail} <span aria-hidden="true">→</span>
+                  {service.detail}{' '}
+                  <span className="nudge" aria-hidden="true">
+                    →
+                  </span>
                 </span>
               </Link>
             ))}

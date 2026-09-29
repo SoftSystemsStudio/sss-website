@@ -26,16 +26,16 @@ export const metadata: Metadata = {
     template: '%s | Soft Systems Studio',
   },
   description:
-    'A flat $997 website build for service businesses in Phenix City & Smiths Station, AL, and Columbus, GA. Care Plans from $150/month.',
+    'Custom websites for local businesses, anywhere. A flat $997 build from a one-person studio based in Phenix City, AL. Care Plans from $150/month.',
   keywords: [
-    'website design Phenix City AL',
-    'web designer Columbus GA',
-    'local business website builder',
-    'Smiths Station AL web design',
+    'website design for local businesses',
+    'small business website designer',
+    'local business website',
     'service business website',
-    'affordable website build',
-    'website retainer plan',
+    'flat price website design',
     'website care plan',
+    'web designer Phenix City AL',
+    'web designer Columbus GA',
   ],
   authors: [{ name: 'Soft Systems Studio LLC' }],
   creator: 'Soft Systems Studio LLC',
@@ -47,7 +47,7 @@ export const metadata: Metadata = {
     siteName: 'Soft Systems Studio',
     title: 'Websites for Local Businesses | Soft Systems Studio',
     description:
-      'A flat $997 website build for service businesses near Phenix City, AL and Columbus, GA. Care Plans from $150/month.',
+      'Custom websites for local businesses, anywhere. A flat $997 build, designed and written by one person. Care Plans from $150/month.',
     images: [
       {
         url: '/api/og',

@@ -11,7 +11,7 @@ export default function Faq({ faqs }: { faqs: FaqItem[] }) {
   return (
     <div className="border-t border-ink">
       {faqs.map((faq) => (
-        <details key={faq.question} className="group border-b border-line">
+        <details key={faq.question} className="faq group border-b border-line">
           <summary className="flex cursor-pointer list-none items-start justify-between gap-6 py-6 text-lg font-semibold text-ink [&::-webkit-details-marker]:hidden">
             <span>{faq.question}</span>
             <svg

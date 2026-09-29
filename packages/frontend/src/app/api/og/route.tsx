@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
     const title = searchParams.get('title');
     const line1 = title ?? 'You built the business.';
     const line2 = title ? '' : 'I’ll build the website.';
-    const footer = `${BUILD_FEE} flat build · Care Plans from ${RETAINER_MIN}/mo · Phenix City · Smiths Station · Columbus`;
+    const footer = `${BUILD_FEE} flat build · Care Plans from ${RETAINER_MIN}/mo · Based in Phenix City, AL · Working anywhere`;
 
     // Subset fonts only cover the characters they were fetched for, so it's all
     // or nothing: a partial set would mix typefaces glyph by glyph.

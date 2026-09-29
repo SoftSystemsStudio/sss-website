@@ -1,17 +1,17 @@
 # Soft Systems Studio
 
-> Soft Systems Studio LLC builds websites for local service businesses in and
-> around Phenix City and Smiths Station, Alabama, and Columbus, Georgia. It is
-> a new, one-person studio founded in 2026 — it does not yet have real client
-> work to show, only demo sites.
+> Soft Systems Studio LLC builds websites for local businesses anywhere,
+> working remotely by phone, email and video. It is based near Phenix City,
+> Alabama. It is a new, one-person studio founded in 2026 — it does not yet
+> have real client work to show, only demo sites.
 
 ## Facts
 
 - Website build: a flat $997, one-time fee. No tiered packages.
 - Ongoing Care Plan (optional, after launch): $150–$200 per month, covers
   hosting, updates, and support. Plans differ only in edit hours (2 / 3 / 4).
-- Service area: Phenix City, AL; Smiths Station, AL; Columbus, GA; and the
-  surrounding area. Remote clients elsewhere are also welcome.
+- Service area: local businesses anywhere, remotely. In-person meetings are
+  possible around Phenix City, AL; Smiths Station, AL; and Columbus, GA.
 - Founded 2026, one person (Austin Hodges). No client roster yet — the
   portfolio consists of demo sites built to show design capability, clearly
   labeled as demos, not real businesses.

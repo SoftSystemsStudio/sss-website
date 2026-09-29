@@ -35,7 +35,9 @@ export default function Navbar({
   const closeMobile = useCallback(() => setMobileOpen(false), []);
 
   return (
-    <header className={`sticky top-0 z-50 border-b border-line-soft bg-paper ${className}`}>
+    <header
+      className={`site-header sticky top-0 z-50 border-b border-line-soft bg-paper ${className}`}
+    >
       <div className="mx-auto flex h-16 max-w-page items-center justify-between pl-5 pr-3 sm:px-8 lg:h-[88px] lg:px-20">
         <Link
           href="/"
@@ -50,7 +52,7 @@ export default function Navbar({
             <Link
               key={item.href}
               href={item.href}
-              className="text-[15px] font-medium text-ink hover:text-ink-muted"
+              className="nav-link text-[15px] font-medium text-ink"
             >
               {item.label}
             </Link>
@@ -87,7 +89,7 @@ export default function Navbar({
         <nav
           id="mobile-menu"
           aria-label="Main"
-          className="border-t border-line-soft bg-paper px-5 pb-6 pt-2 md:hidden"
+          className="menu-enter border-t border-line-soft bg-paper px-5 pb-6 pt-2 md:hidden"
         >
           {items.map((item) => (
             <Link

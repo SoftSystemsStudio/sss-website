@@ -112,6 +112,7 @@ Native `fetch()` + Next.js API routes. No React Query, SWR, or tRPC.
 - **Fonts**: Instrument Serif (display) + Instrument Sans (body) via `next/font` in `app/layout.tsx`
 - **Global CSS**: `/src/styles/globals.css` — focus/selection styles, the `.marker` highlight, and the heading rules the `/demo/*` sites were designed against (scoped to `.sss-demo` by `app/demo/layout.tsx`; don't widen them)
 - **Homepage showcase images**: `public/images/work/` are screenshots of the `/demo/*` pages — re-capture them if a demo's hero changes
+- **Motion**: CSS classes in `globals.css` (`.rise` entrance, `.reveal` scroll reveal, `.parallax`, `.concept-pan`, `.nudge`, link underlines). All of it sits inside `@media (prefers-reduced-motion: no-preference)`, and scroll-driven effects use `animation-timeline` behind `@supports` — no JS, so content can never get stuck hidden. `ShowcaseParallax.tsx` is the only motion JS (pointer position → CSS vars). Keep new motion inside those guards.
 
 ### Key Conventions
 

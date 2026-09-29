@@ -13,8 +13,10 @@ export interface Concept {
   fullImage: string;
   /** 390×844 (2x) capture of the demo's first screen on a phone */
   mobileImage: string;
-  problem: string;
-  design: string;
+  /** Who the site is designed around, in one line */
+  builtFor: string;
+  /** What's actually on the demo — keep these true to the page */
+  features: string[];
 }
 
 export const CONCEPTS: Concept[] = [
@@ -25,10 +27,13 @@ export const CONCEPTS: Concept[] = [
     href: '/demo/ironwood-auto',
     fullImage: '/images/work/ironwood-auto-full.jpg',
     mobileImage: '/images/work/ironwood-auto-mobile.jpg',
-    problem:
-      'People find a repair shop on their phone, often standing next to a car that won’t start.',
-    design:
-      'The phone number sits above the fold, a call bar follows you down the page, and services scan in seconds.',
+    builtFor: 'Drivers searching on a phone, often next to a car that won’t start.',
+    features: [
+      'Call button up top',
+      'Sticky call bar on phones',
+      'Services at a glance',
+      'Hours and location',
+    ],
   },
   {
     slug: 'kettle-and-grain',
@@ -37,9 +42,13 @@ export const CONCEPTS: Concept[] = [
     href: '/demo/kettle-and-grain',
     fullImage: '/images/work/kettle-and-grain-full.jpg',
     mobileImage: '/images/work/kettle-and-grain-mobile.jpg',
-    problem: 'A coffee shop sells a room, not an emergency. Urgency would feel wrong.',
-    design:
-      'Big, quiet photography, a menu you can actually read, and hours and directions one tap away.',
+    builtFor: 'People choosing where to spend a slow morning.',
+    features: [
+      'Full-bleed photography',
+      'Readable, priced menu',
+      'Photo gallery',
+      'Hours and directions',
+    ],
   },
   {
     slug: 'green-bench',
@@ -48,9 +57,13 @@ export const CONCEPTS: Concept[] = [
     href: '/demo/green-bench',
     fullImage: '/images/work/green-bench-full.jpg',
     mobileImage: '/images/work/green-bench-mobile.jpg',
-    problem: 'Lawn care is judged by finished yards, and the work changes with the seasons.',
-    design:
-      'Recent work leads the page, services are grouped by season, and asking for a quote takes one tap.',
+    builtFor: 'Homeowners comparing lawn companies by the yards they’ve done.',
+    features: [
+      'Recent work gallery',
+      'Seasonal timeline',
+      'Services list',
+      'Quote by call or email',
+    ],
   },
   {
     slug: 'mayhaw',
@@ -59,10 +72,13 @@ export const CONCEPTS: Concept[] = [
     href: '/demo/mayhaw',
     fullImage: '/images/work/mayhaw-full.jpg',
     mobileImage: '/images/work/mayhaw-mobile.jpg',
-    problem:
-      'Flowers are bought for an occasion, often on the same day, by someone who has never ordered from you before.',
-    design:
-      'The arrangements lead, ordering is organized by occasion, and the same-day cutoff sits above everything else.',
+    builtFor: 'Someone buying flowers for an occasion, often the same day.',
+    features: [
+      'Same-day cutoff up top',
+      'Shop by occasion',
+      'This week’s bouquets',
+      'Order by phone',
+    ],
   },
 ];
 

@@ -1,69 +1,69 @@
 import React from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
-import { SERVICE_AREA_LABEL, BUSINESS_PHONE } from '@/lib/business';
+import { SERVICE_AREA_LABEL, BUSINESS_PHONE, CONTACT_EMAIL } from '@/lib/business';
 
-interface FooterLink {
-  label: string;
-  href: string;
-}
+const FOOTER_NAV = [
+  { label: 'Work', href: '/#portfolio' },
+  { label: 'Pricing', href: '/#pricing' },
+  { label: 'About', href: '/about' },
+  { label: 'Get a quote', href: '/intake' },
+];
 
-interface FooterProps {
-  logo?: string;
-  brand?: string;
-  links?: FooterLink[];
-  className?: string;
-}
-
-export default function Footer({
-  logo = '/images/soft-systems-logo.png',
-  brand = 'Soft Systems Studio',
-  links = [
-    { label: 'Privacy', href: '/privacy' },
-    { label: 'Terms', href: '/terms' },
-  ],
-  className = '',
-}: FooterProps) {
+export default function Footer() {
   return (
-    <footer className={`border-t border-white/10 py-10 bg-[#050505] ${className}`}>
-      <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-3 text-sm text-white/90 font-mono">
-          {logo && (
-            <Image src={logo} alt={brand} width={28} height={28} className="h-7 w-7" unoptimized />
-          )}
-          <span>
-            &copy; {new Date().getFullYear()} Soft Systems Studio
-            <span className="blink-cursor text-lime-400">_</span>
+    <footer className="surface-ink bg-ink text-on-ink">
+      <div className="mx-auto max-w-page px-5 pb-10 sm:px-8 lg:px-20">
+        <div className="flex flex-col gap-10 border-t border-paper/20 pt-12 md:flex-row md:items-start md:justify-between">
+          <div className="flex max-w-md flex-col gap-3">
+            <Link href="/" className="font-serif text-[28px] text-paper">
+              Soft Systems Studio
+            </Link>
+            <p className="text-[15px] leading-relaxed">
+              Websites for local businesses in {SERVICE_AREA_LABEL}.
+              {BUSINESS_PHONE && (
+                <>
+                  {' '}
+                  Call{' '}
+                  <a href={`tel:${BUSINESS_PHONE}`} className="text-paper underline">
+                    {BUSINESS_PHONE}
+                  </a>
+                  .
+                </>
+              )}
+              {/* TODO(Austin): once a business phone number exists, set BUSINESS_PHONE
+                  in src/lib/business.ts (E.164 format) — this line and the
+                  LocalBusiness schema pick it up automatically. Do not hardcode a
+                  number here. */}
+            </p>
+            <a
+              href={`mailto:${CONTACT_EMAIL}`}
+              className="text-[15px] text-paper underline underline-offset-4"
+            >
+              {CONTACT_EMAIL}
+            </a>
+          </div>
+          <nav
+            aria-label="Footer"
+            className="flex flex-wrap gap-x-8 gap-y-3 text-[15px] font-medium"
+          >
+            {FOOTER_NAV.map((item) => (
+              <Link key={item.href} href={item.href} className="text-paper hover:text-on-ink">
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+        </div>
+        <div className="mt-14 flex flex-col gap-3 text-sm sm:flex-row sm:justify-between">
+          <span>&copy; {new Date().getFullYear()} Soft Systems Studio LLC</span>
+          <span className="flex gap-6">
+            <Link href="/privacy" className="hover:text-paper">
+              Privacy
+            </Link>
+            <Link href="/terms" className="hover:text-paper">
+              Terms
+            </Link>
           </span>
         </div>
-        <div className="flex gap-6">
-          {links.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="text-white/70 hover:text-lime-400 text-sm transition focus:outline-none focus:ring-2 focus:ring-lime-500 rounded"
-            >
-              {link.label}
-            </Link>
-          ))}
-        </div>
-      </div>
-      <div className="max-w-7xl mx-auto px-6 mt-6 pt-6 border-t border-white/5 text-center text-xs text-white/40">
-        Serving {SERVICE_AREA_LABEL}.
-        {BUSINESS_PHONE && (
-          <>
-            {' '}
-            Call{' '}
-            <a href={`tel:${BUSINESS_PHONE}`} className="text-white/60 hover:text-lime-400">
-              {BUSINESS_PHONE}
-            </a>
-            .
-          </>
-        )}
-        {/* TODO(Austin): once a business phone number exists, set BUSINESS_PHONE
-            in src/lib/business.ts (E.164 format) — this line and the
-            LocalBusiness schema pick it up automatically. Do not hardcode a
-            number here. */}
       </div>
     </footer>
   );

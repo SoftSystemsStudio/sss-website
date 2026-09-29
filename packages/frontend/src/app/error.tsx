@@ -15,22 +15,27 @@ export default function Error({
   }, [error]);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[#050505] text-white px-4">
-      <h1 className="text-6xl font-bold mb-4">Error</h1>
-      <p className="text-xl text-gray-400 mb-8">Something went wrong.</p>
-      <div className="flex gap-4">
+    <div className="flex min-h-screen flex-col items-center justify-center px-5 text-center">
+      <h1 className="font-serif text-[56px] leading-none tracking-[-0.015em] sm:text-[72px]">
+        Something <em>went wrong.</em>
+      </h1>
+      <p className="mb-10 mt-5 text-lg text-ink-soft">
+        Try loading the page again. If it keeps happening, head back to the homepage.
+      </p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
+        <button
+          type="button"
+          onClick={reset}
+          className="inline-flex h-[52px] items-center justify-center rounded bg-ink px-7 font-semibold text-paper hover:bg-[#23443C]"
+        >
+          Try again
+        </button>
         <a
           href="/"
-          className="px-6 py-3 bg-lime-400 text-black font-semibold rounded-lg hover:bg-lime-300 transition-colors"
+          className="inline-flex h-[52px] items-center justify-center rounded border-[1.5px] border-ink px-7 font-semibold text-ink hover:bg-ink hover:text-paper"
         >
-          Go Home
+          Go to the homepage
         </a>
-        <button
-          onClick={reset}
-          className="px-6 py-3 border border-white/20 text-white rounded-lg hover:bg-white/10 transition-colors"
-        >
-          Try Again
-        </button>
       </div>
     </div>
   );

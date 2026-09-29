@@ -1,0 +1,31 @@
+import { Button, Section } from '@/components/ui';
+import { CONTACT_EMAIL } from '@/lib/business';
+
+/** The closing call to action shared by the homepage and About page. Sits directly above <Footer />. */
+export default function QuoteCta() {
+  return (
+    <Section className="surface-ink bg-ink py-24 text-paper lg:pb-24 lg:pt-[120px]">
+      <h2 className="font-serif text-[56px] leading-[0.92] tracking-[-0.015em] sm:text-[88px] lg:text-[120px]">
+        Tell me about
+        <br />
+        <em>your business.</em>
+      </h2>
+      <div className="mt-14 flex flex-col gap-8 lg:mt-24 lg:flex-row lg:items-center lg:justify-between">
+        <p className="text-xl leading-normal text-on-ink">
+          About five minutes. I reply within 24 hours.
+        </p>
+        <div className="flex flex-col gap-5 sm:flex-row-reverse sm:items-center sm:gap-8">
+          <Button as="link" href="/intake" variant="accent" size="lg">
+            Start your quote
+          </Button>
+          <a
+            href={`mailto:${CONTACT_EMAIL}`}
+            className="text-base text-on-ink underline underline-offset-[6px] hover:text-paper"
+          >
+            or email {CONTACT_EMAIL}
+          </a>
+        </div>
+      </div>
+    </Section>
+  );
+}

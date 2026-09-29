@@ -1,14 +1,22 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
-import { Space_Grotesk } from 'next/font/google';
+import { Instrument_Sans, Instrument_Serif } from 'next/font/google';
 import '../styles/globals.css';
 import { AppProviders } from './providers';
 import { GoogleAnalytics } from '@/components/GoogleAnalytics';
 
-const spaceGrotesk = Space_Grotesk({
+const sans = Instrument_Sans({
   subsets: ['latin'],
   display: 'swap',
-  variable: '--font-space-grotesk',
+  variable: '--font-sans',
+});
+
+const serif = Instrument_Serif({
+  subsets: ['latin'],
+  weight: '400',
+  style: ['normal', 'italic'],
+  display: 'swap',
+  variable: '--font-serif',
 });
 
 export const metadata: Metadata = {
@@ -71,8 +79,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={spaceGrotesk.variable}>
-      <body className="antialiased min-h-screen bg-[#050505] text-gray-200 selection:bg-lime-400 selection:text-black">
+    <html lang="en" className={`${sans.variable} ${serif.variable}`}>
+      <body className="min-h-screen bg-paper font-sans text-ink">
         <AppProviders>
           <Suspense>
             <GoogleAnalytics />

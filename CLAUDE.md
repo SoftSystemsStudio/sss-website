@@ -108,8 +108,10 @@ Native `fetch()` + Next.js API routes. No React Query, SWR, or tRPC.
 ### Styling
 
 - **Primary**: Tailwind CSS 3.4 (utility-first)
-- **Design tokens**: Custom colors (`brand-lime`), glows, animations in `tailwind.config.cjs`
-- **Global CSS**: `/src/styles/globals.css` - glassmorphism, gradients, terminal effects
+- **Design tokens**: palette (`paper`, `limestone`, `ink`, `line`, `sun`, `on-ink`) and font families in `tailwind.config.js` — the only Tailwind config (Tailwind resolves `.js` first; a stray `.cjs` was ignored and has been removed)
+- **Fonts**: Instrument Serif (display) + Instrument Sans (body) via `next/font` in `app/layout.tsx`
+- **Global CSS**: `/src/styles/globals.css` — focus/selection styles, the `.marker` highlight, and the heading rules the `/demo/*` sites were designed against (scoped to `.sss-demo` by `app/demo/layout.tsx`; don't widen them)
+- **Homepage showcase images**: `public/images/work/` are screenshots of the `/demo/*` pages — re-capture them if a demo's hero changes
 
 ### Key Conventions
 

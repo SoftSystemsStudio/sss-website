@@ -1,10 +1,9 @@
-'use client';
-
-import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Navbar, Footer, Section } from '@/components/ui';
-import { FadeIn, StaggerContainer } from '@/components/motion';
+import { Navbar, Footer, Section, Button } from '@/components/ui';
+import { FadeIn } from '@/components/motion';
+import Faq from '@/components/Faq';
+import QuoteCta from '@/components/QuoteCta';
 import {
   OrganizationSchema,
   LocalBusinessSchema,
@@ -16,21 +15,10 @@ import {
   BUILD_ONLY_HOSTING_DAYS,
   BUILD_REVISION_ROUNDS,
   CARE_PLANS,
-  RETAINER_MIN,
+  CONTACT_EMAIL,
   RETAINER_RANGE,
   SERVICE_AREA_LABEL,
 } from '@/lib/business';
-
-const InteractiveFAQ = dynamic(() => import('@/components/sentient/faq/InteractiveFAQ'), {
-  ssr: false,
-});
-
-const NAV_ITEMS = [
-  { label: 'Website Build', href: '#website' },
-  { label: 'Care Plans', href: '#retainer' },
-  { label: 'Portfolio', href: '#portfolio' },
-  { label: 'About', href: '/about' },
-];
 
 // Must match the Lead Tool's docs/SCOPE.md §1 — what the build actually ships.
 const WEBSITE_FEATURES = [
@@ -43,27 +31,50 @@ const WEBSITE_FEATURES = [
   'Launched on your own domain — registered in your name, so you own it',
 ];
 
-const PORTFOLIO_SITES = [
-  {
-    name: 'Kettle & Grain Coffee Co.',
-    type: 'Coffee Shop',
-    description: 'Atmosphere, menu, and hours — no urgency, just a place worth finding.',
-    image: '/images/demo/kettle-and-grain/hero-interior.jpg',
-    url: '/demo/kettle-and-grain',
-  },
+// Screenshots in public/images/work/ are captured from the /demo/* pages.
+const CONCEPTS = [
   {
     name: 'Ironwood Auto & Tire',
-    type: 'Auto Repair',
-    description: 'Phone-first and built for someone who needs their car back today.',
-    image: '/images/demo/ironwood-auto/hero-shop.jpg',
-    url: '/demo/ironwood-auto',
+    type: 'Auto repair',
+    href: '/demo/ironwood-auto',
+    image: '/images/work/ironwood-auto-desktop.jpg',
+    problem:
+      'People find a repair shop on their phone, often standing next to a car that won’t start.',
+    design:
+      'The phone number sits above the fold, a call bar follows you down the page, and services scan in seconds.',
+  },
+  {
+    name: 'Kettle & Grain Coffee Co.',
+    type: 'Coffee shop',
+    href: '/demo/kettle-and-grain',
+    image: '/images/work/kettle-and-grain-desktop.jpg',
+    problem: 'A coffee shop sells a room, not an emergency. Urgency would feel wrong.',
+    design:
+      'Big, quiet photography, a menu you can actually read, and hours and directions one tap away.',
   },
   {
     name: 'Green Bench Lawn & Landscape',
-    type: 'Lawn & Landscape',
-    description: 'Portfolio-driven, built around seasonal work and finished yards.',
-    image: '/images/demo/green-bench/hero-yard.jpg',
-    url: '/demo/green-bench',
+    type: 'Lawn & landscape',
+    href: '/demo/green-bench',
+    image: '/images/work/green-bench-desktop.jpg',
+    problem: 'Lawn care is judged by finished yards, and the work changes with the seasons.',
+    design:
+      'Recent work leads the page, services are grouped by season, and asking for a quote takes one tap.',
+  },
+];
+
+const STEPS = [
+  {
+    title: 'Tell me about your business',
+    body: 'A five-minute form, then a short call. You get a launch date before you commit to anything.',
+  },
+  {
+    title: 'I design, write and build it',
+    body: 'You don’t have to write a word. I draft everything, and you approve it.',
+  },
+  {
+    title: 'Review, refine, launch',
+    body: `${BUILD_REVISION_ROUNDS} rounds of changes, then your site goes live on your own domain.`,
   },
 ];
 
@@ -94,7 +105,7 @@ const FAQS = [
   {
     question: 'Can I see examples of your work?',
     answer:
-      "Check out the demo portfolio below. Soft Systems Studio is a new studio — I don't have real client sites to show yet, so these are demos I built myself to show what's possible, clearly labeled as demos.",
+      "The concept sites above are my work: three sites I designed and built for invented businesses, each clearly labeled as a concept. Soft Systems Studio is new, so there aren't client sites to show yet.",
   },
   {
     question: 'Do you offer hosting?',
@@ -106,6 +117,103 @@ const FAQS = [
   },
 ];
 
+const EYEBROW =
+  'text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-muted sm:text-[13px]';
+const SECTION_TITLE =
+  'font-serif text-[48px] leading-[0.98] tracking-[-0.015em] sm:text-[64px] lg:text-[76px]';
+
+function BrowserFrame({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="overflow-hidden rounded-md bg-white shadow-[0_30px_60px_-36px_rgba(23,49,43,0.5)]">
+      <div
+        className="flex h-8 items-center gap-[7px] border-b border-[#E3E5DE] px-3.5"
+        aria-hidden="true"
+      >
+        <span className="h-[9px] w-[9px] rounded-full bg-[#CDD1C7]" />
+        <span className="h-[9px] w-[9px] rounded-full bg-[#CDD1C7]" />
+        <span className="h-[9px] w-[9px] rounded-full bg-[#CDD1C7]" />
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function PhoneFrame({ src, alt, eager = false }: { src: string; alt: string; eager?: boolean }) {
+  return (
+    <div className="relative aspect-[220/468] overflow-hidden rounded-[40px] border-8 border-ink bg-ink shadow-[0_40px_70px_-30px_rgba(23,49,43,0.5)]">
+      <Image
+        src={src}
+        alt={alt}
+        fill
+        sizes="220px"
+        className="rounded-[32px] object-cover object-top"
+        loading={eager ? 'eager' : 'lazy'}
+      />
+    </div>
+  );
+}
+
+/** The hero stage: the three concept sites on a laptop-width browser and two phones. */
+function Showcase() {
+  return (
+    <div className="relative mt-10 h-[360px] overflow-hidden rounded-md bg-limestone sm:h-[460px] lg:mt-14 lg:h-[580px]">
+      <p className="absolute left-4 top-4 z-30 rounded-full bg-paper px-3.5 py-2 text-[13px] font-medium text-ink-soft sm:left-6 sm:top-6">
+        Concept sites
+        <span className="hidden sm:inline"> · the businesses are invented, the design is real</span>
+      </p>
+
+      {/* Phone-sized screens: one phone, centred */}
+      <div className="absolute left-1/2 top-[72px] z-20 w-[200px] -translate-x-1/2 md:hidden">
+        <PhoneFrame
+          src="/images/work/ironwood-auto-mobile.jpg"
+          alt="The Ironwood Auto & Tire concept site on a phone"
+          eager
+        />
+      </div>
+
+      {/* Tablet and up: the browser, plus phones either side */}
+      <div className="absolute left-[4%] top-[76px] z-10 hidden w-[70%] md:block lg:left-1/2 lg:w-[64%] lg:-translate-x-1/2">
+        <div className="overflow-hidden rounded-[10px] bg-white shadow-[0_40px_80px_-30px_rgba(23,49,43,0.4)]">
+          <div
+            className="flex h-9 items-center gap-[7px] border-b border-[#E3E5DE] px-3.5"
+            aria-hidden="true"
+          >
+            <span className="h-2.5 w-2.5 rounded-full bg-[#CDD1C7]" />
+            <span className="h-2.5 w-2.5 rounded-full bg-[#CDD1C7]" />
+            <span className="h-2.5 w-2.5 rounded-full bg-[#CDD1C7]" />
+            <span className="mx-auto hidden h-[22px] w-1/2 items-center justify-center rounded-md bg-[#F1F2EC] text-xs text-ink-muted lg:flex">
+              Ironwood Auto &amp; Tire
+            </span>
+          </div>
+          <div className="relative aspect-[1440/900]">
+            <Image
+              src="/images/work/ironwood-auto-desktop.jpg"
+              alt="The Ironwood Auto & Tire concept site on a laptop"
+              fill
+              sizes="(min-width: 1440px) 820px, (min-width: 1024px) 64vw, 70vw"
+              className="object-cover object-top"
+              loading="eager"
+              fetchPriority="high"
+            />
+          </div>
+        </div>
+      </div>
+      <div className="absolute left-[6.25%] top-[150px] z-20 hidden w-[17%] max-w-[220px] lg:block">
+        <PhoneFrame
+          src="/images/work/kettle-and-grain-mobile.jpg"
+          alt="The Kettle & Grain Coffee concept site on a phone"
+        />
+      </div>
+      <div className="absolute right-[4%] top-[110px] z-20 hidden w-[24%] max-w-[220px] md:block lg:right-[6.25%] lg:w-[17%]">
+        <PhoneFrame
+          src="/images/work/green-bench-mobile.jpg"
+          alt="The Green Bench Lawn & Landscape concept site on a phone"
+        />
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
   return (
     <>
@@ -114,333 +222,274 @@ export default function Home() {
       <WebSiteSchema />
       <FAQSchema faqs={FAQS} />
 
-      <div className="fixed inset-0 bg-gradient-to-br from-black via-gray-900 to-black opacity-90 pointer-events-none" />
-      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-lime-900/20 via-transparent to-transparent pointer-events-none" />
+      <a href="#main-content" className="skip-link">
+        Skip to main content
+      </a>
 
-      <Navbar
-        items={NAV_ITEMS}
-        ctaLabel="Get a Quote"
-        ctaHref="/intake"
-        brand="Soft Systems Studio"
-      />
+      <Navbar />
 
-      <div className="antialiased min-h-screen bg-black text-gray-100 selection:bg-lime-400 selection:text-black overflow-x-hidden">
-        <a
-          href="#main-content"
-          className="skip-link sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:bg-white focus:text-black focus:px-4 focus:py-2 focus:rounded"
-        >
-          Skip to main content
-        </a>
-
-        <main id="main-content" className="relative z-10">
-          {/* Hero — brand first; one headline, one line of support, one CTA group */}
-          <Section className="pt-28 pb-28 md:pt-36 md:pb-36">
-            <FadeIn>
-              <div className="max-w-4xl mx-auto text-center">
-                <h1 className="text-5xl sm:text-6xl md:text-7xl font-black text-white mb-5 leading-[1.05] tracking-tight">
-                  Soft Systems
-                  <br />
-                  <span className="bg-gradient-to-r from-lime-400 via-cyan-400 to-lime-300 text-transparent bg-clip-text animate-gradient">
-                    Studio
-                  </span>
-                </h1>
-                <p className="text-xl md:text-2xl text-gray-200 font-medium mb-4">
-                  Websites for local businesses.
-                </p>
-                <p className="text-base md:text-lg text-gray-400 leading-relaxed mb-10 max-w-2xl mx-auto font-light">
-                  A flat {BUILD_FEE} website build for service businesses in {SERVICE_AREA_LABEL}.
-                  Optional Care Plans from {RETAINER_MIN}/month.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <a
-                    href="/intake"
-                    className="group relative inline-block px-8 py-4 bg-lime-400 text-black font-bold text-lg rounded-lg overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-lime-400/40"
-                  >
-                    <span className="relative z-10">Get a Quote</span>
-                    <div className="absolute inset-0 bg-gradient-to-r from-lime-300 to-cyan-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  </a>
-                  <a
-                    href="#portfolio"
-                    className="inline-block px-8 py-4 border-2 border-lime-400/50 text-lime-400 font-bold text-lg rounded-lg hover:bg-lime-400/10 transition-all duration-300"
-                  >
-                    See the Work →
-                  </a>
-                </div>
-              </div>
-            </FadeIn>
-          </Section>
-
-          {/* Website Build */}
-          <Section id="website" className="py-24 relative">
-            <div className="absolute inset-0 bg-gradient-to-br from-lime-900/10 via-transparent to-cyan-900/10 pointer-events-none" />
-
-            <FadeIn>
-              <div className="text-center mb-16">
-                <h2 className="text-4xl md:text-5xl font-black text-white mb-4">
-                  One Website Build. One Price.
-                </h2>
-                <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-                  {BUILD_FEE} flat. No tiers, no upsells disguised as &quot;packages.&quot;
-                  Everything a local service business needs to launch a professional site.
-                </p>
-              </div>
-            </FadeIn>
-
-            <FadeIn className="max-w-2xl mx-auto relative z-10">
-              <div className="relative p-8 md:p-10 rounded-2xl border border-lime-400/40 bg-white/5 backdrop-blur">
-                <div className="absolute inset-0 bg-gradient-to-br from-lime-400/10 to-cyan-400/10 opacity-50 rounded-2xl" />
-                <div className="relative z-10">
-                  <div className="flex items-baseline gap-2 mb-6">
-                    <span className="text-5xl font-black text-lime-400">{BUILD_FEE}</span>
-                    <span className="text-gray-400">one-time</span>
-                  </div>
-                  <ul className="space-y-3 mb-8">
-                    {WEBSITE_FEATURES.map((feature) => (
-                      <li key={feature} className="text-gray-300 flex items-start gap-3">
-                        <span className="text-lime-400 mt-0.5">✓</span>
-                        <span>{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <a
-                    href="/intake"
-                    className="block text-center px-6 py-3 rounded-lg font-bold bg-lime-400 text-black hover:bg-lime-300 hover:scale-105 transition-all duration-300"
-                  >
-                    Get Started
-                  </a>
-                  <p className="text-sm text-gray-500 text-center mt-4">
-                    Want ongoing updates after launch?{' '}
-                    <a href="#retainer" className="text-lime-400 hover:underline">
-                      Care Plans start at {RETAINER_MIN}/month.
-                    </a>
-                  </p>
-                </div>
-              </div>
-            </FadeIn>
-
-            <FadeIn>
-              <div className="max-w-4xl mx-auto text-center mt-20">
-                <h3 className="text-2xl font-bold text-white mb-8">How It Works</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                  <div className="p-6">
-                    <div className="w-12 h-12 rounded-full bg-lime-400/10 border-2 border-lime-400 flex items-center justify-center text-lime-400 font-black text-xl mb-4 mx-auto">
-                      1
-                    </div>
-                    <h4 className="font-bold text-white mb-2">Quick Intake</h4>
-                    <p className="text-gray-400 text-sm">
-                      Tell me about your business, brand, and goals in a short form
-                    </p>
-                  </div>
-                  <div className="p-6">
-                    <div className="w-12 h-12 rounded-full bg-cyan-400/10 border-2 border-cyan-400 flex items-center justify-center text-cyan-400 font-black text-xl mb-4 mx-auto">
-                      2
-                    </div>
-                    <h4 className="font-bold text-white mb-2">I Build It</h4>
-                    <p className="text-gray-400 text-sm">
-                      I design and build the site myself, using AI to move fast
-                    </p>
-                  </div>
-                  <div className="p-6">
-                    <div className="w-12 h-12 rounded-full bg-lime-400/10 border-2 border-lime-400 flex items-center justify-center text-lime-400 font-black text-xl mb-4 mx-auto">
-                      3
-                    </div>
-                    <h4 className="font-bold text-white mb-2">You Launch</h4>
-                    <p className="text-gray-400 text-sm">
-                      Approve the final result, go live, and start getting customers
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </FadeIn>
-          </Section>
-
-          {/* Care Plans */}
-          <Section id="retainer" className="py-24 relative">
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-cyan-900/5 to-transparent pointer-events-none" />
-            <FadeIn>
-              <div className="max-w-3xl mx-auto text-center">
-                <h2 className="text-4xl md:text-5xl font-black text-white mb-4">Keep It Running</h2>
-                <p className="text-xl text-gray-300 mb-10">
-                  An optional monthly Care Plan covers hosting, updates, and support after launch.
-                  Every plan includes the same services — they differ only in how many hours of
-                  edits you get each month.
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-                  {CARE_PLANS.map((plan) => (
-                    <div
-                      key={plan.name}
-                      className="p-6 rounded-2xl border border-white/10 bg-white/5 backdrop-blur"
-                    >
-                      <div className="text-sm font-semibold uppercase tracking-wide text-gray-400 mb-2">
-                        {plan.name}
-                      </div>
-                      <div className="text-4xl font-black text-cyan-400">
-                        {plan.price}
-                        <span className="text-base font-normal text-gray-400">/month</span>
-                      </div>
-                      <p className="text-gray-300 text-sm mt-2">
-                        {plan.editHours} hours of edits a month
-                      </p>
-                    </div>
-                  ))}
-                </div>
-                <p className="text-gray-400 text-sm mb-10">
-                  Unused hours don&apos;t roll over. Anything beyond your hours is quoted before I
-                  start. Cancel anytime.
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl mx-auto text-left mb-10">
-                  {[
-                    'Hosting & uptime monitoring',
-                    'Content and text updates',
-                    'Small design tweaks',
-                    'Email support',
-                  ].map((item) => (
-                    <div key={item} className="flex items-start gap-3 text-gray-300 text-sm">
-                      <span className="text-cyan-400 mt-0.5">✓</span>
-                      <span>{item}</span>
-                    </div>
-                  ))}
-                </div>
-                <a
-                  href="/intake"
-                  className="inline-block px-8 py-4 border-2 border-cyan-400/50 text-cyan-400 font-bold rounded-lg hover:bg-cyan-400/10 transition-all duration-300"
-                >
-                  Ask About a Care Plan
-                </a>
-              </div>
-            </FadeIn>
-          </Section>
-
-          {/* Portfolio */}
-          <Section id="portfolio" className="py-24 relative">
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-lime-900/5 to-transparent pointer-events-none" />
-
-            <FadeIn>
-              <div className="text-center mb-16">
-                <h2 className="text-4xl md:text-5xl font-black text-white mb-4">
-                  See What I Can Build
-                </h2>
-                <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-                  Soft Systems Studio is a new studio — I don&apos;t have real client sites to show
-                  yet, so these three demos are what I&apos;ve built to show what&apos;s possible.
-                  Clearly labeled, not real businesses.{' '}
-                  <Link href="/about" className="text-lime-400 hover:underline">
-                    Read my story →
-                  </Link>
-                </p>
-              </div>
-            </FadeIn>
-
-            <StaggerContainer className="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10">
-              {PORTFOLIO_SITES.map((site) => (
-                <Link
-                  key={site.name}
-                  href={site.url}
-                  className="group relative rounded-2xl border border-white/10 bg-white/5 overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-lime-400/10 block"
-                >
-                  <div className="relative aspect-[4/3] overflow-hidden">
-                    <Image
-                      src={site.image}
-                      alt={`${site.name} demo site preview`}
-                      fill
-                      sizes="(min-width: 768px) 33vw, 100vw"
-                      className="object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
-                    <div className="absolute bottom-4 left-4 right-4">
-                      <div className="text-xs font-medium text-gray-300 mb-1">{site.type}</div>
-                      <h3 className="text-xl font-bold text-white group-hover:text-lime-400 transition">
-                        {site.name}
-                      </h3>
-                    </div>
-                  </div>
-                  <div className="p-6">
-                    <p className="text-gray-300 text-sm">{site.description}</p>
-                  </div>
-                </Link>
-              ))}
-            </StaggerContainer>
-
-            <FadeIn className="text-center mt-12">
-              <p className="text-gray-400 mb-6">
-                Click any example to explore a live demo. Your site will be custom-designed for your
-                brand.
+      <main id="main-content">
+        {/* Hero */}
+        <Section className="pb-10 pt-8 sm:pt-12 lg:pt-14">
+          <FadeIn duration={0.7}>
+            <p className={EYEBROW}>
+              <span className="hidden sm:inline">Web design · </span>Phenix City · Smiths Station ·
+              Columbus
+            </p>
+            <h1 className="mt-5 font-serif text-[56px] leading-[0.92] tracking-[-0.015em] sm:mt-8 sm:text-[72px] md:text-[88px] lg:text-[108px] xl:text-[132px]">
+              You built the business. <br className="hidden sm:inline" />
+              <em>
+                I’ll build the <span className="marker">website.</span>
+              </em>
+            </h1>
+            <div className="mt-6 flex flex-col gap-6 lg:mt-10 lg:flex-row lg:items-end lg:justify-between">
+              <p className="max-w-[600px] text-[17px] leading-[1.55] text-ink-soft sm:text-[21px]">
+                Custom websites for local service businesses, designed and written by me, Austin,
+                for one flat price of {BUILD_FEE}.
               </p>
-              <a
-                href="/intake"
-                className="inline-block px-8 py-4 bg-lime-400 text-black font-bold rounded-lg hover:bg-lime-300 transition-all duration-300 hover:scale-105"
-              >
-                Start Your Project
-              </a>
-            </FadeIn>
-          </Section>
-
-          {/* FAQ */}
-          <Section id="faq" className="py-24 relative">
-            <FadeIn>
-              <h2 className="text-4xl md:text-5xl font-black text-white text-center mb-16">
-                Questions?
-              </h2>
-            </FadeIn>
-            <div className="max-w-3xl mx-auto">
-              <InteractiveFAQ faqs={FAQS} />
-            </div>
-          </Section>
-
-          {/* Final CTA */}
-          <Section className="py-28 relative">
-            <div className="absolute inset-0 bg-gradient-to-br from-lime-900/20 via-transparent to-cyan-900/20 pointer-events-none" />
-            <FadeIn>
-              <div className="max-w-3xl mx-auto text-center relative z-10">
-                <h2 className="text-4xl md:text-5xl font-black text-white mb-6">
-                  Ready to Build Something Great?
-                </h2>
-                <p className="text-xl text-gray-300 mb-10">
-                  Get a quote for a {BUILD_FEE} website build — or browse the demos first.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <a
-                    href="/intake"
-                    className="inline-block px-10 py-5 bg-lime-400 text-black font-bold text-lg rounded-lg hover:bg-lime-300 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-lime-400/40"
-                  >
-                    Get a Quote
-                  </a>
-                  <a
-                    href="#portfolio"
-                    className="inline-block px-10 py-5 border-2 border-white/20 text-white font-bold text-lg rounded-lg hover:bg-white/10 transition-all duration-300"
-                  >
-                    See the Demos
-                  </a>
-                </div>
+              <div className="grid grid-cols-2 gap-2.5 sm:flex sm:items-center sm:gap-8">
+                <Button
+                  as="link"
+                  href="/intake"
+                  variant="primary"
+                  size="lg"
+                  className="max-sm:h-[54px] max-sm:px-0"
+                >
+                  Get a quote
+                </Button>
+                <Link
+                  href="#portfolio"
+                  className="inline-flex h-[54px] items-center justify-center rounded border-[1.5px] border-ink font-semibold text-ink sm:order-first sm:h-auto sm:border-0 sm:text-[17px] sm:underline sm:underline-offset-[6px] sm:hover:text-ink-soft"
+                >
+                  See the work
+                </Link>
               </div>
-            </FadeIn>
-          </Section>
-        </main>
+            </div>
+          </FadeIn>
+          <FadeIn delay={0.15} duration={0.8}>
+            <Showcase />
+          </FadeIn>
+        </Section>
 
-        <Footer />
+        {/* Where */}
+        <Section>
+          <p className="border-y border-line py-7 text-center font-serif text-2xl italic leading-snug tracking-[-0.01em] sm:py-10 sm:text-[30px] lg:text-[34px]">
+            Serving Phenix City and Smiths Station, Alabama, and Columbus, Georgia, just across the
+            river.
+          </p>
+        </Section>
 
-        {/* Chat widget and AI receptionist demo are unwired for now.
-            Chat: backend no longer exists.
-            VoiceDemo /api/livekit-token: kept in the repo; re-enable when ready. */}
+        {/* Work */}
+        <Section id="portfolio" className="scroll-mt-16 py-20 lg:scroll-mt-[88px] lg:py-[120px]">
+          <div className="grid gap-6 lg:grid-cols-[7fr_5fr] lg:items-end lg:gap-[72px]">
+            <h2 className={SECTION_TITLE}>
+              Concept work. <em className="text-ink-muted">Invented businesses, real design.</em>
+            </h2>
+            <p className="text-[17px] leading-relaxed text-ink-soft sm:text-lg">
+              I built these to show range before I had client sites to show. Each one is designed
+              around how its customers actually decide, and each is labeled as a concept.
+            </p>
+          </div>
 
-        <style jsx global>{`
-          @keyframes gradient {
-            0% {
-              background-position: 0% 50%;
-            }
-            50% {
-              background-position: 100% 50%;
-            }
-            100% {
-              background-position: 0% 50%;
-            }
-          }
-          .animate-gradient {
-            background-size: 200% 200%;
-            animation: gradient 3s ease infinite;
-          }
-        `}</style>
-      </div>
+          <div className="mt-14 flex flex-col gap-16 lg:mt-20 lg:gap-20">
+            {CONCEPTS.map((concept, index) => (
+              <article
+                key={concept.href}
+                className={`grid gap-8 lg:items-center lg:gap-16 ${index % 2 === 1 ? 'lg:grid-cols-[5fr_7fr]' : 'lg:grid-cols-[7fr_5fr]'}`}
+              >
+                <div className={index % 2 === 1 ? 'lg:order-last' : ''}>
+                  <BrowserFrame>
+                    <div className="relative aspect-[16/9]">
+                      <Image
+                        src={concept.image}
+                        alt={`The ${concept.name} concept site`}
+                        fill
+                        sizes="(min-width: 1440px) 740px, (min-width: 1024px) 55vw, 100vw"
+                        className="object-cover object-top"
+                      />
+                    </div>
+                  </BrowserFrame>
+                </div>
+                <div className="flex flex-col">
+                  <p className={EYEBROW}>Concept · {concept.type}</p>
+                  <h3 className="mt-3 font-serif text-[40px] leading-none sm:text-[50px]">
+                    {concept.name}
+                  </h3>
+                  <p className="mt-7 text-sm font-bold">The problem</p>
+                  <p className="mt-1.5 text-[17px] leading-[1.55] text-ink-soft sm:text-lg">
+                    {concept.problem}
+                  </p>
+                  <p className="mt-5 text-sm font-bold">The design</p>
+                  <p className="mt-1.5 text-[17px] leading-[1.55] text-ink-soft sm:text-lg">
+                    {concept.design}
+                  </p>
+                  <Link
+                    href={concept.href}
+                    className="mt-7 self-start font-semibold underline underline-offset-[6px] hover:text-ink-soft"
+                  >
+                    Open the concept<span className="sr-only">: {concept.name}</span>
+                  </Link>
+                </div>
+              </article>
+            ))}
+          </div>
+        </Section>
+
+        {/* Pricing */}
+        <Section
+          id="pricing"
+          className="scroll-mt-16 bg-limestone py-20 lg:scroll-mt-[88px] lg:py-[120px]"
+          innerClassName="grid gap-20 lg:grid-cols-2 lg:gap-28"
+        >
+          <h2 className="sr-only">Pricing</h2>
+          <div>
+            <p className={EYEBROW}>The build</p>
+            <p className="mt-5 font-serif text-[128px] leading-[0.82] tracking-[-0.03em] sm:text-[200px]">
+              {BUILD_FEE}
+              <em className="text-[44px] tracking-normal text-ink-muted sm:text-[64px]">, once.</em>
+            </p>
+            <p className="mt-7 font-serif text-[26px] leading-tight sm:text-[30px]">
+              One flat price. No packages, no tiers, no surprises on the invoice.
+            </p>
+            <ul className="mt-9 border-t border-line">
+              {WEBSITE_FEATURES.map((feature) => (
+                <li key={feature} className="border-b border-line py-3.5 text-[17px]">
+                  {feature}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <p className={EYEBROW}>After launch</p>
+            <h3 className={`mt-5 ${SECTION_TITLE}`}>Care Plans</h3>
+            <p className="mt-6 text-[17px] leading-relaxed text-ink-soft sm:text-lg">
+              Hosting, updates and a person who answers your email. Every plan has the same
+              services; the difference is how many hours of edits you get each month.
+            </p>
+            <ul className="mt-9 border-y border-ink">
+              {CARE_PLANS.map((plan, index) => (
+                <li
+                  key={plan.name}
+                  className={`grid grid-cols-[1fr_auto] items-baseline gap-x-6 py-5 sm:grid-cols-[150px_1fr_auto] ${index > 0 ? 'border-t border-line' : ''}`}
+                >
+                  <span className="text-lg font-semibold">{plan.name}</span>
+                  <span className="order-last col-span-2 text-[17px] text-ink-soft sm:order-none sm:col-span-1">
+                    {plan.editHours} hours of edits a month
+                  </span>
+                  <span className="font-serif text-[40px] leading-none">
+                    {plan.price}
+                    <span className="font-sans text-[15px] text-ink-muted">/mo</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-6 text-[15px] leading-relaxed text-ink-muted">
+              Every plan includes hosting and uptime monitoring, content and text updates, small
+              design tweaks and email support. Optional. Cancel anytime. Unused hours don’t roll
+              over.
+            </p>
+          </div>
+        </Section>
+
+        {/* Process */}
+        <Section id="process" className="scroll-mt-16 py-20 lg:scroll-mt-[88px] lg:py-[120px]">
+          <h2 className={SECTION_TITLE}>How it goes</h2>
+          <ol className="mt-12 grid gap-10 md:grid-cols-3 lg:mt-14 lg:gap-14">
+            {STEPS.map((step, index) => (
+              <li key={step.title} className="border-t border-ink pt-6">
+                <span
+                  className="block font-serif text-[64px] italic leading-none"
+                  aria-hidden="true"
+                >
+                  {index + 1}.
+                </span>
+                <h3 className="mt-5 text-[21px] font-semibold">{step.title}</h3>
+                <p className="mt-2.5 text-[17px] leading-relaxed text-ink-soft">{step.body}</p>
+              </li>
+            ))}
+          </ol>
+        </Section>
+
+        {/* Who */}
+        <Section
+          id="about"
+          className="scroll-mt-16 border-t border-line-soft py-20 lg:scroll-mt-[88px] lg:py-[120px]"
+          innerClassName="grid gap-12 lg:grid-cols-[7fr_5fr] lg:items-center lg:gap-24"
+        >
+          <div>
+            <p className={EYEBROW}>Who you’ll work with</p>
+            <h2 className="mt-5 font-serif text-[64px] leading-[0.95] tracking-[-0.015em] sm:text-[96px]">
+              Hi, I’m <em>Austin.</em>
+            </h2>
+            <p className="mt-8 text-lg leading-relaxed text-ink-soft sm:text-[21px]">
+              Soft Systems Studio is one person: me. I live near Phenix City and build websites for
+              the businesses around here.
+            </p>
+            <p className="mt-5 text-lg leading-relaxed text-ink-soft sm:text-[21px]">
+              It’s a new studio, so I charge for the work itself, not for a reputation I haven’t
+              built yet. You deal with the person designing your site from the first call to launch
+              day. I use AI tools to work quickly, and I check every page myself.
+            </p>
+            <p className="mt-8 font-serif text-[26px] italic text-ink-soft">— Austin Hodges</p>
+          </div>
+          <div className="rounded-md bg-limestone p-7 sm:p-10">
+            <dl>
+              {[
+                ['Based', 'Near Phenix City, Alabama'],
+                ['Works with', `Local service businesses in ${SERVICE_AREA_LABEL}, and remotely`],
+                ['You talk to', 'Austin, from the first call to launch day'],
+                ['Replies', 'Within 24 hours'],
+              ].map(([term, detail]) => (
+                <div key={term} className="border-b border-line py-4 first:pt-0">
+                  <dt className="text-[13px] font-semibold uppercase tracking-[0.14em] text-ink-muted">
+                    {term}
+                  </dt>
+                  <dd className="mt-1 text-[17px]">{detail}</dd>
+                </div>
+              ))}
+              <div className="pt-4">
+                <dt className="text-[13px] font-semibold uppercase tracking-[0.14em] text-ink-muted">
+                  Email
+                </dt>
+                <dd className="mt-1 text-[17px]">
+                  <a
+                    href={`mailto:${CONTACT_EMAIL}`}
+                    className="break-all underline underline-offset-4"
+                  >
+                    {CONTACT_EMAIL}
+                  </a>
+                </dd>
+              </div>
+            </dl>
+            <Link
+              href="/about"
+              className="mt-8 inline-block font-semibold underline underline-offset-[6px] hover:text-ink-soft"
+            >
+              More about the studio
+            </Link>
+          </div>
+        </Section>
+
+        {/* FAQ */}
+        <Section
+          id="faq"
+          className="scroll-mt-16 pb-24 lg:scroll-mt-[88px] lg:pb-[120px]"
+          innerClassName="grid gap-10 lg:grid-cols-[4fr_8fr] lg:gap-16"
+        >
+          <div>
+            <h2 className={SECTION_TITLE}>Questions</h2>
+            <p className="mt-5 max-w-xs text-[17px] leading-relaxed text-ink-soft">
+              Something not covered here? Ask it in the quote form or by email.
+            </p>
+          </div>
+          <Faq faqs={FAQS} />
+        </Section>
+
+        <QuoteCta />
+      </main>
+
+      <Footer />
     </>
   );
 }

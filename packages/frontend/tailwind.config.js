@@ -8,38 +8,27 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Space Grotesk', 'system-ui', 'sans-serif'],
-        mono: ['JetBrains Mono', 'Monaco', 'Courier New', 'monospace'],
+        // Loaded with next/font in app/layout.tsx
+        sans: ['var(--font-sans)', 'system-ui', 'sans-serif'],
+        serif: ['var(--font-serif)', 'Georgia', 'serif'],
       },
       colors: {
-        sss: {
-          bg: '#02040a',
-          surface: '#050816',
-          accent: '#c0ff6b',
-          muted: '#9ca3af',
+        paper: '#F7F7F3', // page background
+        limestone: '#E8E9E2', // bands, showcase stage, placeholders
+        ink: {
+          DEFAULT: '#17312B', // river green: headings, buttons, dark sections
+          soft: '#3F4B46', // body copy
+          muted: '#5C6762', // labels, captions
         },
-        sys: {
-          bg: '#F0F0F0',
-          surface: '#FFFFFF',
-          text: '#000000',
-          muted: '#656565',
-          border: '#000000',
-          accent: '#00FF00',
-          orange: '#FF6B00',
+        line: {
+          DEFAULT: '#C3C8BD', // rules on limestone
+          soft: '#DDE0D6', // rules on paper
         },
-        'sys-dark': {
-          bg: '#000000',
-          surface: '#0a0a0a',
-          text: '#FFFFFF',
-          muted: '#71717a',
-          border: '#27272a',
-          accent: '#c0ff6b',
-          cyan: '#22d3ee',
-          purple: '#a78bfa',
-          orange: '#fb923c',
-          pink: '#f472b6',
-          green: '#10b981',
-        },
+        sun: '#F2C230', // the one accent: highlight, CTA on dark sections
+        'on-ink': '#C4CFCA', // secondary text on ink backgrounds
+      },
+      maxWidth: {
+        page: '90rem', // 1440px: a 1280px column inside the lg gutters
       },
     },
   },

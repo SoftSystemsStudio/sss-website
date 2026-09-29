@@ -14,17 +14,53 @@ export default function GlobalError({
     Sentry.captureException(error);
   }, [error]);
 
+  // Replaces the root layout (and its fonts), so styles are inline and self-contained.
   return (
     <html lang="en">
-      <body className="bg-[#050505] text-white">
-        <div className="min-h-screen flex flex-col items-center justify-center px-4">
-          <h1 className="text-6xl font-bold mb-4">Error</h1>
-          <p className="text-xl text-gray-400 mb-8">Something went wrong.</p>
-          <button
-            onClick={reset}
-            className="px-6 py-3 bg-lime-400 text-black font-semibold rounded-lg hover:bg-lime-300 transition-colors"
+      <body
+        style={{ margin: 0, background: '#F7F7F3', color: '#17312B', fontFamily: 'Georgia, serif' }}
+      >
+        <div
+          style={{
+            minHeight: '100vh',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '0 20px',
+            textAlign: 'center',
+          }}
+        >
+          <h1 style={{ fontSize: 56, fontWeight: 400, lineHeight: 1, margin: 0 }}>
+            Something <em>went wrong.</em>
+          </h1>
+          <p
+            style={{
+              fontFamily: 'system-ui, sans-serif',
+              fontSize: 18,
+              color: '#3F4B46',
+              margin: '20px 0 40px',
+            }}
           >
-            Try Again
+            Try loading the page again.
+          </p>
+          <button
+            type="button"
+            onClick={reset}
+            style={{
+              height: 52,
+              padding: '0 28px',
+              border: 0,
+              borderRadius: 4,
+              background: '#17312B',
+              color: '#F7F7F3',
+              fontFamily: 'system-ui, sans-serif',
+              fontSize: 16,
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            Try again
           </button>
         </div>
       </body>

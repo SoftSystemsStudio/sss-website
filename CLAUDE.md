@@ -14,7 +14,8 @@ This file is the repo's operating runbook for Claude Code: how work is planned, 
 
 **User types**:
 
-- **Site visitors** — read the marketing pages, submit the intake form, book a demo call
+- **Site visitors** — local business owners anywhere (the studio is based near Phenix City, AL, and works remotely); read the marketing pages, submit the intake form
+- **Outreach recipients** — owners Austin emails a `/for/<trade>` link
 - **Austin (owner)** — receives intake-form leads by email, no admin dashboard in this repo (the old `/admin` dashboard was deleted in the 2026-08-31 split; it duplicated the lead tool's own dashboard and was unreachable dead weight)
 
 ---
@@ -108,14 +109,19 @@ Native `fetch()` + Next.js API routes. No React Query, SWR, or tRPC.
 ### Styling
 
 - **Primary**: Tailwind CSS 3.4 (utility-first)
-- **Design tokens**: Custom colors (`brand-lime`), glows, animations in `tailwind.config.cjs`
-- **Global CSS**: `/src/styles/globals.css` - glassmorphism, gradients, terminal effects
+- **Design tokens**: palette (`paper`, `limestone`, `ink`, `line`, `sun`, `on-ink`) and font families in `tailwind.config.js` — the only Tailwind config (Tailwind resolves `.js` first; a stray `.cjs` was ignored and has been removed)
+- **Fonts**: Instrument Serif (display) + Instrument Sans (body) via `next/font` in `app/layout.tsx`
+- **Global CSS**: `/src/styles/globals.css` — focus/selection styles, the `.marker` highlight, and the heading rules the `/demo/*` sites were designed against (scoped to `.sss-demo` by `app/demo/layout.tsx`; don't widen them)
+- **Homepage showcase images**: `public/images/work/` are screenshots of the `/demo/*` pages — re-capture them if a demo's hero changes
+- **Concepts and trade pages**: `lib/concepts.ts` lists the demo sites (homepage rows, trade pages); `lib/trades.ts` drives the `/for/<trade>` outreach pages (lawn care, coffee shops, florists). A trade's quote links prefill the intake form via `?type=` — keep `businessType` in `BUSINESS_TYPES` (`app/intake/intake-form.tsx`), and keep trade copy inside what the build ships (`WEBSITE_FEATURES` in `lib/business.ts`)
+- **Motion**: CSS classes in `globals.css` (`.rise` entrance, `.reveal` scroll reveal, `.parallax`, `.concept-pan`, `.nudge`, link underlines). All of it sits inside `@media (prefers-reduced-motion: no-preference)`, and scroll-driven effects use `animation-timeline` behind `@supports` — no JS, so content can never get stuck hidden. `ShowcaseParallax.tsx` is the only motion JS (pointer position → CSS vars). Keep new motion inside those guards.
 
 ### Key Conventions
 
 - 3D/heavy components: Use `dynamic()` with `ssr: false`
 - Forms: HTML forms + Zod validation on API routes
 - Auth: Clerk via `@clerk/nextjs`
+- New public pages must be added to `isPublicRoute` in `src/middleware.ts`. On Vercel (where `CLERK_SECRET_KEY` is set) Clerk rewrites any unlisted route to a 404 for signed-out visitors; locally, without the key, the middleware is a no-op, so the page works in dev and silently 404s in production.
 
 ---
 

@@ -81,8 +81,36 @@ winterizing — numbered because it's an actual sequence) → services grid
 
 ---
 
+## 4. Mayhaw Flower Studio — Florist
+
+**Slug:** `/demo/mayhaw` (added 2026-09 with the `/for/florists` trade page)
+
+**Design problem:** occasion-driven and often same-day. The buyer usually
+has never ordered from the shop before and arrives with an occasion
+(birthday, sympathy, wedding) rather than a product in mind. The
+arrangements have to carry the page, and the same-day cutoff has to be
+impossible to miss. Ordering is by phone or the contact form — the $997
+build doesn't include online checkout, so the demo doesn't pretend to.
+
+**Style:** Blush paper (`#F6ECE7`) with aubergine ink (`#3A1D2E`) and a
+berry accent (`#A3303F`) — softer than the other three without going
+cream-and-gold. Display face is Bodoni Moda (set light, with italics),
+body is Jost. Signature: arch-topped photo frames, like a shop window.
+
+**Structure:** same-day cutoff bar → split hero (headline + arched shop
+photo) → shop by occasion (four arched tiles with "from" prices) → this
+week's three bouquets → "a studio, not a catalog" → weddings band →
+order by phone + visit/hours → footer disclaimer and photo credits.
+
+**Name check:** "Mayhaw" (a blossoming tree native to Georgia and
+Alabama) was checked against Phenix City/Columbus florists and a general
+search; no florist by that name turned up. "Larkspur", "Foxglove & Fern"
+and "Understory" were rejected because real florists use them.
+
+---
+
 ## Image sourcing
 
-All photography is real, sourced from the Pexels API and downloaded into
+All photography is real, sourced from Pexels and downloaded into
 `packages/frontend/public/images/demo/<slug>/`. No AI-generated people or
 premises. Photographer credits appear in each page's footer.

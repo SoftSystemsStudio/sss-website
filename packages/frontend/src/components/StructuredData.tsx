@@ -36,7 +36,7 @@ export function OrganizationSchema() {
     url: 'https://softsystemsstudiollc.com',
     logo: 'https://softsystemsstudiollc.com/images/soft-systems-logo.png',
     description:
-      'Website builds and Care Plans for local service businesses in and around Phenix City, AL and Columbus, GA.',
+      'Website builds and Care Plans for local businesses anywhere, from a one-person studio based in Phenix City, AL.',
     sameAs: [
       // Add your social media profiles here
       // 'https://twitter.com/softsystems',
@@ -74,7 +74,7 @@ export function LocalBusinessSchema() {
     url: 'https://softsystemsstudiollc.com',
     image: 'https://softsystemsstudiollc.com/images/soft-systems-logo.png',
     description:
-      'Website builds and Care Plans for local service businesses — serving Phenix City and Smiths Station, AL, and Columbus, GA.',
+      'Website builds and Care Plans for local businesses anywhere, working remotely. Based in Phenix City, AL; in person around Phenix City and Smiths Station, AL, and Columbus, GA.',
     priceRange: `${BUILD_FEE} / ${RETAINER_MIN}-${RETAINER_MAX} per month`,
     areaServed: SERVICE_AREA_CITIES.map((name: string) => ({
       '@type': 'City',

@@ -1,86 +1,56 @@
 /* packages/frontend/src/styles/globals.css */
 
-/* Import Premium Fonts - Inter for elegance, JetBrains Mono for labels */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
-
-/* Tailwind layers */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Design tokens - Brand Colors (Logo: Black, Gray, Lime) */
-:root {
-  --color-bg: #050505;
-  --color-bg-elevated: #111111;
-  --color-text: #F3F4F6;
-  --color-text-secondary: #D1D5DB;
-  --color-muted: #9CA3AF;
-  --color-border: rgba(255, 255, 255, 0.1);
-  --color-surface: rgba(255, 255, 255, 0.05);
-  --color-accent: #84CC16; /* Lime from logo */
-  --color-accent-hover: #A3E635;
-  --color-glow: #84CC16;
-  --font-display: 'Inter', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
-}
+/* Colors and fonts live in tailwind.config.js; fonts load via next/font in app/layout.tsx. */
 
-/* Global reset */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-
-/* Global typography + background */
-html,
 body {
-  margin: 0;
-  padding: 0;
-  font-family: 'Inter', system-ui, sans-serif;
-  min-height: 100%;
-}
-
-/* Deep Space Dark Background - Luxury AI Aesthetic */
-body {
-  color: var(--color-text);
-  background-color: #050505;
-}
-
-/* Optional: base link / button defaults to feel consistent */
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-button {
-  font-family: inherit;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* ============================================
-   Accessibility Enhancements
+   Accessibility
    ============================================ */
 
 /* Visible focus outlines for keyboard navigation */
 :focus-visible {
-  outline: 2px solid #84CC16; /* lime accent */
-  outline-offset: 2px;
+  outline: 2px solid #17312b;
+  outline-offset: 3px;
 }
 
-/* Skip link for screen readers - improved visibility */
+/* Dark (ink) sections: the ink outline would disappear */
+.surface-ink :focus-visible {
+  outline-color: #f2c230;
+}
+
 .skip-link {
   position: absolute;
   left: -9999px;
   z-index: 9999;
   padding: 1rem 1.5rem;
-  background: #84CC16;
-  color: #000000;
+  background: #17312b;
+  color: #f7f7f3;
   font-weight: 600;
   border-radius: 0 0 0.5rem 0;
-  text-decoration: none;
 }
 .skip-link:focus {
   left: 0;
   top: 0;
+}
+
+/* Highlighter stroke behind a word (the hero's "website.") */
+.marker {
+  background-image: linear-gradient(transparent 60%, #f2c230 60%, #f2c230 88%, transparent 88%);
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+::selection {
+  background-color: #f2c230;
+  color: #17312b;
 }
 
 /* Reduced motion: disable animations for users who prefer it */
@@ -95,213 +65,239 @@ button {
   }
 }
 
-/* Improve text legibility on dark backgrounds */
-body {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* Selection color - brand lime */
-::selection {
-  background-color: #84CC16;
-  color: #000000;
-}
-
-/* Headers use Inter with tight tracking for elegance */
-@layer base {
-  h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-display) !important;
-    font-weight: 700 !important;
-    letter-spacing: -0.02em;
-  }
-
-  h1 {
-    font-weight: 800 !important;
-    letter-spacing: -0.03em;
-  }
-}
-
-/* Monospace only for code/labels */
-code,
-pre,
-kbd,
-samp,
-.font-mono {
-  font-family: var(--font-mono);
-}
-
-/* ============================================
-   Glassmorphism Cards - Bento Grid Style
-   ============================================ */
-.glass-card {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 1rem;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-}
-
-.glass-card:hover {
-  border-color: rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.08);
-}
-
-/* ============================================
-   Ambient Glow Effects (Subtle, brand lime)
-   ============================================ */
-.glow-orb {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(100px);
-  opacity: 0.1;
-  pointer-events: none;
-}
-
-.glow-lime {
-  background: radial-gradient(circle, rgba(132, 204, 22, 0.4) 0%, transparent 70%);
-}
-
-/* Hero glow behind text - subtle lime */
-.hero-glow {
-  position: absolute;
-  width: 500px;
-  height: 500px;
-  background: radial-gradient(circle, rgba(132, 204, 22, 0.15) 0%, transparent 70%);
-  filter: blur(80px);
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* ============================================
-   Text Utilities
-   ============================================ */
-.text-gradient {
-  background: linear-gradient(135deg, #FFFFFF 0%, #D1D5DB 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.text-gradient-lime {
-  background: linear-gradient(135deg, #A3E635 0%, #84CC16 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Legacy - keeping for backwards compatibility */
-.text-gradient-purple {
-  background: linear-gradient(135deg, #A3E635 0%, #84CC16 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* ============================================
-   Section Styles
-   ============================================ */
-.section-dark {
-  background-color: #0A0A0A;
-}
-
-.section-elevated {
-  background-color: #111111;
-}
-
-/* Subtle section divider */
-.section-divider {
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-/* ============================================
-   Tech Stack / Terminal Styling
-   ============================================ */
-.terminal-deps {
-  background-color: rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(0, 255, 65, 0.3);
-  color: #00ff41;
-  font-family: var(--font-mono);
-  padding: 24px;
-  border-radius: 12px;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-.terminal-deps .highlight {
-  color: #00ff41;
-}
-
-/* ============================================
-   Animation Utilities
-   ============================================ */
-@keyframes blink {
-  0%, 50% { opacity: 1; }
-  51%, 100% { opacity: 0; }
-}
-
-.blink-cursor {
-  animation: blink 1s step-end infinite;
-}
-
-@keyframes pulse-glow {
-  0%, 100% { opacity: 0.2; }
-  50% { opacity: 0.4; }
-}
-
-.animate-pulse-glow {
-  animation: pulse-glow 4s ease-in-out infinite;
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
-}
-
-.animate-float {
-  animation: float 6s ease-in-out infinite;
-}
-
-/* ============================================
-   Mobile Responsiveness Improvements
-   ============================================ */
 @media (max-width: 640px) {
   /* Ensure touch targets are at least 44px */
   button,
-  a[href],
+  a[href]:not(.link-underline),
   input,
   select,
   textarea {
     min-height: 44px;
   }
 
-  /* Improve text readability on mobile */
+  /* Prevent zoom on iOS */
   body {
-    font-size: 16px; /* Prevent zoom on iOS */
-  }
-
-  /* Reduce heavy animations on mobile */
-  .hero-glow {
-    width: 300px;
-    height: 300px;
-    opacity: 0.08;
-  }
-
-  /* Better spacing for mobile */
-  .glass-card {
-    padding: 1rem;
+    font-size: 16px;
   }
 }
 
-/* High contrast mode support */
-@media (prefers-contrast: high) {
-  .glass-card {
-    border-width: 2px;
+/* ============================================
+   Demo sites (/demo/*)
+   Each demo brings its own fonts as --font-display / --font-body and was
+   designed against these heading rules, so they stay, scoped to the
+   wrapper in app/demo/layout.tsx. :where() keeps the specificity of a bare
+   `h1` so each demo's own tracking utilities still win.
+   ============================================ */
+@layer base {
+  :where(.sss-demo) :is(h1, h2, h3, h4, h5, h6) {
+    font-family: var(--font-display) !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.02em;
   }
 
-  :focus-visible {
-    outline-width: 3px;
+  :where(.sss-demo) h1 {
+    font-weight: 800 !important;
+    letter-spacing: -0.03em;
+  }
+}
+
+:where(.sss-demo) :focus-visible {
+  outline-color: #84cc16;
+}
+
+:where(.sss-demo) ::selection {
+  background-color: #84cc16;
+  color: #000000;
+}
+
+/* ============================================
+   Motion
+   Everything below only applies when the visitor hasn't asked for reduced
+   motion, so nothing can end up half-animated or hidden for them. Scroll-
+   driven effects also sit behind @supports: browsers without scroll
+   timelines simply show the content, no JavaScript involved.
+   ============================================ */
+
+.link-underline {
+  position: relative;
+  background: linear-gradient(currentColor, currentColor) 0 100% / 100% 1.5px no-repeat;
+  padding-bottom: 3px;
+}
+
+/* Underlined text links stay text-height (so the underline hugs the words)
+   but keep a finger-sized hit area */
+.link-underline::after {
+  content: '';
+  position: absolute;
+  inset: -12px -6px;
+}
+
+.nav-link {
+  background: linear-gradient(currentColor, currentColor) 0 100% / 0% 1.5px no-repeat;
+  padding-bottom: 3px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Page-load entrance: add .rise and set --rise-delay per element */
+  .rise {
+    animation: sss-rise 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) var(--rise-delay, 0s) both;
+  }
+
+  /* The yellow highlight draws in under the hero's last word */
+  .marker-draw {
+    background-repeat: no-repeat;
+    background-size: 0% 100%;
+    animation: sss-marker 0.7s cubic-bezier(0.6, 0, 0.2, 1) 0.9s forwards;
+  }
+
+  /* Hero showcase: layers drift with the pointer (vars set by ShowcaseParallax) */
+  .parallax {
+    transform: translate3d(
+      calc(var(--px, 0) * var(--depth, 8) * 1px),
+      calc(var(--py, 0) * var(--depth, 8) * 1px),
+      0
+    );
+    transition: transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  /* Links: underline wipes out and back in; nav links grow one on hover */
+  .link-underline,
+  .nav-link {
+    transition: background-size 0.35s cubic-bezier(0.6, 0, 0.2, 1);
+  }
+  .link-underline:hover {
+    background-position: 100% 100%;
+    background-size: 0% 1.5px;
+  }
+  .nav-link:hover {
+    background-size: 100% 1.5px;
+  }
+
+  /* Arrows inside links and buttons nudge forward */
+  .nudge {
+    display: inline-block;
+    transition: transform 0.3s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  :is(a, button, .group):hover .nudge,
+  :is(a, button):focus-visible .nudge {
+    transform: translateX(4px);
+  }
+
+  /* Concept screenshots: scroll through the site on hover */
+  .concept-pan {
+    transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  @media (hover: hover) {
+    .group:hover .concept-pan,
+    .group:focus-within .concept-pan {
+      transform: translateY(var(--pan));
+      transition-duration: 7s;
+      transition-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+    }
+  }
+
+  /* Mobile menu slides in */
+  .menu-enter {
+    animation: sss-menu 0.25s ease-out both;
+  }
+
+  /* FAQ answers open smoothly where the browser can animate to height: auto */
+  @supports selector(::details-content) {
+    details.faq {
+      interpolate-size: allow-keywords;
+    }
+    details.faq::details-content {
+      block-size: 0;
+      overflow: hidden;
+      transition:
+        block-size 0.35s cubic-bezier(0.2, 0.7, 0.2, 1),
+        content-visibility 0.35s allow-discrete;
+    }
+    details.faq[open]::details-content {
+      block-size: auto;
+    }
+  }
+
+  @supports (animation-timeline: view()) {
+    /* Content eases in as it scrolls into view */
+    .reveal {
+      animation: sss-reveal linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 22%;
+    }
+
+    /* Touch screens can't hover: pan the concept screenshots with the scroll instead */
+    @media (hover: none) {
+      .concept-frame {
+        view-timeline-name: --concept;
+      }
+      .concept-pan {
+        animation: sss-pan linear both;
+        animation-timeline: --concept;
+        animation-range: cover 25% cover 85%;
+      }
+    }
+
+    /* The header picks up a soft shadow once the page scrolls */
+    .site-header {
+      animation: sss-header linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 160px;
+    }
+  }
+}
+
+@keyframes sss-rise {
+  from {
+    opacity: 0;
+    translate: 0 28px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+@keyframes sss-marker {
+  to {
+    background-size: 100% 100%;
+  }
+}
+
+@keyframes sss-reveal {
+  from {
+    opacity: 0;
+    translate: 0 40px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+@keyframes sss-pan {
+  from {
+    transform: none;
+  }
+  to {
+    transform: translateY(var(--pan));
+  }
+}
+
+@keyframes sss-menu {
+  from {
+    opacity: 0;
+    translate: 0 -8px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+@keyframes sss-header {
+  to {
+    box-shadow: 0 10px 30px -24px rgba(23, 49, 43, 0.45);
   }
 }
 

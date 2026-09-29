@@ -2,7 +2,6 @@
 
 import React, { useState, useCallback } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import Button from './Button';
 
 interface NavItem {
@@ -11,119 +10,98 @@ interface NavItem {
 }
 
 interface NavbarProps {
-  logo?: string;
-  brand?: string;
   items?: NavItem[];
   ctaLabel?: string;
   ctaHref?: string;
   className?: string;
 }
 
+const SITE_NAV: NavItem[] = [
+  { label: 'Work', href: '/#portfolio' },
+  { label: 'Pricing', href: '/#pricing' },
+  { label: 'How it goes', href: '/#process' },
+  { label: 'About', href: '/about' },
+];
+
 export default function Navbar({
-  logo = '/images/soft-systems-logo.png',
-  brand = 'SOFT SYSTEMS',
-  items = [],
-  ctaLabel = 'Get Started',
+  items = SITE_NAV,
+  ctaLabel = 'Get a quote',
   ctaHref = '/intake',
   className = '',
 }: NavbarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const toggleMobile = useCallback(() => setMobileOpen((prev) => !prev), []);
+  const closeMobile = useCallback(() => setMobileOpen(false), []);
 
   return (
     <header
-      className={`sticky top-0 z-[100] backdrop-blur-lg bg-black/95 border-b border-white/10 shadow-lg ${className}`}
+      className={`site-header sticky top-0 z-50 border-b border-line-soft bg-paper ${className}`}
     >
-      <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-        {/* Brand with Logo */}
-        <Link href="/" className="flex items-center gap-3">
-          {logo && (
-            <Image
-              src={logo}
-              alt={brand}
-              width={36}
-              height={36}
-              className="h-9 w-9"
-              priority
-              unoptimized
-            />
-          )}
-          <span className="font-bold text-xl tracking-tight text-white hidden sm:block">
-            {brand}
-          </span>
+      <div className="mx-auto flex h-16 max-w-page items-center justify-between pl-5 pr-3 sm:px-8 lg:h-[88px] lg:px-20">
+        <Link
+          href="/"
+          className="font-serif text-[25px] tracking-[-0.01em] text-ink lg:text-[30px]"
+          onClick={closeMobile}
+        >
+          Soft Systems Studio
         </Link>
 
-        {/* Desktop nav */}
-        <nav className="hidden md:flex items-center gap-8">
+        <nav aria-label="Main" className="hidden items-center gap-9 md:flex">
           {items.map((item) => (
-            <a
+            <Link
               key={item.href}
               href={item.href}
-              className="text-sm text-gray-400 hover:text-white transition focus:outline-none focus:ring-2 focus:ring-purple-500 rounded"
+              className="nav-link text-[15px] font-medium text-ink"
             >
               {item.label}
-            </a>
+            </Link>
           ))}
-          <Button
-            as="link"
-            href={ctaHref}
-            variant="primary"
-            size="sm"
-            className="ml-2 bg-white text-black hover:bg-gray-100"
-          >
+          <Button as="link" href={ctaHref} variant="primary" size="sm">
             {ctaLabel}
           </Button>
         </nav>
 
-        {/* Mobile hamburger */}
         <button
           type="button"
-          aria-label="Toggle navigation menu"
+          aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
           aria-expanded={mobileOpen}
-          className="md:hidden p-2 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 rounded"
+          aria-controls="mobile-menu"
+          className="flex h-11 w-11 items-center justify-center text-ink md:hidden"
           onClick={toggleMobile}
         >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            {mobileOpen ? (
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            ) : (
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 6h16M4 12h16M4 18h16"
-              />
-            )}
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            aria-hidden="true"
+          >
+            {mobileOpen ? <path d="M6 6l12 12M18 6L6 18" /> : <path d="M4 8h16M4 16h16" />}
           </svg>
         </button>
       </div>
 
-      {/* Mobile menu */}
       {mobileOpen && (
-        <nav className="md:hidden bg-[#050505] border-t border-white/5 px-6 py-4 space-y-4">
+        <nav
+          id="mobile-menu"
+          aria-label="Main"
+          className="menu-enter border-t border-line-soft bg-paper px-5 pb-6 pt-2 md:hidden"
+        >
           {items.map((item) => (
-            <a
+            <Link
               key={item.href}
               href={item.href}
-              className="block text-gray-400 hover:text-white transition"
-              onClick={() => setMobileOpen(false)}
+              className="flex items-center border-b border-line-soft py-3 text-lg text-ink"
+              onClick={closeMobile}
             >
               {item.label}
-            </a>
+            </Link>
           ))}
-          <Button
-            as="link"
-            href={ctaHref}
-            variant="primary"
-            size="md"
-            className="w-full justify-center bg-white text-black hover:bg-gray-100"
-          >
+          <Button as="link" href={ctaHref} variant="primary" size="md" className="mt-6 w-full">
             {ctaLabel}
           </Button>
         </nav>

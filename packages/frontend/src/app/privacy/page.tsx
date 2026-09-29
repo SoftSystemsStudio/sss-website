@@ -9,20 +9,17 @@ export const metadata: Metadata = {
   alternates: { canonical: '/privacy' },
 };
 
-const NAV_ITEMS = [
-  { label: 'Home', href: '/' },
-  { label: 'Terms', href: '/terms' },
-];
-
 export default function PrivacyPage() {
   return (
-    <div className="antialiased min-h-screen bg-[#050505] text-gray-200">
-      <Navbar items={NAV_ITEMS} ctaLabel="Get a Quote" ctaHref="/intake" />
-      <main className="max-w-3xl mx-auto px-4 py-24">
-        <h1 className="text-4xl font-bold text-white mb-8">Privacy Policy</h1>
-        <div className="prose prose-invert prose-gray max-w-none space-y-6 text-gray-300 leading-relaxed">
+    <div className="min-h-screen">
+      <Navbar />
+      <main className="mx-auto max-w-3xl px-5 py-16 sm:px-8 sm:py-24">
+        <h1 className="mb-10 font-serif text-[48px] leading-none tracking-[-0.015em] sm:text-[64px]">
+          Privacy Policy
+        </h1>
+        <div className="space-y-6 text-[17px] leading-relaxed text-ink-soft">
           <p>
-            <strong className="text-white">Last updated:</strong> September 2026
+            <strong className="text-ink">Last updated:</strong> September 2026
           </p>
           <p>
             I&apos;m Austin, and I built and run this site myself. Here&apos;s what actually happens
@@ -30,7 +27,7 @@ export default function PrivacyPage() {
             true.
           </p>
 
-          <h2 className="text-2xl font-semibold text-white mt-8">The contact form</h2>
+          <h2 className="pt-6 font-serif text-[32px] leading-tight text-ink">The contact form</h2>
           <p>
             When you fill out the intake form, your name, business name, email, phone number, and
             what you told me about your business get emailed straight to me, and to no one else. I
@@ -39,14 +36,16 @@ export default function PrivacyPage() {
             I don&apos;t sell it, rent it, or add you to a mailing list.
           </p>
 
-          <h2 className="text-2xl font-semibold text-white mt-8">Analytics and tracking</h2>
+          <h2 className="pt-6 font-serif text-[32px] leading-tight text-ink">
+            Analytics and tracking
+          </h2>
           <p>
             As of this writing, this site doesn&apos;t run Google Analytics or any other visitor
             tracking or advertising service. If that ever changes, this page will say so before it
             happens, not after.
           </p>
 
-          <h2 className="text-2xl font-semibold text-white mt-8">
+          <h2 className="pt-6 font-serif text-[32px] leading-tight text-ink">
             SSS Hub, and my own Google Calendar and Gmail
           </h2>
           <p>
@@ -63,13 +62,15 @@ export default function PrivacyPage() {
           <p>To show me my own day at a glance, SSS Hub asks my Google account for two things:</p>
           <ul className="list-disc pl-6 space-y-2">
             <li>
-              <code className="text-lime-400">
+              <code className="break-all rounded bg-limestone px-1.5 py-0.5 text-[15px] text-ink">
                 https://www.googleapis.com/auth/calendar.readonly
               </code>{' '}
               &mdash; read-only access to my calendar
             </li>
             <li>
-              <code className="text-lime-400">https://www.googleapis.com/auth/gmail.readonly</code>{' '}
+              <code className="break-all rounded bg-limestone px-1.5 py-0.5 text-[15px] text-ink">
+                https://www.googleapis.com/auth/gmail.readonly
+              </code>{' '}
               &mdash; read-only access to my Gmail
             </li>
           </ul>
@@ -97,7 +98,7 @@ export default function PrivacyPage() {
             Google&apos;s own permissions page:{' '}
             <a
               href="https://myaccount.google.com/permissions"
-              className="text-lime-400 hover:underline"
+              className="text-ink underline underline-offset-4 hover:text-ink-soft"
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -106,7 +107,7 @@ export default function PrivacyPage() {
             .
           </p>
 
-          <h2 className="text-2xl font-semibold text-white mt-8">
+          <h2 className="pt-6 font-serif text-[32px] leading-tight text-ink">
             Docklight Lo-Fi, and TikTok/YouTube
           </h2>
           <p>
@@ -114,7 +115,7 @@ export default function PrivacyPage() {
             site. Docklight Lo-Fi is an ambient music channel I run (
             <a
               href="https://www.tiktok.com/@docklightlo-fi"
-              className="text-lime-400 hover:underline"
+              className="text-ink underline underline-offset-4 hover:text-ink-soft"
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -129,17 +130,24 @@ export default function PrivacyPage() {
           </p>
           <ul className="list-disc pl-6 space-y-2">
             <li>
-              <code className="text-lime-400">video.upload</code> &mdash; upload a video to the
-              account, as a draft
+              <code className="break-all rounded bg-limestone px-1.5 py-0.5 text-[15px] text-ink">
+                video.upload
+              </code>{' '}
+              &mdash; upload a video to the account, as a draft
             </li>
             <li>
-              <code className="text-lime-400">video.publish</code> &mdash; post a video directly to
-              the account&apos;s own profile
+              <code className="break-all rounded bg-limestone px-1.5 py-0.5 text-[15px] text-ink">
+                video.publish
+              </code>{' '}
+              &mdash; post a video directly to the account&apos;s own profile
             </li>
             <li>
-              <code className="text-lime-400">user.info.basic</code> &mdash; read the account&apos;s
-              own basic profile info (open id, display name, avatar), so the automation can confirm
-              which account it&apos;s about to post as before it does
+              <code className="break-all rounded bg-limestone px-1.5 py-0.5 text-[15px] text-ink">
+                user.info.basic
+              </code>{' '}
+              &mdash; read the account&apos;s own basic profile info (open id, display name,
+              avatar), so the automation can confirm which account it&apos;s about to post as before
+              it does
             </li>
           </ul>
           <p>
@@ -152,7 +160,7 @@ export default function PrivacyPage() {
             permissions; on YouTube/Google, from{' '}
             <a
               href="https://myaccount.google.com/permissions"
-              className="text-lime-400 hover:underline"
+              className="text-ink underline underline-offset-4 hover:text-ink-soft"
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -161,17 +169,22 @@ export default function PrivacyPage() {
             .
           </p>
 
-          <h2 className="text-2xl font-semibold text-white mt-8">Changes to this policy</h2>
+          <h2 className="pt-6 font-serif text-[32px] leading-tight text-ink">
+            Changes to this policy
+          </h2>
           <p>
             If what this site or SSS Hub does with information changes, I&apos;ll update this page
             to match &mdash; it&apos;s meant to describe what&apos;s actually true, not what was
             true when I first wrote it.
           </p>
 
-          <h2 className="text-2xl font-semibold text-white mt-8">Contact</h2>
+          <h2 className="pt-6 font-serif text-[32px] leading-tight text-ink">Contact</h2>
           <p>
             Questions about any of this? Email me at{' '}
-            <a href={`mailto:${CONTACT_EMAIL}`} className="text-lime-400 hover:underline">
+            <a
+              href={`mailto:${CONTACT_EMAIL}`}
+              className="text-ink underline underline-offset-4 hover:text-ink-soft"
+            >
               {CONTACT_EMAIL}
             </a>
             .

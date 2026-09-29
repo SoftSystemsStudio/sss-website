@@ -3,22 +3,22 @@ import React from 'react';
 interface SectionProps {
   children: React.ReactNode;
   id?: string;
+  /** Classes for the full-bleed <section> (background, vertical padding). */
   className?: string;
-  gradient?: 'none' | 'subtle' | 'dark';
+  /** Classes for the inner, page-width container. */
+  innerClassName?: string;
 }
 
-const gradientClasses: Record<'none' | 'subtle' | 'dark', string> = {
-  none: '',
-  subtle: 'bg-gradient-to-b from-black via-[#0a0a0a] to-black',
-  dark: 'bg-gradient-to-b from-[#0a0a0a] via-black to-[#0a0a0a]',
-};
-
-export default function Section({ children, id, className = '', gradient = 'none' }: SectionProps) {
-  // eslint-disable-next-line security/detect-object-injection -- gradient is a typed union, not user input
-  const gradientClass = gradientClasses[gradient];
+/** A full-bleed section with the site's page-width container and side gutters. */
+export default function Section({
+  children,
+  id,
+  className = '',
+  innerClassName = '',
+}: SectionProps) {
   return (
-    <section id={id} className={`py-24 ${gradientClass} ${className}`}>
-      <div className="max-w-7xl mx-auto px-6">{children}</div>
+    <section id={id} className={className}>
+      <div className={`mx-auto max-w-page px-5 sm:px-8 lg:px-20 ${innerClassName}`}>{children}</div>
     </section>
   );
 }

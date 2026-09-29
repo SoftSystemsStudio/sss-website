@@ -29,10 +29,32 @@ export const CARE_PLANS = [
 /** Revision rounds included in the build, before launch. */
 export const BUILD_REVISION_ROUNDS = 2;
 
+/** What the build ships. Must match the Lead Tool's docs/SCOPE.md §1. */
+export const WEBSITE_FEATURES = [
+  'A custom one-page site built around your business and brand',
+  'The words written for you — you review, you don’t have to write',
+  'Mobile-first and fast, with tap-to-call on phones',
+  'Contact form that emails you directly',
+  'Basic on-page SEO',
+  `${BUILD_REVISION_ROUNDS} rounds of revisions before launch`,
+  'Launched on your own domain — registered in your name, so you own it',
+];
+
 /** How long a build-only site stays on our hosting after launch. */
 export const BUILD_ONLY_HOSTING_DAYS = 30;
 
-/** Service-area business — no street address is published (home-based). */
+/**
+ * Where Austin is based. The studio works with local businesses anywhere
+ * (remotely, by phone, email and video) — decided 2026-09-29, so copy should
+ * not imply the studio only serves this area.
+ */
+export const HOME_BASE = 'Phenix City, Alabama';
+
+/**
+ * The in-person area: where meetings can happen face to face. Also the
+ * LocalBusiness schema's `areaServed`. No street address is published
+ * (home-based).
+ */
 export const SERVICE_AREA_CITIES = ['Phenix City, AL', 'Smiths Station, AL', 'Columbus, GA'];
 export const SERVICE_AREA_LABEL = 'Phenix City and Smiths Station, AL, and Columbus, GA';
 

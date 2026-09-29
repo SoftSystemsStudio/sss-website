@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'outline';
+export type ButtonVariant = 'primary' | 'accent' | 'secondary' | 'ghost' | 'outline';
 type ButtonSize = 'sm' | 'md' | 'lg';
 
 interface ButtonBaseProps {
@@ -36,20 +36,19 @@ interface ButtonAsAnchor extends ButtonBaseProps {
 type ButtonProps = ButtonAsButton | ButtonAsLink | ButtonAsAnchor;
 
 const sizeClasses: Record<ButtonSize, string> = {
-  sm: 'py-2 px-4 text-sm',
-  md: 'py-3 px-6 text-base',
-  lg: 'py-4 px-10 text-lg',
+  sm: 'h-[46px] px-[22px] text-[15px]',
+  md: 'h-[52px] px-7 text-base',
+  lg: 'h-[58px] px-8 text-[17px]',
 };
 
 const variantClasses: Record<ButtonVariant, string> = {
-  primary:
-    'bg-[#c0ff6b] text-black font-semibold shadow-lg shadow-[#c0ff6b]/30 hover:bg-[#d4ff8f] hover:shadow-[#c0ff6b]/50 focus:ring-2 focus:ring-[#c0ff6b] focus:ring-offset-2 focus:ring-offset-black',
-  secondary:
-    'bg-[#656565] text-[#d5d5d5] font-medium hover:bg-[#7a7a7a] focus:ring-2 focus:ring-[#656565] focus:ring-offset-2 focus:ring-offset-black',
-  ghost:
-    'border border-[#656565] text-[#d5d5d5] font-medium hover:border-[#c0ff6b] hover:text-[#c0ff6b] focus:ring-2 focus:ring-[#656565] focus:ring-offset-2 focus:ring-offset-black',
-  outline:
-    'border border-[#656565] text-[#d5d5d5] font-medium bg-transparent hover:border-[#c0ff6b] hover:text-[#c0ff6b] focus:ring-2 focus:ring-[#c0ff6b] focus:ring-offset-2 focus:ring-offset-black',
+  // Ink (river green) is the default action colour on light backgrounds
+  primary: 'bg-ink text-paper font-semibold hover:bg-[#23443C]',
+  // Sun is reserved for the main action on ink sections
+  accent: 'bg-sun text-ink font-bold hover:bg-[#F5CD55]',
+  secondary: 'bg-limestone text-ink font-semibold hover:bg-[#DDDFD6]',
+  ghost: 'text-ink font-semibold underline underline-offset-[6px] hover:text-ink-soft',
+  outline: 'border-[1.5px] border-ink text-ink font-semibold hover:bg-ink hover:text-paper',
 };
 
 export default function Button({
@@ -61,7 +60,7 @@ export default function Button({
   ...props
 }: ButtonProps) {
   const baseClasses =
-    'inline-flex items-center justify-center rounded-full transition-all duration-200 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed';
+    'inline-flex items-center justify-center rounded transition-[color,background-color,border-color,transform] duration-200 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed';
   // eslint-disable-next-line security/detect-object-injection -- size and variant are typed unions, not user input
   const classes = `${baseClasses} ${sizeClasses[size]} ${variantClasses[variant]} ${className}`;
 

@@ -1,14 +1,22 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
-import { Space_Grotesk } from 'next/font/google';
+import { Instrument_Sans, Instrument_Serif } from 'next/font/google';
 import '../styles/globals.css';
 import { AppProviders } from './providers';
 import { GoogleAnalytics } from '@/components/GoogleAnalytics';
 
-const spaceGrotesk = Space_Grotesk({
+const sans = Instrument_Sans({
   subsets: ['latin'],
   display: 'swap',
-  variable: '--font-space-grotesk',
+  variable: '--font-sans',
+});
+
+const serif = Instrument_Serif({
+  subsets: ['latin'],
+  weight: '400',
+  style: ['normal', 'italic'],
+  display: 'swap',
+  variable: '--font-serif',
 });
 
 export const metadata: Metadata = {
@@ -18,16 +26,16 @@ export const metadata: Metadata = {
     template: '%s | Soft Systems Studio',
   },
   description:
-    'A flat $997 website build for service businesses in Phenix City & Smiths Station, AL, and Columbus, GA. Care Plans from $150/month.',
+    'Custom websites for local businesses, anywhere. A flat $997 build from a one-person studio based in Phenix City, AL. Care Plans from $150/month.',
   keywords: [
-    'website design Phenix City AL',
-    'web designer Columbus GA',
-    'local business website builder',
-    'Smiths Station AL web design',
+    'website design for local businesses',
+    'small business website designer',
+    'local business website',
     'service business website',
-    'affordable website build',
-    'website retainer plan',
+    'flat price website design',
     'website care plan',
+    'web designer Phenix City AL',
+    'web designer Columbus GA',
   ],
   authors: [{ name: 'Soft Systems Studio LLC' }],
   creator: 'Soft Systems Studio LLC',
@@ -39,7 +47,7 @@ export const metadata: Metadata = {
     siteName: 'Soft Systems Studio',
     title: 'Websites for Local Businesses | Soft Systems Studio',
     description:
-      'A flat $997 website build for service businesses near Phenix City, AL and Columbus, GA. Care Plans from $150/month.',
+      'Custom websites for local businesses, anywhere. A flat $997 build, designed and written by one person. Care Plans from $150/month.',
     images: [
       {
         url: '/api/og',
@@ -71,8 +79,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={spaceGrotesk.variable}>
-      <body className="antialiased min-h-screen bg-[#050505] text-gray-200 selection:bg-lime-400 selection:text-black">
+    <html lang="en" className={`${sans.variable} ${serif.variable}`}>
+      <body className="min-h-screen bg-paper font-sans text-ink">
         <AppProviders>
           <Suspense>
             <GoogleAnalytics />

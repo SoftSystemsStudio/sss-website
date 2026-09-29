@@ -11,6 +11,7 @@ const isPublicRoute = createRouteMatcher([
   '/sign-in(.*)',
   '/sign-up(.*)',
   '/demo(.*)', // All demo routes are public
+  '/for(.*)', // Trade landing pages (lib/trades.ts), linked from outreach emails
   '/api/cron/(.*)',
   '/api/intake',
   '/api/og',

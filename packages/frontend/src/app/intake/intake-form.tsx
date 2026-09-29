@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-misused-promises -- Form handlers are async and API responses need runtime validation */
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { Button } from '@/components/ui';
 import { BUILD_FEE, RETAINER_MIN, RETAINER_RANGE } from '@/lib/business';
 
 type ServiceInterest = 'website' | 'care_plan' | 'website_and_care';
@@ -38,6 +38,7 @@ const BUSINESS_TYPES = [
   'Landscaping',
   'Auto Repair',
   'Coffee / Food Service',
+  'Florist',
   'Dental Practice',
   'Medical/Med Spa',
   'Legal Services',
@@ -66,8 +67,25 @@ const SERVICES = [
   },
 ];
 
+const EYEBROW =
+  'text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-muted sm:text-[13px]';
+// The legend floats so it sits below the rule instead of on it; the next element clears it.
+const FIELDSET = 'mt-12 min-w-0 border-t border-line pt-8 first:mt-0 [&>legend+*]:clear-both';
+const LEGEND = 'float-left mb-6 w-full font-serif text-[30px] leading-tight';
+const LABEL = 'mb-2 block text-[15px] font-medium text-ink';
+const INPUT =
+  'w-full rounded border border-line bg-white px-4 py-3 text-base text-ink placeholder:text-ink-muted/70 focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink';
+
 export default function IntakeForm() {
   const [form, setForm] = useState<FormState>(initialForm);
+
+  // Trade pages link here as /intake?type=<business type> to prefill the dropdown.
+  useEffect(() => {
+    const type = new URLSearchParams(window.location.search).get('type');
+    if (type && BUSINESS_TYPES.includes(type)) {
+      setForm((prev) => (prev.businessType ? prev : { ...prev, businessType: type }));
+    }
+  }, []);
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -121,18 +139,15 @@ export default function IntakeForm() {
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-[#050505] text-white flex items-center justify-center px-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="max-w-md text-center"
-        >
-          <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+      <div className="flex min-h-screen items-center justify-center px-5">
+        <div className="max-w-md text-center" role="status">
+          <div className="mx-auto mb-8 flex h-16 w-16 items-center justify-center rounded-full bg-ink">
             <svg
-              className="w-8 h-8 text-green-400"
+              className="h-8 w-8 text-sun"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
+              aria-hidden="true"
             >
               <path
                 strokeLinecap="round"
@@ -142,188 +157,202 @@ export default function IntakeForm() {
               />
             </svg>
           </div>
-          <h1 className="text-3xl font-bold mb-4">Thank You!</h1>
-          <p className="text-gray-400 mb-6">
-            We&apos;ve received your request. You&apos;ll hear from us within 24 hours to schedule a
-            quick call and discuss your project.
+          <h1 className="font-serif text-[48px] leading-none tracking-[-0.015em] sm:text-[56px]">
+            Thanks, <em>I’ve got it.</em>
+          </h1>
+          <p className="mb-10 mt-5 text-lg leading-relaxed text-ink-soft">
+            I’ll reply within 24 hours to set up a quick call about your project.
           </p>
-          <Link
-            href="/"
-            className="inline-block px-6 py-3 bg-white text-black font-semibold rounded-lg hover:bg-gray-100 transition-colors"
-          >
-            Back to Home
-          </Link>
-        </motion.div>
+          <Button as="link" href="/" variant="primary" size="md">
+            Back to home
+          </Button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white">
-      <header className="border-b border-white/10">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="text-lg font-semibold">
+    <div className="min-h-screen">
+      <header className="border-b border-line-soft">
+        <div className="mx-auto flex h-16 max-w-3xl items-center justify-between px-5 sm:px-8">
+          <Link href="/" className="font-serif text-[25px] tracking-[-0.01em]">
             Soft Systems Studio
           </Link>
-          <Link href="/" className="text-sm text-gray-400 hover:text-white transition-colors">
+          <Link href="/" className="text-[15px] font-medium text-ink-soft hover:text-ink">
             &larr; Back to site
           </Link>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-12">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Get Your Free Quote</h1>
-          <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-            Tell us about your business and we&apos;ll get back to you within 24 hours with a custom
-            quote.
-          </p>
-        </div>
+      <main className="mx-auto max-w-3xl px-5 pb-24 pt-12 sm:px-8 sm:pt-16">
+        <p className={`rise ${EYEBROW}`}>Get a quote</p>
+        <h1 className="rise mt-5 font-serif text-[52px] [--rise-delay:0.1s] leading-[0.92] tracking-[-0.015em] sm:text-[72px]">
+          Tell me about <em>your business.</em>
+        </h1>
+        <p className="rise mt-6 text-lg leading-relaxed text-ink-soft [--rise-delay:0.2s] sm:text-xl">
+          About five minutes. I reply within 24 hours, then we set up a short call.
+        </p>
 
-        <form onSubmit={handleSubmit} className="space-y-8">
-          <section className="bg-white/5 border border-white/10 rounded-2xl p-6 md:p-8">
-            <h2 className="text-xl font-semibold mb-6">Contact Information</h2>
-            <div className="grid md:grid-cols-2 gap-6">
+        <form onSubmit={handleSubmit} className="mt-12" noValidate>
+          <fieldset className={FIELDSET}>
+            <legend className={LEGEND}>Contact details</legend>
+            <div className="grid gap-6 md:grid-cols-2">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Your Name *</label>
+                <label htmlFor="name" className={LABEL}>
+                  Your name <span aria-hidden="true">*</span>
+                </label>
                 <input
+                  id="name"
                   type="text"
+                  autoComplete="name"
+                  required
                   value={form.name}
                   onChange={(e) => update('name', e.target.value)}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-lime-400 transition-colors"
+                  className={INPUT}
                   placeholder="John Smith"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Business Name *
+                <label htmlFor="businessName" className={LABEL}>
+                  Business name <span aria-hidden="true">*</span>
                 </label>
                 <input
+                  id="businessName"
                   type="text"
+                  autoComplete="organization"
+                  required
                   value={form.businessName}
                   onChange={(e) => update('businessName', e.target.value)}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-lime-400 transition-colors"
+                  className={INPUT}
                   placeholder="Smith Plumbing LLC"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Email *</label>
+                <label htmlFor="email" className={LABEL}>
+                  Email <span aria-hidden="true">*</span>
+                </label>
                 <input
+                  id="email"
                   type="email"
+                  autoComplete="email"
+                  required
                   value={form.email}
                   onChange={(e) => update('email', e.target.value)}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-lime-400 transition-colors"
+                  className={INPUT}
                   placeholder="john@smithplumbing.com"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Phone *</label>
+                <label htmlFor="phone" className={LABEL}>
+                  Phone <span aria-hidden="true">*</span>
+                </label>
                 <input
+                  id="phone"
                   type="tel"
+                  autoComplete="tel"
+                  required
                   value={form.phone}
                   onChange={(e) => update('phone', e.target.value)}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-lime-400 transition-colors"
+                  className={INPUT}
                   placeholder="(555) 123-4567"
                 />
               </div>
             </div>
-          </section>
+          </fieldset>
 
-          <section className="bg-white/5 border border-white/10 rounded-2xl p-6 md:p-8">
-            <h2 className="text-xl font-semibold mb-6">About Your Business</h2>
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                What type of business do you run?
-              </label>
-              <select
-                value={form.businessType}
-                onChange={(e) => update('businessType', e.target.value)}
-                className="w-full px-4 py-3 bg-[#1a1a1a] border border-white/10 rounded-lg focus:outline-none focus:border-lime-400 transition-colors text-white"
-              >
-                <option value="" className="bg-[#1a1a1a] text-gray-400">
-                  Select your industry...
+          <fieldset className={FIELDSET}>
+            <legend className={LEGEND}>Your business</legend>
+            <label htmlFor="businessType" className={LABEL}>
+              What type of business do you run?
+            </label>
+            <select
+              id="businessType"
+              value={form.businessType}
+              onChange={(e) => update('businessType', e.target.value)}
+              className={INPUT}
+            >
+              <option value="">Select your industry…</option>
+              {BUSINESS_TYPES.map((type) => (
+                <option key={type} value={type}>
+                  {type}
                 </option>
-                {BUSINESS_TYPES.map((type) => (
-                  <option key={type} value={type} className="bg-[#1a1a1a] text-white">
-                    {type}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </section>
+              ))}
+            </select>
+          </fieldset>
 
-          <section className="bg-white/5 border border-white/10 rounded-2xl p-6 md:p-8">
-            <h2 className="text-xl font-semibold mb-6">What are you interested in? *</h2>
-            <div className="grid md:grid-cols-3 gap-4">
-              {SERVICES.map((service) => {
-                const isSelected = form.serviceInterest === service.key;
-                return (
-                  <button
-                    key={service.key}
-                    type="button"
-                    onClick={() => update('serviceInterest', service.key)}
-                    className={`p-6 rounded-xl border-2 text-left transition-all ${
-                      isSelected
-                        ? 'border-lime-400 bg-lime-400/10'
-                        : 'border-white/10 hover:border-white/30'
-                    }`}
-                  >
-                    <div className="font-semibold mb-1">{service.name}</div>
-                    <div className="text-lime-400 font-bold mb-2">{service.price}</div>
-                    <div className="text-sm text-gray-400">{service.description}</div>
-                  </button>
-                );
-              })}
+          <fieldset className={FIELDSET}>
+            <legend className={LEGEND}>
+              What are you interested in? <span aria-hidden="true">*</span>
+            </legend>
+            <div className="grid gap-3 md:grid-cols-3">
+              {SERVICES.map((service) => (
+                <label key={service.key} className="relative block cursor-pointer">
+                  <input
+                    type="radio"
+                    name="serviceInterest"
+                    value={service.key}
+                    checked={form.serviceInterest === service.key}
+                    onChange={() => update('serviceInterest', service.key)}
+                    className="peer sr-only"
+                  />
+                  <span className="block h-full rounded-md border-[1.5px] border-line bg-white p-5 transition-colors hover:border-ink peer-checked:border-ink peer-checked:bg-ink peer-checked:text-paper peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-[3px] peer-focus-visible:outline-ink">
+                    <span className="block font-semibold">{service.name}</span>
+                    <span className="mt-1 block font-serif text-[26px] leading-tight">
+                      {service.price}
+                    </span>
+                    <span className="mt-2 block text-[15px] opacity-80">{service.description}</span>
+                  </span>
+                </label>
+              ))}
             </div>
-          </section>
+          </fieldset>
 
-          <section className="bg-white/5 border border-white/10 rounded-2xl p-6 md:p-8">
-            <h2 className="text-xl font-semibold mb-6">Tell Us More</h2>
+          <fieldset className={FIELDSET}>
+            <legend className={LEGEND}>Anything else</legend>
             <div className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  What&apos;s your biggest challenge right now?
+                <label htmlFor="biggestChallenge" className={LABEL}>
+                  What’s your biggest challenge right now?
                 </label>
                 <textarea
+                  id="biggestChallenge"
                   value={form.biggestChallenge}
                   onChange={(e) => update('biggestChallenge', e.target.value)}
                   rows={4}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-lime-400 transition-colors resize-none"
+                  className={`${INPUT} resize-none`}
                   placeholder="e.g., No professional website, outdated site that doesn’t convert, need help keeping content current..."
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  How did you hear about us?
+                <label htmlFor="howDidYouHear" className={LABEL}>
+                  How did you hear about me?
                 </label>
                 <input
+                  id="howDidYouHear"
                   type="text"
                   value={form.howDidYouHear}
                   onChange={(e) => update('howDidYouHear', e.target.value)}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-lime-400 transition-colors"
+                  className={INPUT}
                   placeholder="Google, referral, social media..."
                 />
               </div>
             </div>
-          </section>
+          </fieldset>
 
           {error && (
-            <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400">
+            <div
+              role="alert"
+              className="mt-10 rounded-md border border-[#B3261E]/40 bg-[#B3261E]/5 p-4 text-[#8C1D18]"
+            >
               {error}
             </div>
           )}
 
-          <div className="text-center">
-            <button
-              type="submit"
-              disabled={loading}
-              className="px-8 py-4 bg-lime-400 text-black font-semibold rounded-xl hover:bg-lime-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? 'Submitting...' : 'Get My Free Quote'}
-            </button>
-            <p className="mt-4 text-sm text-gray-500">
-              We&apos;ll respond within 24 hours. No spam, ever.
-            </p>
+          <div className="mt-10 flex flex-col gap-4 border-t border-ink pt-10 sm:flex-row sm:items-center sm:gap-8">
+            <Button type="submit" variant="primary" size="lg" disabled={loading}>
+              {loading ? 'Sending…' : 'Get my quote'}
+            </Button>
+            <p className="text-[15px] text-ink-muted">I’ll reply within 24 hours. No spam, ever.</p>
           </div>
         </form>
       </main>

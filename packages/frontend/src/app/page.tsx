@@ -20,6 +20,7 @@ import {
   CARE_PLANS,
   CONTACT_EMAIL,
   HOME_BASE,
+  HOME_BASE_SHORT,
   RETAINER_RANGE,
   SERVICE_AREA_LABEL,
   WEBSITE_FEATURES,
@@ -41,6 +42,10 @@ const STEPS = [
 ];
 
 const FAQS = [
+  {
+    question: 'How much does a website cost for a small business?',
+    answer: `A flat ${BUILD_FEE}, one time. That covers the design, the writing, the build and launch on your own domain. Hosting and edits after launch are optional Care Plans at ${RETAINER_RANGE}.`,
+  },
   {
     question: 'How long does a website build take?',
     answer:
@@ -74,8 +79,13 @@ const FAQS = [
     answer: `Hosting is included with every Care Plan (${RETAINER_RANGE}). Without one, I hand over your finished site files and help point your domain wherever you choose to host it. Your site stays live on my hosting for ${BUILD_ONLY_HOSTING_DAYS} days after launch while you move it.`,
   },
   {
-    question: 'Where are you located, and who do you work with?',
-    answer: `Based near ${HOME_BASE}. I work with local businesses anywhere — everything runs by phone, email and video call. If you're around ${SERVICE_AREA_LABEL}, we can also meet in person.`,
+    question: 'Where are you located?',
+    answer: `I’m based in ${HOME_BASE}. I meet clients in person around ${SERVICE_AREA_LABEL}, and I work with local businesses anywhere else by phone, email and video call.`,
+  },
+  {
+    question: 'Do you work with businesses outside Columbus, Phenix City and Auburn?',
+    answer:
+      'Yes. Most of the work happens by phone, email and video anyway, so where you are doesn’t change the price, the process or the timeline.',
   },
 ];
 
@@ -164,8 +174,8 @@ export default function Home() {
         {/* Hero */}
         <Section className="pb-10 pt-8 sm:pt-12 lg:pt-14">
           <p className={`rise ${EYEBROW}`}>
-            <span className="hidden sm:inline">Websites for local businesses · </span>Based in
-            Phenix City, AL
+            <span className="hidden sm:inline">Websites for local businesses · </span>Based in{' '}
+            {HOME_BASE_SHORT}
           </p>
           <h1 className="rise mt-5 font-serif text-[56px] leading-[0.92] tracking-[-0.015em] sm:mt-8 sm:text-[72px] md:text-[88px] lg:text-[108px] xl:text-[132px] [--rise-delay:0.1s]">
             You built the business. <br className="hidden sm:inline" />
@@ -175,8 +185,9 @@ export default function Home() {
           </h1>
           <div className="rise mt-6 flex flex-col gap-6 [--rise-delay:0.3s] lg:mt-10 lg:flex-row lg:items-end lg:justify-between">
             <p className="max-w-[600px] text-[17px] leading-[1.55] text-ink-soft sm:text-[21px]">
-              Custom websites for local businesses anywhere, designed and written by me, Austin, for
-              one flat price of {BUILD_FEE}.
+              Custom websites for local businesses, designed and written by me, Austin, for one flat
+              price of {BUILD_FEE}. In person around Columbus, Phenix City and Auburn; by video
+              everywhere else.
             </p>
             <div className="grid grid-cols-2 gap-2.5 sm:flex sm:items-center sm:gap-8">
               <Button
@@ -202,8 +213,8 @@ export default function Home() {
         {/* Where */}
         <Section>
           <p className="reveal border-y border-line py-7 text-center font-serif text-2xl italic leading-snug tracking-[-0.01em] sm:py-10 sm:text-[30px] lg:text-[34px]">
-            Based in {HOME_BASE}. Working with local businesses from the next street over to the
-            next state over.
+            Based in {HOME_BASE}. Meeting in person anywhere from Columbus and Phenix City to Auburn
+            and Opelika, and working by phone and video with businesses everywhere else.
           </p>
         </Section>
 
@@ -317,9 +328,9 @@ export default function Home() {
               Hi, I’m <em>Austin.</em>
             </h2>
             <p className="mt-8 text-lg leading-relaxed text-ink-soft sm:text-[21px]">
-              Soft Systems Studio is one person: me. I’m based near {HOME_BASE} and build websites
-              for local businesses anywhere. We work by phone, email and video, so it doesn’t matter
-              how far away you are.
+              Soft Systems Studio is one person: me. I’m based in {HOME_BASE}, and I build websites
+              for local businesses. If you’re around {SERVICE_AREA_LABEL}, we can sit down in
+              person; anywhere else, we work by phone, email and video.
             </p>
             <p className="mt-5 text-lg leading-relaxed text-ink-soft sm:text-[21px]">
               It’s a new studio, so I charge for the work itself, not for a reputation I haven’t
@@ -331,9 +342,9 @@ export default function Home() {
           <div className="reveal rounded-md bg-limestone p-7 sm:p-10">
             <dl>
               {[
-                ['Based', `Near ${HOME_BASE}`],
-                ['Works with', 'Local businesses anywhere, by phone, email and video'],
+                ['Based', HOME_BASE],
                 ['In person', `Around ${SERVICE_AREA_LABEL}`],
+                ['Remotely', 'Local businesses anywhere, by phone, email and video'],
                 ['You talk to', 'Austin, from the first call to launch day'],
                 ['Replies', 'Within 24 hours'],
               ].map(([term, detail]) => (

@@ -22,20 +22,21 @@ const serif = Instrument_Serif({
 export const metadata: Metadata = {
   metadataBase: new URL('https://softsystemsstudiollc.com'),
   title: {
-    default: 'Soft Systems Studio — Websites for Local Businesses',
+    default: 'Soft Systems Studio | Web Design in Columbus, Phenix City & Auburn',
     template: '%s | Soft Systems Studio',
   },
   description:
-    'Custom websites for local businesses, anywhere. A flat $997 build from a one-person studio based in Phenix City, AL. Care Plans from $150/month.',
+    'Custom websites for local businesses in Columbus, Phenix City, Auburn and Opelika, from a web designer in Smiths Station, AL. A flat $997 build. Care Plans from $150/month.',
   keywords: [
-    'website design for local businesses',
-    'small business website designer',
+    'web designer Columbus GA',
+    'web design Phenix City AL',
+    'website design Auburn AL',
+    'web designer Opelika AL',
+    'web design Smiths Station AL',
+    'small business website design',
     'local business website',
-    'service business website',
     'flat price website design',
     'website care plan',
-    'web designer Phenix City AL',
-    'web designer Columbus GA',
   ],
   authors: [{ name: 'Soft Systems Studio LLC' }],
   creator: 'Soft Systems Studio LLC',
@@ -45,23 +46,23 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: 'https://softsystemsstudiollc.com',
     siteName: 'Soft Systems Studio',
-    title: 'Websites for Local Businesses | Soft Systems Studio',
+    title: 'Web Design for Local Businesses | Soft Systems Studio',
     description:
-      'Custom websites for local businesses, anywhere. A flat $997 build, designed and written by one person. Care Plans from $150/month.',
+      'Custom websites for local businesses around Columbus, Phenix City and Auburn, and anywhere else by video. A flat $997 build, designed and written by one person.',
     images: [
       {
         url: '/api/og',
         width: 1200,
         height: 630,
-        alt: 'Soft Systems Studio - Websites for Local Businesses',
+        alt: 'Soft Systems Studio: web design for local businesses',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Websites for Local Businesses | Soft Systems Studio',
+    title: 'Web Design for Local Businesses | Soft Systems Studio',
     description:
-      'A flat $997 website build for local service businesses. Care Plans from $150/month.',
+      'A flat $997 website build for local businesses, from a web designer in Smiths Station, AL. Care Plans from $150/month.',
     images: ['/api/og'],
   },
   robots: {

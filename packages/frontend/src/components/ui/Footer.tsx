@@ -1,7 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { HOME_BASE, BUSINESS_PHONE, CONTACT_EMAIL } from '@/lib/business';
-import { TRADES } from '@/lib/trades';
+import { HOME_BASE, BUSINESS_PHONE, CONTACT_EMAIL, SERVICE_AREA_LABEL } from '@/lib/business';
 
 const FOOTER_NAV = [
   { label: 'Work', href: '/#portfolio' },
@@ -20,7 +19,7 @@ export default function Footer() {
               Soft Systems Studio
             </Link>
             <p className="text-[15px] leading-relaxed">
-              Websites for local businesses, wherever they are. Based in {HOME_BASE}.
+              Websites for local businesses. Based in {HOME_BASE}.
               {BUSINESS_PHONE && (
                 <>
                   {' '}
@@ -54,17 +53,8 @@ export default function Footer() {
                 </Link>
               ))}
             </nav>
-            <p className="text-[15px] md:text-right">
-              Websites for{' '}
-              {TRADES.map((trade, i) => (
-                <span key={trade.slug}>
-                  {i > 0 && ', '}
-                  {i > 0 && i === TRADES.length - 1 && 'and '}
-                  <Link href={`/for/${trade.slug}`} className="nav-link text-paper">
-                    {trade.audience}
-                  </Link>
-                </span>
-              ))}
+            <p className="max-w-sm text-[15px] md:text-right">
+              In person around {SERVICE_AREA_LABEL}. By phone and video everywhere else.
             </p>
           </div>
         </div>

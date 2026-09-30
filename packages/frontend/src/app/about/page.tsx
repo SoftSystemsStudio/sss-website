@@ -2,11 +2,11 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Navbar, Footer, Section } from '@/components/ui';
 import QuoteCta from '@/components/QuoteCta';
-import { BUILD_FEE, CARE_PLANS, HOME_BASE, RETAINER_MIN } from '@/lib/business';
+import { BUILD_FEE, CARE_PLANS, HOME_BASE, RETAINER_MIN, SERVICE_AREA_LABEL } from '@/lib/business';
 
 export const metadata: Metadata = {
   title: 'About',
-  description: `A new studio, one person, honest pricing. Why Soft Systems Studio charges ${BUILD_FEE} for a website build instead of $3,000+.`,
+  description: `Austin Hodges runs Soft Systems Studio, a one-person web design studio in ${HOME_BASE}. Why a website build here is ${BUILD_FEE} instead of $3,000+.`,
   alternates: { canonical: '/about' },
 };
 
@@ -52,8 +52,9 @@ export default function AboutPage() {
           </h1>
           <p className="rise mt-8 max-w-3xl text-lg leading-relaxed text-ink-soft [--rise-delay:0.25s] sm:text-[21px]">
             I’m Austin Hodges. I started Soft Systems Studio in 2026 to build websites for local
-            businesses. I’m based near {HOME_BASE} and work with businesses anywhere. It’s just me:
-            I design, write, build and support every site myself.
+            businesses. I’m based in {HOME_BASE}, I meet clients in person around{' '}
+            {SERVICE_AREA_LABEL}, and I work with businesses anywhere else by phone and video. It’s
+            just me: I design, write, build and support every site myself.
           </p>
         </Section>
 

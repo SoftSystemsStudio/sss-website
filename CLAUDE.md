@@ -14,8 +14,8 @@ This file is the repo's operating runbook for Claude Code: how work is planned, 
 
 **User types**:
 
-- **Site visitors** — local business owners anywhere (the studio is based near Phenix City, AL, and works remotely); read the marketing pages, submit the intake form
-- **Outreach recipients** — owners Austin emails a `/for/<trade>` link
+- **Site visitors** — local business owners (the studio is based in Smiths Station, AL, meets in person around Columbus, Phenix City, Auburn and Opelika, and works remotely anywhere else); read the marketing pages, submit the intake form
+- **Outreach recipients** — owners Austin emails a `/for/<trade>` link (those pages are outreach-only: noindex, out of the sitemap, not linked from the site)
 - **Austin (owner)** — receives intake-form leads by email, no admin dashboard in this repo (the old `/admin` dashboard was deleted in the 2026-08-31 split; it duplicated the lead tool's own dashboard and was unreachable dead weight)
 
 ---
@@ -114,7 +114,8 @@ Native `fetch()` + Next.js API routes. No React Query, SWR, or tRPC.
 - **Fonts**: Instrument Serif (display) + Instrument Sans (body) via `next/font` in `app/layout.tsx`
 - **Global CSS**: `/src/styles/globals.css` — focus/selection styles, the `.marker` highlight, and the heading rules the `/demo/*` sites were designed against (scoped to `.sss-demo` by `app/demo/layout.tsx`; don't widen them)
 - **Homepage showcase images**: `public/images/work/` are screenshots of the `/demo/*` pages — re-capture them if a demo's hero changes
-- **Concepts and trade pages**: `lib/concepts.ts` lists the demo sites, shown as project cards (`components/ConceptCard.tsx`) on the homepage and trade pages — keep each concept's `features` true to what its demo actually shows; `lib/trades.ts` drives the `/for/<trade>` outreach pages (lawn care, coffee shops, florists). A trade's quote links prefill the intake form via `?type=` — keep `businessType` in `BUSINESS_TYPES` (`app/intake/intake-form.tsx`), and keep trade copy inside what the build ships (`WEBSITE_FEATURES` in `lib/business.ts`)
+- **Concepts and trade pages**: `lib/concepts.ts` lists the demo sites, shown as project cards (`components/ConceptCard.tsx`) on the homepage and trade pages — keep each concept's `features` true to what its demo actually shows; `lib/trades.ts` drives the `/for/<trade>` outreach pages (lawn care, coffee shops, florists) — outreach-only, so they stay noindex, out of the sitemap and unlinked; the public site says "local businesses" and doesn't advertise specific business types. A trade's quote links prefill the intake form via `?type=` — keep `businessType` in `BUSINESS_TYPES` (`app/intake/intake-form.tsx`), and keep trade copy inside what the build ships (`WEBSITE_FEATURES` in `lib/business.ts`)
+- **Location and search**: base town, in-person cities and the service-area label all come from `lib/business.ts` (`HOME_BASE`, `SERVICE_AREA_CITIES`, `SERVICE_AREA_LABEL`); JSON-LD in `components/StructuredData.tsx`, the AI-facing summary in `public/llms.txt` (plain text — update it by hand when facts change) and `app/robots.ts`, which names the search and AI crawlers explicitly
 - **Motion**: CSS classes in `globals.css` (`.rise` entrance, `.reveal` scroll reveal, `.parallax`, `.concept-pan`, `.nudge`, link underlines). All of it sits inside `@media (prefers-reduced-motion: no-preference)`, and scroll-driven effects use `animation-timeline` behind `@supports` — no JS, so content can never get stuck hidden. `ShowcaseParallax.tsx` is the only motion JS (pointer position → CSS vars). Keep new motion inside those guards.
 
 ### Key Conventions

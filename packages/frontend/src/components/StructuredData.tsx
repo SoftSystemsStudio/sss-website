@@ -14,11 +14,35 @@
 
 import {
   BUILD_FEE,
+  CARE_PLANS,
+  CONTACT_EMAIL,
   RETAINER_MIN,
   RETAINER_MAX,
   SERVICE_AREA_CITIES,
   BUSINESS_PHONE,
 } from '@/lib/business';
+
+const SITE_URL = 'https://softsystemsstudiollc.com';
+/** One `@id` for the business, so every schema on the site describes the same entity. */
+const BUSINESS_ID = `${SITE_URL}/#business`;
+
+/** The facts search engines and AI answers quote: what, where, who, how much. */
+const BUSINESS_DESCRIPTION =
+  'Custom websites for local businesses, designed and written by one person for a flat ' +
+  `${BUILD_FEE}, with optional Care Plans for hosting and edits. Based in Smiths Station, AL, ` +
+  'meeting in person around Columbus, GA, Phenix City, AL, and Auburn and Opelika, AL, and ' +
+  'working with businesses anywhere by phone, email and video.';
+
+const ADDRESS = {
+  '@type': 'PostalAddress',
+  addressLocality: 'Smiths Station',
+  addressRegion: 'AL',
+  addressCountry: 'US',
+};
+
+const FOUNDER = { '@type': 'Person', name: 'Austin Hodges', jobTitle: 'Founder and web designer' };
+
+const dollars = (price: string) => Number(price.replace(/[^0-9.]/g, ''));
 
 interface FAQ {
   question: string;
@@ -32,11 +56,15 @@ export function OrganizationSchema() {
   const schema = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
+    '@id': `${SITE_URL}/#organization`,
     name: 'Soft Systems Studio LLC',
-    url: 'https://softsystemsstudiollc.com',
-    logo: 'https://softsystemsstudiollc.com/images/soft-systems-logo.png',
-    description:
-      'Website builds and Care Plans for local businesses anywhere, from a one-person studio based in Phenix City, AL.',
+    url: SITE_URL,
+    logo: `${SITE_URL}/images/soft-systems-logo.png`,
+    description: BUSINESS_DESCRIPTION,
+    email: CONTACT_EMAIL,
+    foundingDate: '2026',
+    founder: FOUNDER,
+    address: ADDRESS,
     sameAs: [
       // Add your social media profiles here
       // 'https://twitter.com/softsystems',
@@ -45,7 +73,8 @@ export function OrganizationSchema() {
     contactPoint: {
       '@type': 'ContactPoint',
       contactType: 'Customer Service',
-      url: 'https://softsystemsstudiollc.com/intake',
+      email: CONTACT_EMAIL,
+      url: `${SITE_URL}/intake`,
     },
   };
 
@@ -62,24 +91,60 @@ export function OrganizationSchema() {
  * LocalBusiness Schema - service-area business, no street address.
  *
  * Austin works from home; we were told explicitly not to publish a home
- * address. `areaServed` carries the geo signal instead of `address`. Phone
- * is added automatically once BUSINESS_PHONE (lib/business.ts) is set —
- * until then this schema simply omits `telephone` rather than invent one.
+ * address, so `address` carries the town only and `areaServed` carries the
+ * in-person cities. Phone is added automatically once BUSINESS_PHONE
+ * (lib/business.ts) is set — until then this schema simply omits
+ * `telephone` rather than invent one.
  */
 export function LocalBusinessSchema() {
   const schema: Record<string, unknown> = {
     '@context': 'https://schema.org',
     '@type': 'ProfessionalService',
-    name: 'Soft Systems Studio LLC',
-    url: 'https://softsystemsstudiollc.com',
-    image: 'https://softsystemsstudiollc.com/images/soft-systems-logo.png',
-    description:
-      'Website builds and Care Plans for local businesses anywhere, working remotely. Based in Phenix City, AL; in person around Phenix City and Smiths Station, AL, and Columbus, GA.',
+    '@id': BUSINESS_ID,
+    name: 'Soft Systems Studio',
+    legalName: 'Soft Systems Studio LLC',
+    url: SITE_URL,
+    image: `${SITE_URL}/images/soft-systems-logo.png`,
+    description: BUSINESS_DESCRIPTION,
+    email: CONTACT_EMAIL,
+    founder: FOUNDER,
+    address: ADDRESS,
     priceRange: `${BUILD_FEE} / ${RETAINER_MIN}-${RETAINER_MAX} per month`,
-    areaServed: SERVICE_AREA_CITIES.map((name: string) => ({
+    areaServed: SERVICE_AREA_CITIES.map((city) => ({
       '@type': 'City',
-      name,
+      name: `${city.name}, ${city.stateCode}`,
+      containedInPlace: { '@type': 'State', name: city.state },
     })),
+    knowsAbout: [
+      'Website design',
+      'Small business websites',
+      'Website copywriting',
+      'Local SEO',
+      'Website hosting and maintenance',
+    ],
+    makesOffer: [
+      {
+        '@type': 'Offer',
+        name: 'Custom website build',
+        description: 'Designed, written and launched on your own domain. One flat fee.',
+        price: dollars(BUILD_FEE),
+        priceCurrency: 'USD',
+        itemOffered: { '@type': 'Service', name: 'Custom website for a local business' },
+      },
+      ...CARE_PLANS.map((plan) => ({
+        '@type': 'Offer',
+        name: `Care Plan — ${plan.name}`,
+        description: `Hosting plus ${plan.editHours} hours of edits a month. Optional.`,
+        priceCurrency: 'USD',
+        priceSpecification: {
+          '@type': 'UnitPriceSpecification',
+          price: dollars(plan.price),
+          priceCurrency: 'USD',
+          unitCode: 'MON',
+        },
+        itemOffered: { '@type': 'Service', name: 'Website hosting and maintenance' },
+      })),
+    ],
   };
 
   if (BUSINESS_PHONE) {
@@ -132,8 +197,10 @@ export function WebSiteSchema() {
   const schema = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
+    '@id': `${SITE_URL}/#website`,
     name: 'Soft Systems Studio',
-    url: 'https://softsystemsstudiollc.com',
+    url: SITE_URL,
+    publisher: { '@id': `${SITE_URL}/#organization` },
   };
 
   return (

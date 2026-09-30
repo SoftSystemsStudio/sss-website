@@ -1,5 +1,4 @@
 import type { MetadataRoute } from 'next';
-import { TRADES } from '@/lib/trades';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = 'https://softsystemsstudiollc.com';
@@ -43,13 +42,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'monthly',
       priority: 0.7,
     },
-    // Trade landing pages (lib/trades.ts)
-    ...TRADES.map((trade) => ({
-      url: `${baseUrl}/for/${trade.slug}`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly' as const,
-      priority: 0.8,
-    })),
+    // The /for/<trade> outreach pages are deliberately left out: they're
+    // noindex (see app/for/[trade]/page.tsx).
     // Legal pages
     {
       url: `${baseUrl}/privacy`,

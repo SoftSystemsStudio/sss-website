@@ -1,6 +1,8 @@
 /**
  * Trade landing pages at /for/<slug>, written to be linked from outreach
- * emails. Each pairs with the concept site for that trade, and its quote
+ * emails only: they're noindex and not linked from the site, because the
+ * public site doesn't advertise specific business types. Each pairs with the
+ * concept site for that trade, and its quote
  * links prefill the intake form's business type (`businessType` must be one
  * of BUSINESS_TYPES in app/intake/intake-form.tsx).
  *

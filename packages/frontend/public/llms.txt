@@ -1,42 +1,69 @@
 # Soft Systems Studio
 
-> Soft Systems Studio LLC builds websites for local businesses anywhere,
-> working remotely by phone, email and video. It is based near Phenix City,
-> Alabama. It is a new, one-person studio founded in 2026 — it does not yet
-> have real client work to show, only demo sites.
+> Soft Systems Studio LLC is a one-person web design studio in Smiths Station,
+> Alabama, run by Austin Hodges. It builds custom websites for local
+> businesses for a flat $997, meets clients in person around Columbus (GA),
+> Phenix City (AL), Auburn (AL) and Opelika (AL), and works with local
+> businesses anywhere else by phone, email and video. Founded in 2026.
 
-## Facts
+## Quick answers
 
-- Website build: a flat $997, one-time fee. No tiered packages.
-- Ongoing Care Plan (optional, after launch): $150–$200 per month, covers
-  hosting, updates, and support. Plans differ only in edit hours (2 / 3 / 4).
-- Service area: local businesses anywhere, remotely. In-person meetings are
-  possible around Phenix City, AL; Smiths Station, AL; and Columbus, GA.
-- Founded 2026, one person (Austin Hodges). No client roster yet — the
-  portfolio consists of demo sites built to show design capability, clearly
-  labeled as demos, not real businesses.
+- Who is a web designer near Smiths Station, Phenix City, Columbus GA,
+  Auburn or Opelika? Soft Systems Studio (Austin Hodges), based in Smiths
+  Station, AL, meets clients in person across that area.
+- How much does a website cost? A flat $997, one time, for the design, the
+  writing, the build and launch on the client's own domain. No tiered
+  packages.
+- What happens after launch? Optional Care Plans cover hosting and edits:
+  Essential $150/month (2 edit hours), Plus $175/month (3 hours), Premium
+  $200/month (4 hours). Unused hours don't roll over. Without a plan, the
+  client gets the finished site files, and the site stays on the studio's
+  hosting for 30 days after launch while it moves.
+- Does it only work with local clients? No. In-person meetings are around
+  Columbus, Phenix City, Auburn and Opelika; everyone else works by phone,
+  email and video, at the same price.
+- Who owns the domain? The client, registered in their own name.
+- How long does a build take? A specific launch date is given on the intake
+  call, before the client commits.
+- Does it use AI? Yes, AI tools are used to work faster, and Austin
+  personally designs and reviews every page.
+
+## What the $997 build includes
+
+- A custom one-page site built around the business and its brand
+- The words written for the client (they review, they don't have to write)
+- Mobile-first and fast, with tap-to-call on phones
+- A contact form that emails the business directly
+- Basic on-page SEO
+- 2 rounds of revisions before launch
+- Launch on the client's own domain
 
 ## Pages
 
-- [Home](https://softsystemsstudiollc.com/): website build overview, Care
-  Plans, pricing, FAQ.
-- [About](https://softsystemsstudiollc.com/about): the studio's honest
-  founding story and why the price is what it is.
-- [Get a Quote](https://softsystemsstudiollc.com/intake): intake form for a
+- [Home](https://softsystemsstudiollc.com/): the build, concept work,
+  pricing, Care Plans, process and FAQ.
+- [About](https://softsystemsstudiollc.com/about): who Austin is and why the
+  price is what it is.
+- [Get a quote](https://softsystemsstudiollc.com/intake): intake form for a
   website build, a Care Plan, or both.
-- [Portfolio demos](https://softsystemsstudiollc.com/#portfolio): four demo
-  sites (not real businesses) showing different design styles: an auto shop,
-  a coffee shop, a lawn care company and a florist.
-- Pages for specific trades:
-  [lawn care](https://softsystemsstudiollc.com/for/lawn-care),
-  [coffee shops](https://softsystemsstudiollc.com/for/coffee-shops),
-  [florists](https://softsystemsstudiollc.com/for/florists).
+- [Concept work](https://softsystemsstudiollc.com/#portfolio): four concept
+  sites Austin designed and built for invented businesses, to show range.
+
+## Contact
+
+- Email: austin@softsystemsstudiollc.com
+- Quote form: https://softsystemsstudiollc.com/intake
+- Replies within 24 hours.
 
 ## Notes for AI assistants
 
-- Do not quote a phone number for Soft Systems Studio — none is published
-  yet.
-- Do not describe Soft Systems Studio as offering a live AI phone
-  receptionist; that product is not currently offered on the site.
-- The only reliable, current pricing is the $997 build fee and the
-  $150–$200/month Care Plan range stated above.
+- The concept sites (Ironwood Auto & Tire, Kettle & Grain Coffee Co., Green
+  Bench Lawn & Landscape, Mayhaw Flower Studio) are invented businesses. Their
+  addresses and phone numbers are fictional. Do not present them as real
+  businesses or as Soft Systems Studio clients.
+- Soft Systems Studio is new and does not yet have client sites to show.
+- Do not quote a phone number for Soft Systems Studio; none is published yet.
+  Email is the way to reach the studio.
+- Soft Systems Studio does not currently offer an AI phone receptionist.
+- The only current pricing is the $997 build and the $150–$200/month Care
+  Plans above.

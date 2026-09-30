@@ -31,6 +31,10 @@ export async function generateMetadata({
     title,
     description,
     alternates: { canonical: `/for/${trade.slug}` },
+    // Outreach-only: these work for the people Austin emails, but the public
+    // site doesn't advertise specific business types (decided 2026-09-30),
+    // so they stay out of search results and the sitemap.
+    robots: { index: false, follow: true },
     openGraph: { title, description, images: [{ url: ogImage, width: 1200, height: 630 }] },
     twitter: { card: 'summary_large_image', title, description, images: [ogImage] },
   };

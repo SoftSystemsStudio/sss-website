@@ -45,18 +45,26 @@ export const BUILD_ONLY_HOSTING_DAYS = 30;
 
 /**
  * Where Austin is based. The studio works with local businesses anywhere
- * (remotely, by phone, email and video) — decided 2026-09-29, so copy should
- * not imply the studio only serves this area.
+ * (remotely, by phone, email and video), and in person around the cities
+ * below — decided 2026-09-30, so copy can lead with the local area without
+ * implying the studio only serves it.
  */
-export const HOME_BASE = 'Phenix City, Alabama';
+export const HOME_BASE = 'Smiths Station, Alabama';
+export const HOME_BASE_SHORT = 'Smiths Station, AL';
 
 /**
  * The in-person area: where meetings can happen face to face. Also the
  * LocalBusiness schema's `areaServed`. No street address is published
- * (home-based).
+ * (home-based), only the town.
  */
-export const SERVICE_AREA_CITIES = ['Phenix City, AL', 'Smiths Station, AL', 'Columbus, GA'];
-export const SERVICE_AREA_LABEL = 'Phenix City and Smiths Station, AL, and Columbus, GA';
+export const SERVICE_AREA_CITIES = [
+  { name: 'Smiths Station', state: 'Alabama', stateCode: 'AL' },
+  { name: 'Phenix City', state: 'Alabama', stateCode: 'AL' },
+  { name: 'Columbus', state: 'Georgia', stateCode: 'GA' },
+  { name: 'Auburn', state: 'Alabama', stateCode: 'AL' },
+  { name: 'Opelika', state: 'Alabama', stateCode: 'AL' },
+] as const;
+export const SERVICE_AREA_LABEL = 'Columbus, Phenix City, Auburn and Opelika';
 
 /**
  * Austin doesn't have a published business phone number yet. Leave this

@@ -68,4 +68,4 @@ export const SERVICE_AREA_LABEL = 'Phenix City and Smiths Station, AL, and Colum
 export const BUSINESS_PHONE: string | null = null;
 
 /** The one inbox Austin actually checks — see audit §5 / P5 #16. */
-export const CONTACT_EMAIL = 'softsystemstudioco@gmail.com';
+export const CONTACT_EMAIL = 'austin@softsystemsstudiollc.com';

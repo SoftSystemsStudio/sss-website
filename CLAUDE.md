@@ -56,6 +56,7 @@ This file is the repo's operating runbook for Claude Code: how work is planned, 
 - **Styling**: Tailwind CSS 3.4
 - **Auth (site)**: Clerk — only gates the (currently empty) signed-in nav state; there is no protected dashboard left in this repo
 - **Email**: Resend (intake-form notifications, welcome emails)
+- **Mailbox**: Google Workspace — `austin@softsystemsstudiollc.com` (`CONTACT_EMAIL`). The old `softsystemstudioco@gmail.com` was upgraded into the same account and still receives mail. DNS is on Cloudflare; Resend and SendGrid send via their own subdomains, so root SPF lists only Google
 - **Payments**: Stripe Payment Links (hardcoded URLs in `api/intake/route.ts`, not the Stripe API)
 - **Error tracking**: Sentry
 - **Voice demo**: LiveKit (`/api/livekit-token` mints a room-scoped token; `components/VoiceDemo.tsx` connects in-browser) — replaced the Vapi phone-callback demo on 2026-09-01. The agent itself runs as a separate always-on service on LiveKit Cloud (project `sss-receptionist`), not in this repo.

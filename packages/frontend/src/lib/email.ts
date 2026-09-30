@@ -31,7 +31,7 @@ export async function sendEmail({
   subject,
   html,
   text,
-  from = env.RESEND_FROM_EMAIL || 'Soft Systems Studio <noreply@softsystems.studio>',
+  from = env.RESEND_FROM_EMAIL || 'Soft Systems Studio <noreply@softsystemsstudiollc.com>',
   replyTo,
 }: SendEmailParams): Promise<SendEmailResult> {
   if (!env.RESEND_API_KEY) {

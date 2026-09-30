@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid service selection' }, { status: 400 });
     }
 
-    const adminEmail = env.ADMIN_EMAIL || env.RESEND_FROM_EMAIL || CONTACT_EMAIL;
+    const adminEmail = env.ADMIN_EMAIL || CONTACT_EMAIL;
 
     await sendEmail({
       to: adminEmail,

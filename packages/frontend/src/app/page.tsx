@@ -210,9 +210,12 @@ export default function Home() {
         {/* Work */}
         <Section id="portfolio" className="scroll-mt-16 py-20 lg:scroll-mt-[88px] lg:py-[120px]">
           <div className="reveal grid gap-6 lg:grid-cols-[7fr_5fr] lg:items-end lg:gap-[72px]">
-            <h2 className={SECTION_TITLE}>
-              Concept work. <em className="text-ink-muted">Invented businesses, real design.</em>
-            </h2>
+            <div>
+              <p className={EYEBROW}>Concept work</p>
+              <h2 className={`mt-4 text-balance ${SECTION_TITLE}`}>
+                Invented businesses, real design.
+              </h2>
+            </div>
             <p className="text-[17px] leading-relaxed text-ink-soft sm:text-lg">
               I built these to show range before I had client sites to show. Each one is designed
               around how its customers actually decide, and each is labeled as a concept.

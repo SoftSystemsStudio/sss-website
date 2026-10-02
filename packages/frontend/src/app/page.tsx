@@ -14,22 +14,31 @@ import {
   WebSiteSchema,
 } from '@/components/StructuredData';
 import {
-  BUILD_FEE,
+  ADD_ONS_FROM,
+  BUILD_FROM,
   BUILD_ONLY_HOSTING_DAYS,
+  BUILD_PACKAGES,
   BUILD_REVISION_ROUNDS,
   CARE_PLANS,
   CONTACT_EMAIL,
+  DEPOSIT_THRESHOLD,
   HOME_BASE,
   HOME_BASE_SHORT,
   RETAINER_RANGE,
   SERVICE_AREA_LABEL,
   WEBSITE_FEATURES,
+  getPackage,
 } from '@/lib/business';
+
+const STARTER = getPackage('starter');
+const BUSINESS = getPackage('business');
+const GROWTH = getPackage('growth');
+const CUSTOM = getPackage('custom');
 
 const STEPS = [
   {
     title: 'Tell me about your business',
-    body: 'A five-minute form, then a short call. You get a launch date before you commit to anything.',
+    body: 'A one-minute form, then a detailed questionnaire and a short call. You get a written quote and a launch date before you commit to anything.',
   },
   {
     title: 'I design, write and build it',
@@ -44,7 +53,16 @@ const STEPS = [
 const FAQS = [
   {
     question: 'How much does a website cost for a small business?',
-    answer: `A flat ${BUILD_FEE}, one time. That covers the design, the writing, the build and launch on your own domain. Hosting and edits after launch are optional Care Plans at ${RETAINER_RANGE}.`,
+    answer: `It depends on how much the site needs to do. A one-page site is ${STARTER.price}. Up to 5 pages is ${BUSINESS.price}. Up to 12 pages with online booking, payments or a blog is ${GROWTH.price}. Sites with logins, memberships or a bigger store are quoted, from ${CUSTOM.price}. Every package covers the design, the writing, the build and launch on your own domain. Hosting and edits after launch are optional Care Plans at ${RETAINER_RANGE}.`,
+  },
+  {
+    question: 'Which package do I need?',
+    answer:
+      'Start your quote: a one-minute form, then a detailed questionnaire about what your site needs to do. I recommend a package from your answers and send you a written quote listing everything it includes, before you pay anything.',
+  },
+  {
+    question: 'How do I pay?',
+    answer: `Builds up to ${DEPOSIT_THRESHOLD} are paid in full before work starts. Above that, it’s half to start and half at launch. Payments go through Stripe.`,
   },
   {
     question: 'How long does a website build take?',
@@ -58,7 +76,7 @@ const FAQS = [
   },
   {
     question: 'What’s included in revisions?',
-    answer: `The build includes ${BUILD_REVISION_ROUNDS} rounds of revisions before launch. A round is one list of everything you’d like changed — I make the changes and send the updated site back to you.`,
+    answer: `Every package includes ${BUILD_REVISION_ROUNDS} rounds of revisions before launch. A round is one list of everything you’d like changed — I make the changes and send the updated site back to you. Extra rounds are ${ADD_ONS_FROM} each.`,
   },
   {
     question: 'What if I need changes after launch?',
@@ -185,9 +203,9 @@ export default function Home() {
           </h1>
           <div className="rise mt-6 flex flex-col gap-6 [--rise-delay:0.3s] lg:mt-10 lg:flex-row lg:items-end lg:justify-between">
             <p className="max-w-[600px] text-[17px] leading-[1.55] text-ink-soft sm:text-[21px]">
-              Custom websites for local businesses, designed and written by me, Austin, for one flat
-              price of {BUILD_FEE}. In person around Columbus, Phenix City and Auburn; by video
-              everywhere else.
+              Custom websites for local businesses, designed and written by me, Austin, from{' '}
+              {BUILD_FROM} for a one-page site. In person around Columbus, Phenix City and Auburn;
+              by video everywhere else.
             </p>
             <div className="grid grid-cols-2 gap-2.5 sm:flex sm:items-center sm:gap-8">
               <Button
@@ -244,56 +262,100 @@ export default function Home() {
         <Section
           id="pricing"
           className="scroll-mt-16 bg-limestone py-20 lg:scroll-mt-[88px] lg:py-[120px]"
-          innerClassName="grid gap-20 lg:grid-cols-2 lg:gap-28"
         >
-          <h2 className="sr-only">Pricing</h2>
-          <div className="reveal">
-            <p className={EYEBROW}>The build</p>
-            <p className="mt-5 font-serif text-[128px] leading-[0.82] tracking-[-0.03em] sm:text-[200px]">
-              {BUILD_FEE}
-              <em className="text-[44px] tracking-normal text-ink-muted sm:text-[64px]">, once.</em>
+          <div className="reveal grid gap-6 lg:grid-cols-[7fr_5fr] lg:items-end lg:gap-[72px]">
+            <div>
+              <p className={EYEBROW}>The build</p>
+              <h2 className={`mt-4 text-balance ${SECTION_TITLE}`}>
+                Priced by the size of the site.
+              </h2>
+            </div>
+            <p className="text-[17px] leading-relaxed text-ink-soft sm:text-lg">
+              A one-page site and a site with online booking and client logins are different jobs,
+              so they cost different amounts. Every package includes the design, the writing and
+              launch on your own domain, and every price is right here.
             </p>
-            <p className="mt-7 font-serif text-[26px] leading-tight sm:text-[30px]">
-              One flat price. No packages, no tiers, no surprises on the invoice.
-            </p>
-            <ul className="mt-9 border-t border-line">
-              {WEBSITE_FEATURES.map((feature) => (
-                <li key={feature} className="border-b border-line py-3.5 text-[17px]">
-                  {feature}
-                </li>
-              ))}
-            </ul>
           </div>
 
-          <div className="reveal">
-            <p className={EYEBROW}>After launch</p>
-            <h3 className={`mt-5 ${SECTION_TITLE}`}>Care Plans</h3>
-            <p className="mt-6 text-[17px] leading-relaxed text-ink-soft sm:text-lg">
-              Hosting, updates and a person who answers your email. Every plan has the same
-              services; the difference is how many hours of edits you get each month.
+          <ul className="mt-14 grid gap-10 sm:grid-cols-2 lg:mt-20 lg:grid-cols-4 lg:gap-8">
+            {BUILD_PACKAGES.map((pkg) => (
+              <li key={pkg.id} className="reveal flex flex-col border-t border-ink pt-6">
+                <h3 className="text-lg font-semibold">{pkg.name}</h3>
+                <p className="mt-4 font-serif text-[56px] leading-none tracking-[-0.02em]">
+                  {pkg.quoted && (
+                    <span className="mr-2 font-sans text-[15px] tracking-normal text-ink-muted">
+                      From
+                    </span>
+                  )}
+                  {pkg.price}
+                </p>
+                <p className="mt-4 text-[17px] font-medium">{pkg.summary}</p>
+                <p className="mt-2 text-[17px] leading-relaxed text-ink-soft">{pkg.bestFor}</p>
+                <p className="mt-4 text-[15px] text-ink-muted">{pkg.payment}</p>
+              </li>
+            ))}
+          </ul>
+
+          <div className="reveal mt-12 flex flex-col gap-4 border-t border-line pt-6 lg:flex-row lg:items-baseline lg:justify-between lg:gap-10">
+            <p className="text-[17px] leading-relaxed text-ink-soft">
+              Add-ons, like an extra page or form, online booking or payments, start at{' '}
+              {ADD_ONS_FROM}. Your written quote lists everything before you pay.
             </p>
-            <ul className="mt-9 border-y border-ink">
-              {CARE_PLANS.map((plan, index) => (
-                <li
-                  key={plan.name}
-                  className={`grid grid-cols-[1fr_auto] items-baseline gap-x-6 py-5 sm:grid-cols-[150px_1fr_auto] ${index > 0 ? 'border-t border-line' : ''}`}
-                >
-                  <span className="text-lg font-semibold">{plan.name}</span>
-                  <span className="order-last col-span-2 text-[17px] text-ink-soft sm:order-none sm:col-span-1">
-                    {plan.editHours} hours of edits a month
-                  </span>
-                  <span className="font-serif text-[40px] leading-none">
-                    {plan.price}
-                    <span className="font-sans text-[15px] text-ink-muted">/mo</span>
-                  </span>
-                </li>
-              ))}
-            </ul>
-            <p className="mt-6 text-[15px] leading-relaxed text-ink-muted">
-              Every plan includes hosting and uptime monitoring, content and text updates, small
-              design tweaks and email support. Optional. Cancel anytime. Unused hours don’t roll
-              over.
-            </p>
+            <Link href="/pricing" className="link-underline shrink-0 font-semibold">
+              What each package includes{' '}
+              <span className="nudge" aria-hidden="true">
+                →
+              </span>
+            </Link>
+          </div>
+
+          <div className="mt-20 grid gap-20 lg:mt-28 lg:grid-cols-2 lg:gap-28">
+            <div className="reveal">
+              <p className={EYEBROW}>In every package</p>
+              <h3 className="mt-5 font-serif text-[40px] leading-[1] tracking-[-0.015em] sm:text-[56px]">
+                The essentials, done properly
+              </h3>
+              <ul className="mt-9 border-t border-line">
+                {WEBSITE_FEATURES.map((feature) => (
+                  <li key={feature} className="border-b border-line py-3.5 text-[17px]">
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="reveal">
+              <p className={EYEBROW}>After launch</p>
+              <h3 className="mt-5 font-serif text-[40px] leading-[1] tracking-[-0.015em] sm:text-[56px]">
+                Care Plans
+              </h3>
+              <p className="mt-6 text-[17px] leading-relaxed text-ink-soft sm:text-lg">
+                Hosting, updates and a person who answers your email. Every plan has the same
+                services; the difference is how many hours of edits you get each month.
+              </p>
+              <ul className="mt-9 border-y border-ink">
+                {CARE_PLANS.map((plan, index) => (
+                  <li
+                    key={plan.name}
+                    className={`grid grid-cols-[1fr_auto] items-baseline gap-x-6 py-5 sm:grid-cols-[150px_1fr_auto] ${index > 0 ? 'border-t border-line' : ''}`}
+                  >
+                    <span className="text-lg font-semibold">{plan.name}</span>
+                    <span className="order-last col-span-2 text-[17px] text-ink-soft sm:order-none sm:col-span-1">
+                      {plan.editHours} hours of edits a month
+                    </span>
+                    <span className="font-serif text-[40px] leading-none">
+                      {plan.price}
+                      <span className="font-sans text-[15px] text-ink-muted">/mo</span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-6 text-[15px] leading-relaxed text-ink-muted">
+                Every plan includes hosting and uptime monitoring, content and text updates, small
+                design tweaks and email support. Optional. Cancel anytime. Unused hours don’t roll
+                over. Sites with logins or a store need a Care Plan, quoted with the build.
+              </p>
+            </div>
           </div>
         </Section>
 

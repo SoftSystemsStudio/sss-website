@@ -89,8 +89,9 @@ winterizing — numbered because it's an actual sequence) → services grid
 has never ordered from the shop before and arrives with an occasion
 (birthday, sympathy, wedding) rather than a product in mind. The
 arrangements have to carry the page, and the same-day cutoff has to be
-impossible to miss. Ordering is by phone or the contact form — the $997
-build doesn't include online checkout, so the demo doesn't pretend to.
+impossible to miss. Ordering is by phone or the contact form — the one-page
+Starter build ($997) doesn't include online checkout, so the demo doesn't
+pretend to.
 
 **Style:** Blush paper (`#F6ECE7`) with aubergine ink (`#3A1D2E`) and a
 berry accent (`#A3303F`) — softer than the other three without going

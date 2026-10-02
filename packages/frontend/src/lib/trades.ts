@@ -6,8 +6,10 @@
  * links pass the business type along to the Lead Tool's sign-up page (/intake
  * redirects there), which saves it as the new lead's category.
  *
- * Keep claims inside what the $997 build ships (WEBSITE_FEATURES): a
- * one-page site with a contact form — no online ordering or checkout.
+ * Keep claims inside what the Starter package ships, since that's the price
+ * these pages lead with (WEBSITE_FEATURES and BUILD_PACKAGES in
+ * lib/business.ts): a one-page site with a contact form — no online ordering
+ * or checkout.
  */
 export interface TradeNeed {
   title: string;

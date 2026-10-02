@@ -18,7 +18,7 @@ interface NavbarProps {
 
 const SITE_NAV: NavItem[] = [
   { label: 'Work', href: '/#portfolio' },
-  { label: 'Pricing', href: '/#pricing' },
+  { label: 'Pricing', href: '/pricing' },
   { label: 'How it goes', href: '/#process' },
   { label: 'About', href: '/about' },
 ];

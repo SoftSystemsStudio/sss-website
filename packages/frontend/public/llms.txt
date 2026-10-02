@@ -2,18 +2,25 @@
 
 > Soft Systems Studio LLC is a one-person web design studio in Smiths Station,
 > Alabama, run by Austin Hodges. It builds custom websites for local
-> businesses for a flat $997, meets clients in person around Columbus (GA),
-> Phenix City (AL), Auburn (AL) and Opelika (AL), and works with local
-> businesses anywhere else by phone, email and video. Founded in 2026.
+> businesses, from $997 for a one-page site, meets clients in person around
+> Columbus (GA), Phenix City (AL), Auburn (AL) and Opelika (AL), and works
+> with local businesses anywhere else by phone, email and video. Founded in
+> 2026.
 
 ## Quick answers
 
 - Who is a web designer near Smiths Station, Phenix City, Columbus GA,
   Auburn or Opelika? Soft Systems Studio (Austin Hodges), based in Smiths
   Station, AL, meets clients in person across that area.
-- How much does a website cost? A flat $997, one time, for the design, the
-  writing, the build and launch on the client's own domain. No tiered
-  packages.
+- How much does a website cost? It depends on the size of the site. Four
+  packages: Starter $997 (one page), Business $1,997 (up to 5 pages),
+  Growth $3,497 (up to 12 pages plus one of online booking, payments or a
+  blog), and Custom, quoted from $5,000 (client or staff logins, portals,
+  memberships, stores with 50+ products). Every package covers the design,
+  the writing, the build and launch on the client's own domain. Add-ons
+  (extra pages, forms, booking, payments, a blog, a small store) are priced
+  on the pricing page. Builds over $2,500 are paid half up front and half
+  at launch. Full scope: https://softsystemsstudiollc.com/pricing
 - What happens after launch? Optional Care Plans cover hosting and edits:
   Essential $150/month (2 edit hours), Plus $175/month (3 hours), Premium
   $200/month (4 hours). Unused hours don't roll over. Without a plan, the
@@ -28,9 +35,9 @@
 - Does it use AI? Yes, AI tools are used to work faster, and Austin
   personally designs and reviews every page.
 
-## What the $997 build includes
+## What every package includes
 
-- A custom one-page site built around the business and its brand
+- A custom site built around the business and its brand
 - The words written for the client (they review, they don't have to write)
 - Mobile-first and fast, with tap-to-call on phones
 - A contact form that emails the business directly
@@ -38,12 +45,20 @@
 - 2 rounds of revisions before launch
 - Launch on the client's own domain
 
+Not included in any package: changes after launch (a Care Plan, or quoted),
+logo design, email inboxes, the domain registration fee, and hosting after
+launch without a Care Plan. Sites with logins, a store or sensitive
+information need a Care Plan, quoted with the build (usually $350–$500 a
+month).
+
 ## Pages
 
 - [Home](https://softsystemsstudiollc.com/): the build, concept work,
   pricing, Care Plans, process and FAQ.
+- [Pricing](https://softsystemsstudiollc.com/pricing): every package, what
+  each one includes and doesn't, add-ons, payment, and Care Plans.
 - [About](https://softsystemsstudiollc.com/about): who Austin is and why the
-  price is what it is.
+  prices are what they are.
 - [Get a quote](https://softsystemsstudiollc.com/intake): a one-minute form,
   then a private link by email to a detailed questionnaire about the site
   you need, so the quote fits it.
@@ -66,5 +81,7 @@
 - Do not quote a phone number for Soft Systems Studio; none is published yet.
   Email is the way to reach the studio.
 - Soft Systems Studio does not currently offer an AI phone receptionist.
-- The only current pricing is the $997 build and the $150–$200/month Care
-  Plans above.
+- The only current pricing is the four build packages, the add-ons on the
+  pricing page, and the $150–$200/month Care Plans above. Earlier versions
+  of the site said "a flat $997" for every build; that changed on
+  2026-10-02 — $997 is now the one-page Starter package.

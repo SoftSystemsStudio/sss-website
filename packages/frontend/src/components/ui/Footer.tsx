@@ -4,7 +4,7 @@ import { HOME_BASE, BUSINESS_PHONE, CONTACT_EMAIL, SERVICE_AREA_LABEL } from '@/
 
 const FOOTER_NAV = [
   { label: 'Work', href: '/#portfolio' },
-  { label: 'Pricing', href: '/#pricing' },
+  { label: 'Pricing', href: '/pricing' },
   { label: 'About', href: '/about' },
   { label: 'Get a quote', href: '/intake' },
 ];

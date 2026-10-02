@@ -2,11 +2,18 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Navbar, Footer, Section } from '@/components/ui';
 import QuoteCta from '@/components/QuoteCta';
-import { BUILD_FEE, CARE_PLANS, HOME_BASE, RETAINER_MIN, SERVICE_AREA_LABEL } from '@/lib/business';
+import {
+  BUILD_FROM,
+  BUILD_PACKAGES,
+  CARE_PLANS,
+  HOME_BASE,
+  RETAINER_MIN,
+  SERVICE_AREA_LABEL,
+} from '@/lib/business';
 
 export const metadata: Metadata = {
   title: 'About',
-  description: `Austin Hodges runs Soft Systems Studio, a one-person web design studio in ${HOME_BASE}. Why a website build here is ${BUILD_FEE} instead of $3,000+.`,
+  description: `Austin Hodges runs Soft Systems Studio, a one-person web design studio in ${HOME_BASE}. Why a website here starts at ${BUILD_FROM} instead of $3,000+.`,
   alternates: { canonical: '/about' },
 };
 
@@ -30,7 +37,7 @@ const HOW_I_WORK = [
   },
   {
     title: 'The price list is the whole list',
-    body: `A ${BUILD_FEE} flat build fee, and Care Plans at ${CARE_PLAN_PRICES.slice(0, -1).join(', ')} or ${CARE_PLAN_PRICES[CARE_PLAN_PRICES.length - 1]} a month. That’s everything.`,
+    body: `${BUILD_PACKAGES.length} build packages from ${BUILD_FROM}, a few add-ons, and Care Plans at ${CARE_PLAN_PRICES.slice(0, -1).join(', ')} or ${CARE_PLAN_PRICES[CARE_PLAN_PRICES.length - 1]} a month. All of it is on the pricing page, and your quote lists everything before you pay.`,
   },
 ];
 
@@ -62,7 +69,7 @@ export default function AboutPage() {
           className="border-t border-line-soft py-20 lg:py-[120px]"
           innerClassName="grid gap-8 lg:grid-cols-[4fr_8fr] lg:gap-16"
         >
-          <h2 className={`reveal ${EYEBROW} lg:pt-3`}>Why it’s {BUILD_FEE}</h2>
+          <h2 className={`reveal ${EYEBROW} lg:pt-3`}>Why it starts at {BUILD_FROM}</h2>
           <div className="reveal">
             <p className="font-serif text-[30px] leading-[1.2] tracking-[-0.01em] sm:text-[40px]">
               I charge for the work itself, not for a reputation I haven’t built yet.
@@ -75,14 +82,15 @@ export default function AboutPage() {
                 studies.
               </p>
               <p>
-                An established studio with a client list can charge $3,000 or more, because they’re
-                selling their track record as well as a website. I don’t have one of those yet, so
-                the price covers the work, and I do the work myself.
+                An established studio with a client list can charge $3,000 or more for a small site,
+                because they’re selling their track record as well as a website. I don’t have one of
+                those yet, so the price covers the work, and I do the work myself.
               </p>
               <p>
                 AI tools are what make that math work. They let one person build what used to take a
-                small team, which is how a solo studio can charge {BUILD_FEE} and still do the job
-                properly.
+                small team, which is how a solo studio can build a one-page site for {BUILD_FROM}{' '}
+                and still do the job properly. Bigger sites cost more because they’re more work, not
+                because of the name on the invoice.
               </p>
             </div>
             <p className="mt-10 font-serif text-[26px] italic text-ink-soft">
@@ -113,16 +121,18 @@ export default function AboutPage() {
             {[
               {
                 name: 'Website build',
-                detail: `${BUILD_FEE}, once. A custom one-page site for a local service business.`,
+                href: '/pricing',
+                detail: `From ${BUILD_FROM}. A custom site for a local business, priced by its size.`,
               },
               {
                 name: 'Care Plans',
+                href: '/pricing#care-plans',
                 detail: `From ${RETAINER_MIN}/month. Hosting and monthly edits after launch.`,
               },
             ].map((service) => (
               <Link
                 key={service.name}
-                href="/#pricing"
+                href={service.href}
                 className="group flex flex-col gap-2 border-b border-line py-7 sm:flex-row sm:items-baseline sm:justify-between sm:gap-8"
               >
                 <span className="font-serif text-[36px] leading-none group-hover:italic">

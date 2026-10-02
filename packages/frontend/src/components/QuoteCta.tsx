@@ -15,7 +15,7 @@ export default function QuoteCta({ href = '/intake' }: { href?: string }) {
       </h2>
       <div className="reveal mt-14 flex flex-col gap-8 lg:mt-24 lg:flex-row lg:items-center lg:justify-between">
         <p className="text-xl leading-normal text-on-ink">
-          About five minutes. I reply within 24 hours.
+          A minute to start. I reply within 24 hours.
         </p>
         <div className="flex flex-col gap-5 sm:flex-row-reverse sm:items-center sm:gap-8">
           <Button as="link" href={href} variant="accent" size="lg">

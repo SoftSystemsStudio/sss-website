@@ -1,5 +1,10 @@
 # Soft Systems Studio Website Audit — September 2026
 
+> **Read as history.** The "decided pricing" below (a flat $997 build) was
+> replaced by packages on 2026-10-02: Starter $997, Business $1,997, Growth
+> $3,497, Custom from $5,000. Current prices live in
+> `packages/frontend/src/lib/business.ts` and on `/pricing`.
+
 **Scope:** `softsystemsstudiollc.com`, everything currently in this repo (`packages/frontend`).
 **Method:** read every page/route/component in `packages/frontend/src`, checked live `robots.txt`/`sitemap.xml`/`llms.txt` against production.
 **Not done:** no content was changed. This is read-only.

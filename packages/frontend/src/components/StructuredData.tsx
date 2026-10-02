@@ -13,7 +13,8 @@
  */
 
 import {
-  BUILD_FEE,
+  BUILD_FROM,
+  BUILD_PACKAGES,
   START_PROJECT_URL,
   CARE_PLANS,
   CONTACT_EMAIL,
@@ -29,8 +30,9 @@ const BUSINESS_ID = `${SITE_URL}/#business`;
 
 /** The facts search engines and AI answers quote: what, where, who, how much. */
 const BUSINESS_DESCRIPTION =
-  'Custom websites for local businesses, designed and written by one person for a flat ' +
-  `${BUILD_FEE}, with optional Care Plans for hosting and edits. Based in Smiths Station, AL, ` +
+  'Custom websites for local businesses, designed and written by one person, from ' +
+  `${BUILD_FROM} for a one-page site and priced by the size of the site, with optional Care ` +
+  'Plans for hosting and edits. Based in Smiths Station, AL, ' +
   'meeting in person around Columbus, GA, Phenix City, AL, and Auburn and Opelika, AL, and ' +
   'working with businesses anywhere by phone, email and video.';
 
@@ -110,7 +112,7 @@ export function LocalBusinessSchema() {
     email: CONTACT_EMAIL,
     founder: FOUNDER,
     address: ADDRESS,
-    priceRange: `${BUILD_FEE} / ${RETAINER_MIN}-${RETAINER_MAX} per month`,
+    priceRange: `From ${BUILD_FROM} / ${RETAINER_MIN}-${RETAINER_MAX} per month`,
     areaServed: SERVICE_AREA_CITIES.map((city) => ({
       '@type': 'City',
       name: `${city.name}, ${city.stateCode}`,
@@ -124,14 +126,22 @@ export function LocalBusinessSchema() {
       'Website hosting and maintenance',
     ],
     makesOffer: [
-      {
+      ...BUILD_PACKAGES.map((pkg) => ({
         '@type': 'Offer',
-        name: 'Custom website build',
-        description: 'Designed, written and launched on your own domain. One flat fee.',
-        price: dollars(BUILD_FEE),
+        name: `Website build — ${pkg.name}`,
+        description: `${pkg.summary}. Designed, written and launched on your own domain.`,
         priceCurrency: 'USD',
+        ...(pkg.quoted
+          ? {
+              priceSpecification: {
+                '@type': 'PriceSpecification',
+                minPrice: pkg.priceValue,
+                priceCurrency: 'USD',
+              },
+            }
+          : { price: pkg.priceValue }),
         itemOffered: { '@type': 'Service', name: 'Custom website for a local business' },
-      },
+      })),
       ...CARE_PLANS.map((plan) => ({
         '@type': 'Offer',
         name: `Care Plan — ${plan.name}`,

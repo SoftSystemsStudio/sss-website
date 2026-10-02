@@ -8,7 +8,7 @@ import ConceptCard from '@/components/ConceptCard';
 import { PhoneFrame } from '@/components/DeviceFrames';
 import { getConcept } from '@/lib/concepts';
 import { TRADES, getTrade, quoteHref } from '@/lib/trades';
-import { BUILD_FEE, HOME_BASE, RETAINER_MIN, WEBSITE_FEATURES } from '@/lib/business';
+import { BUILD_FROM, HOME_BASE, RETAINER_MIN, WEBSITE_FEATURES } from '@/lib/business';
 
 // Only the trades in lib/trades.ts exist; anything else is a 404.
 export const dynamicParams = false;
@@ -25,7 +25,7 @@ export async function generateMetadata({
   const trade = getTrade((await params).trade);
   if (!trade) return {};
   const title = `Websites for ${trade.audience}`;
-  const description = `${trade.promise} Custom one-page websites for ${trade.audience}, anywhere: a flat ${BUILD_FEE}, designed and written by one person.`;
+  const description = `${trade.promise} Custom websites for ${trade.audience}, anywhere: from ${BUILD_FROM} for a one-page site, designed and written by one person.`;
   const ogImage = `/api/og?title=${encodeURIComponent(`${title}.`)}`;
   return {
     title,
@@ -73,7 +73,7 @@ export default async function TradePage({ params }: { params: Promise<{ trade: s
               {trade.promise}
             </p>
             <p className="rise mt-7 max-w-[560px] text-[17px] leading-[1.55] text-ink-soft [--rise-delay:0.25s] sm:text-[21px]">
-              {trade.intro} One flat price of {BUILD_FEE}.
+              {trade.intro} One-page sites from {BUILD_FROM}.
             </p>
             <div className="rise mt-8 flex flex-col gap-4 [--rise-delay:0.35s] sm:flex-row sm:items-center sm:gap-8">
               <Button as="link" href={quote} variant="primary" size="lg">
@@ -139,16 +139,19 @@ export default async function TradePage({ params }: { params: Promise<{ trade: s
           <div className="reveal">
             <p className={EYEBROW}>The build</p>
             <p className="mt-5 font-serif text-[112px] leading-[0.82] tracking-[-0.03em] sm:text-[160px]">
-              {BUILD_FEE}
-              <em className="text-[40px] tracking-normal text-ink-muted sm:text-[56px]">, once.</em>
+              <em className="mr-3 text-[40px] tracking-normal text-ink-muted sm:text-[56px]">
+                from
+              </em>
+              {BUILD_FROM}
             </p>
             <p className="mt-7 max-w-md text-[17px] leading-relaxed text-ink-soft">
-              Care Plans from {RETAINER_MIN}/month cover hosting and edits after launch, and they’re
-              optional. I’m based in {HOME_BASE} and work with {trade.audience} anywhere, by phone,
-              email and video.
+              That’s a one-page site. More pages, online booking or payments cost more, and every
+              price is published. Care Plans from {RETAINER_MIN}/month cover hosting and edits after
+              launch, and they’re optional. I’m based in {HOME_BASE} and work with {trade.audience}{' '}
+              anywhere, by phone, email and video.
             </p>
-            <Link href="/#pricing" className="link-underline mt-6 inline-block font-semibold">
-              Pricing details
+            <Link href="/pricing" className="link-underline mt-6 inline-block font-semibold">
+              What each package includes
             </Link>
           </div>
           <ul className="reveal self-end border-t border-line">

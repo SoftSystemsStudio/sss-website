@@ -14,9 +14,9 @@ This file is the repo's operating runbook for Claude Code: how work is planned, 
 
 **User types**:
 
-- **Site visitors** — local business owners (the studio is based in Smiths Station, AL, meets in person around Columbus, Phenix City, Auburn and Opelika, and works remotely anywhere else); read the marketing pages, submit the intake form
+- **Site visitors** — local business owners (the studio is based in Smiths Station, AL, meets in person around Columbus, Phenix City, Auburn and Opelika, and works remotely anywhere else); read the marketing pages, then "Get a quote" — `/intake` redirects to the Lead Tool's sign-up page (`START_PROJECT_URL` in `lib/business.ts`), which creates the lead there and emails them a private link to a detailed questionnaire
 - **Outreach recipients** — owners Austin emails a `/for/<trade>` link (those pages are outreach-only: noindex, out of the sitemap, not linked from the site)
-- **Austin (owner)** — receives intake-form leads by email, no admin dashboard in this repo (the old `/admin` dashboard was deleted in the 2026-08-31 split; it duplicated the lead tool's own dashboard and was unreachable dead weight)
+- **Austin (owner)** — gets each sign-up as a lead in the Lead Tool, marked "From website", plus a Discord alert and an email (the Lead Tool's `docs/WEBSITE-SIGNUP.md`), no admin dashboard in this repo (the old `/admin` dashboard was deleted in the 2026-08-31 split; it duplicated the lead tool's own dashboard and was unreachable dead weight)
 
 ---
 
@@ -55,9 +55,9 @@ This file is the repo's operating runbook for Claude Code: how work is planned, 
 - **Package manager**: pnpm@8.11.0 (two-package workspace)
 - **Styling**: Tailwind CSS 3.4
 - **Auth (site)**: Clerk — only gates the (currently empty) signed-in nav state; there is no protected dashboard left in this repo
-- **Email**: Resend (intake-form notifications, welcome emails)
+- **Email**: Resend (welcome emails). Quote requests no longer go through this site — the old intake form and `/api/intake` were removed 2026-10-02 in favour of the Lead Tool's sign-up
 - **Mailbox**: Google Workspace — `austin@softsystemsstudiollc.com` (`CONTACT_EMAIL`). The old `softsystemstudioco@gmail.com` was upgraded into the same account and still receives mail. DNS is on Cloudflare; Resend and SendGrid send via their own subdomains, so root SPF lists only Google
-- **Payments**: Stripe Payment Links (hardcoded URLs in `api/intake/route.ts`, not the Stripe API)
+- **Payments**: none on this site — build and Care Plan payments are Stripe Checkout links made in the Lead Tool
 - **Error tracking**: Sentry
 - **Voice demo**: LiveKit (`/api/livekit-token` mints a room-scoped token; `components/VoiceDemo.tsx` connects in-browser) — replaced the Vapi phone-callback demo on 2026-09-01. The agent itself runs as a separate always-on service on LiveKit Cloud (project `sss-receptionist`), not in this repo.
 
@@ -70,7 +70,7 @@ Vercel
 ├── Next.js app at packages/frontend/
 ├── Edge middleware for Clerk auth
 ├── Daily cron: /api/cron/cleanup-tokens (proxies to the SaaS backend, elsewhere)
-└── API routes for BFF pattern (intake, livekit-token, cron)
+└── API routes for BFF pattern (livekit-token, cron)
 ```
 
 There is no backend deployed from this repo. `NEXT_PUBLIC_API_URL` (when set) points at the separate SaaS platform's API for the `/api/v1/*` rewrite and the cleanup-tokens cron proxy — that's a runtime HTTP call, not a build dependency.
@@ -114,7 +114,7 @@ Native `fetch()` + Next.js API routes. No React Query, SWR, or tRPC.
 - **Fonts**: Instrument Serif (display) + Instrument Sans (body) via `next/font` in `app/layout.tsx`
 - **Global CSS**: `/src/styles/globals.css` — focus/selection styles, the `.marker` highlight, and the heading rules the `/demo/*` sites were designed against (scoped to `.sss-demo` by `app/demo/layout.tsx`; don't widen them)
 - **Homepage showcase images**: `public/images/work/` are screenshots of the `/demo/*` pages — re-capture them if a demo's hero changes
-- **Concepts and trade pages**: `lib/concepts.ts` lists the demo sites, shown as project cards (`components/ConceptCard.tsx`) on the homepage and trade pages — keep each concept's `features` true to what its demo actually shows; `lib/trades.ts` drives the `/for/<trade>` outreach pages (lawn care, coffee shops, florists) — outreach-only, so they stay noindex, out of the sitemap and unlinked; the public site says "local businesses" and doesn't advertise specific business types. A trade's quote links prefill the intake form via `?type=` — keep `businessType` in `BUSINESS_TYPES` (`app/intake/intake-form.tsx`), and keep trade copy inside what the build ships (`WEBSITE_FEATURES` in `lib/business.ts`)
+- **Concepts and trade pages**: `lib/concepts.ts` lists the demo sites, shown as project cards (`components/ConceptCard.tsx`) on the homepage and trade pages — keep each concept's `features` true to what its demo actually shows; `lib/trades.ts` drives the `/for/<trade>` outreach pages (lawn care, coffee shops, florists) — outreach-only, so they stay noindex, out of the sitemap and unlinked; the public site says "local businesses" and doesn't advertise specific business types. A trade's quote links carry `?type=<businessType>` through the `/intake` redirect to the Lead Tool's sign-up, which saves it as the lead's category; keep trade copy inside what the build ships (`WEBSITE_FEATURES` in `lib/business.ts`)
 - **Location and search**: base town, in-person cities and the service-area label all come from `lib/business.ts` (`HOME_BASE`, `SERVICE_AREA_CITIES`, `SERVICE_AREA_LABEL`); JSON-LD in `components/StructuredData.tsx`, the AI-facing summary in `public/llms.txt` (plain text — update it by hand when facts change) and `app/robots.ts`, which names the search and AI crawlers explicitly
 - **Motion**: CSS classes in `globals.css` (`.rise` entrance, `.reveal` scroll reveal, `.parallax`, `.concept-pan`, `.nudge`, link underlines). All of it sits inside `@media (prefers-reduced-motion: no-preference)`, and scroll-driven effects use `animation-timeline` behind `@supports` — no JS, so content can never get stuck hidden. `ShowcaseParallax.tsx` is the only motion JS (pointer position → CSS vars). Keep new motion inside those guards.
 

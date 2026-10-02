@@ -24,6 +24,21 @@ const nextConfig = {
     unoptimized: process.env.NODE_ENV === 'development',
   },
 
+  // "Get a quote" (2026-10-02): the quote form now lives in the Lead Tool,
+  // which creates the lead there and emails a private link to the full
+  // questionnaire. Every /intake link keeps working — Next carries the query
+  // string (?type= from the trade pages) across. Same URL as START_PROJECT_URL
+  // in src/lib/business.ts. Temporary (307) so it can be pointed elsewhere.
+  async redirects() {
+    return [
+      {
+        source: '/intake',
+        destination: 'https://tool.softsystemsstudiollc.com/start',
+        permanent: false,
+      },
+    ];
+  },
+
   // Production-only compression
   compress: true,
 

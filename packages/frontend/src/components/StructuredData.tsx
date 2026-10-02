@@ -14,6 +14,7 @@
 
 import {
   BUILD_FEE,
+  START_PROJECT_URL,
   CARE_PLANS,
   CONTACT_EMAIL,
   RETAINER_MIN,
@@ -74,7 +75,7 @@ export function OrganizationSchema() {
       '@type': 'ContactPoint',
       contactType: 'Customer Service',
       email: CONTACT_EMAIL,
-      url: `${SITE_URL}/intake`,
+      url: START_PROJECT_URL,
     },
   };
 

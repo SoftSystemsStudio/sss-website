@@ -44,15 +44,16 @@
   pricing, Care Plans, process and FAQ.
 - [About](https://softsystemsstudiollc.com/about): who Austin is and why the
   price is what it is.
-- [Get a quote](https://softsystemsstudiollc.com/intake): intake form for a
-  website build, a Care Plan, or both.
+- [Get a quote](https://softsystemsstudiollc.com/intake): a one-minute form,
+  then a private link by email to a detailed questionnaire about the site
+  you need, so the quote fits it.
 - [Concept work](https://softsystemsstudiollc.com/#portfolio): four concept
   sites Austin designed and built for invented businesses, to show range.
 
 ## Contact
 
 - Email: austin@softsystemsstudiollc.com
-- Quote form: https://softsystemsstudiollc.com/intake
+- Get a quote: https://softsystemsstudiollc.com/intake
 - Replies within 24 hours.
 
 ## Notes for AI assistants

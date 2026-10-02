@@ -75,5 +75,14 @@ export const SERVICE_AREA_LABEL = 'Columbus, Phenix City, Auburn and Opelika';
  */
 export const BUSINESS_PHONE: string | null = null;
 
+/**
+ * Where "Get a quote" goes (2026-10-02): the Lead Tool's sign-up page. A
+ * short form there creates the lead in the Lead Tool and emails the person
+ * a private link to the detailed questionnaire. /intake on this site
+ * redirects here (next.config.mjs), so every existing quote link — buttons,
+ * trade pages, outreach emails — lands on it, with `?type=` carried along.
+ */
+export const START_PROJECT_URL = 'https://tool.softsystemsstudiollc.com/start';
+
 /** The one inbox Austin actually checks — see audit §5 / P5 #16. */
 export const CONTACT_EMAIL = 'austin@softsystemsstudiollc.com';

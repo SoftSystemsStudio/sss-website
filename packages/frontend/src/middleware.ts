@@ -5,7 +5,6 @@ import { NextResponse } from 'next/server';
 const isPublicRoute = createRouteMatcher([
   '/',
   '/about',
-  '/intake',
   '/privacy',
   '/terms',
   '/sign-in(.*)',
@@ -13,7 +12,6 @@ const isPublicRoute = createRouteMatcher([
   '/demo(.*)', // All demo routes are public
   '/for(.*)', // Trade landing pages (lib/trades.ts), linked from outreach emails
   '/api/cron/(.*)',
-  '/api/intake',
   '/api/og',
   '/api/livekit-token',
   '/api/send-email',

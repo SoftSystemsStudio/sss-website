@@ -11,12 +11,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'monthly',
       priority: 0.8,
     },
-    {
-      url: `${baseUrl}/intake`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.9,
-    },
     // Demo sites - showcase portfolio
     {
       url: `${baseUrl}/demo/kettle-and-grain`,

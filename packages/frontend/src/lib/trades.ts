@@ -3,8 +3,8 @@
  * emails only: they're noindex and not linked from the site, because the
  * public site doesn't advertise specific business types. Each pairs with the
  * concept site for that trade, and its quote
- * links prefill the intake form's business type (`businessType` must be one
- * of BUSINESS_TYPES in app/intake/intake-form.tsx).
+ * links pass the business type along to the Lead Tool's sign-up page (/intake
+ * redirects there), which saves it as the new lead's category.
  *
  * Keep claims inside what the $997 build ships (WEBSITE_FEATURES): a
  * one-page site with a contact form — no online ordering or checkout.

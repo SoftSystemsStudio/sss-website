@@ -51,7 +51,7 @@ This file is the repo's operating runbook for Claude Code: how work is planned, 
 ## Tech Stack
 
 - **Language/runtime**: Node.js 22 + TypeScript 5.x
-- **Framework**: Next.js 16 (App Router), React 18
+- **Framework**: Next.js 16 (App Router), React 18. 16.x postdates most model training data; for any Next API, check the version-matched docs bundled at `packages/frontend/node_modules/next/dist/docs/` (pnpm symlink) rather than memory. `next dev`'s own agent-rules scaffolding is switched off (`agentRules: false` in `next.config.mjs`) so it doesn't create files in the tree.
 - **Package manager**: pnpm@8.11.0 (two-package workspace)
 - **Styling**: Tailwind CSS 3.4
 - **Auth (site)**: Clerk — only gates the (currently empty) signed-in nav state; there is no protected dashboard left in this repo

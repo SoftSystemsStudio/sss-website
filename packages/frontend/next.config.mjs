@@ -4,6 +4,12 @@ import { withSentryConfig } from '@sentry/nextjs';
 const nextConfig = {
   reactStrictMode: true,
 
+  // Without this, `next dev` (16.3+) scaffolds AGENTS.md and CLAUDE.md in this
+  // directory whenever it detects an AI coding agent in its environment. The
+  // repo's agent instructions are the hand-written root CLAUDE.md, whose Tech
+  // Stack section points at the bundled Next docs instead.
+  agentRules: false,
+
   // Image optimization with strict domain allowlist
   images: {
     remotePatterns: [

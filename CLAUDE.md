@@ -15,6 +15,7 @@ This file is the repo's operating runbook for Claude Code: how work is planned, 
 **User types**:
 
 - **Site visitors** — local business owners (the studio is based in Smiths Station, AL, meets in person around Columbus, Phenix City, Auburn and Opelika, and works remotely anywhere else); read the marketing pages, then "Get a quote" — `/intake` redirects to the Lead Tool's sign-up page (`START_PROJECT_URL` in `lib/business.ts`), which creates the lead there and emails them a private link to a detailed questionnaire
+- **Leads with a mangled Lead Tool link** — `/q/*`, `/p/*` and `/s/*` here redirect to the same path on `tool.softsystemsstudiollc.com` (`next.config.mjs`), so a questionnaire, teaser or preview link that lost its `tool.` still works
 - **Outreach recipients** — owners Austin emails a `/for/<trade>` link (those pages are outreach-only: noindex, out of the sitemap, not linked from the site)
 - **Austin (owner)** — gets each sign-up as a lead in the Lead Tool, marked "From website", plus a Discord alert and an email (the Lead Tool's `docs/WEBSITE-SIGNUP.md`), no admin dashboard in this repo (the old `/admin` dashboard was deleted in the 2026-08-31 split; it duplicated the lead tool's own dashboard and was unreachable dead weight)
 

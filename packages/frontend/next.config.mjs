@@ -42,6 +42,16 @@ const nextConfig = {
         destination: 'https://tool.softsystemsstudiollc.com/start',
         permanent: false,
       },
+      // Lead Tool client links (2026-10-22): the questionnaire (/q/), teaser
+      // (/p/) and site preview (/s/) all live on tool.softsystemsstudiollc.com.
+      // A lead whose link lost the "tool." (retyped, or only half of it turned
+      // into a link by their phone) landed on this site's 404. Forward them
+      // instead; the token in the path is all the tool needs.
+      ...['q', 'p', 's'].map((prefix) => ({
+        source: `/${prefix}/:path*`,
+        destination: `https://tool.softsystemsstudiollc.com/${prefix}/:path*`,
+        permanent: false,
+      })),
     ];
   },
 

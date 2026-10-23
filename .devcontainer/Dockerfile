@@ -1,5 +1,5 @@
 FROM mcr.microsoft.com/devcontainers/base:ubuntu
-ARG NODE_VERSION=22
+ARG NODE_VERSION=24
 
 # Install git-lfs so devcontainer users can push without missing hooks
 RUN apt-get update \

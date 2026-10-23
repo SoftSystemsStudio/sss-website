@@ -19,8 +19,8 @@
   memberships, stores with 50+ products). Every package covers the design,
   the writing, the build and launch on the client's own domain. Add-ons
   (extra pages, forms, booking, payments, a blog, a small store) are priced
-  on the pricing page. Builds over $2,500 are paid half up front and half
-  at launch. Full scope: https://softsystemsstudiollc.com/pricing
+  on the pricing page. Any package can be paid in full up front, or half up
+  front and half at launch; the site launches once it's paid in full. Full scope: https://softsystemsstudiollc.com/pricing
 - What happens after launch? Optional Care Plans cover hosting and edits:
   Essential $150/month (2 edit hours), Plus $175/month (3 hours), Premium
   $200/month (4 hours). Unused hours don't roll over. Without a plan, the

@@ -21,7 +21,6 @@ import {
   BUILD_REVISION_ROUNDS,
   CARE_PLANS,
   CONTACT_EMAIL,
-  DEPOSIT_THRESHOLD,
   HOME_BASE,
   HOME_BASE_SHORT,
   RETAINER_RANGE,
@@ -62,7 +61,8 @@ const FAQS = [
   },
   {
     question: 'How do I pay?',
-    answer: `Builds up to ${DEPOSIT_THRESHOLD} are paid in full before work starts. Above that, it’s half to start and half at launch. Payments go through Stripe.`,
+    answer:
+      'Pay in full before work starts, or half to start and half at launch — your choice, on any package. Either way, your site goes live once it’s paid in full. Payments go through Stripe.',
   },
   {
     question: 'How long does a website build take?',

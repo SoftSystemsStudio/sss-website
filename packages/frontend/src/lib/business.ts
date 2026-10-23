@@ -37,9 +37,6 @@ export interface BuildPackage {
 /** Revision rounds included in every package, before launch. */
 export const BUILD_REVISION_ROUNDS = 2;
 
-/** Builds above this are paid half up front, half at launch. */
-export const DEPOSIT_THRESHOLD = '$2,500';
-
 export const BUILD_PACKAGES: BuildPackage[] = [
   {
     id: 'starter',

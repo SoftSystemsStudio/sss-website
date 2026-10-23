@@ -10,7 +10,6 @@ import {
   BUILD_PACKAGES,
   BUILD_REVISION_ROUNDS,
   CARE_PLANS,
-  DEPOSIT_THRESHOLD,
   NOT_IN_ANY_PACKAGE,
   PACKAGE_COMPARISON,
   SECURE_CARE_PLAN_RANGE,
@@ -73,7 +72,7 @@ const SCOPE_RULES = [
   },
   {
     title: 'Paying',
-    body: `Builds up to ${DEPOSIT_THRESHOLD} are paid in full before work starts. Above that, it’s half to start and half at launch. Payments go through Stripe.`,
+    body: 'Pay in full before work starts, or half to start and half at launch — your choice, on any package. Either way, your site goes live once it’s paid in full. Payments go through Stripe.',
   },
   {
     title: 'Your domain',

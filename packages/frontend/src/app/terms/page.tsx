@@ -7,7 +7,6 @@ import {
   BUILD_REVISION_ROUNDS,
   CARE_PLANS,
   CONTACT_EMAIL,
-  DEPOSIT_THRESHOLD,
   SECURE_CARE_PLAN_RANGE,
 } from '@/lib/business';
 
@@ -86,9 +85,13 @@ export default function TermsPage() {
           </p>
           <h2 className="pt-6 font-serif text-[32px] leading-tight text-ink">Payment Terms</h2>
           <ul className="list-disc pl-6 space-y-2">
-            <li>Builds up to {DEPOSIT_THRESHOLD} are paid in full before work begins</li>
             <li>
-              Builds over {DEPOSIT_THRESHOLD} are paid 50% before work begins and 50% at launch
+              Any build can be paid in full before work begins, or 50% before work begins and 50% at
+              launch
+            </li>
+            <li>
+              Your site launches on your domain, and its files are handed over, only once the build
+              is paid in full
             </li>
             <li>Care Plan fees are billed monthly in advance</li>
             <li>All payments are processed via Stripe</li>

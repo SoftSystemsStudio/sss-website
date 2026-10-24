@@ -30,9 +30,8 @@ const BUSINESS_ID = `${SITE_URL}/#business`;
 
 /** The facts search engines and AI answers quote: what, where, who, how much. */
 const BUSINESS_DESCRIPTION =
-  'Austin Hodges builds websites for local businesses from Smiths Station, AL. He designs ' +
-  `and writes each site himself. A one-page site is ${BUILD_FROM}, bigger sites cost more, and ` +
-  'optional Care Plans cover hosting and edits after launch. He meets people in person around ' +
+  'Austin Hodges designs, writes and builds websites for local businesses from Smiths ' +
+  'Station, AL, and optional Care Plans cover hosting and edits after launch. He meets people in person around ' +
   'Columbus, GA, Phenix City, AL, and Auburn and Opelika, AL, and works with businesses ' +
   'anywhere else by phone, email and video.';
 

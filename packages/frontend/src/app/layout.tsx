@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     template: '%s | Soft Systems Studio',
   },
   description:
-    'I’m Austin, a web designer in Smiths Station, AL. I build websites for local businesses around Columbus, Phenix City, Auburn and Opelika, from $997.',
+    'I’m Austin, a web designer in Smiths Station, AL. I design and write websites for local businesses around Columbus, Phenix City, Auburn and Opelika.',
   keywords: [
     'web designer Columbus GA',
     'web design Phenix City AL',
@@ -62,7 +62,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Hi, I’m Austin. I build websites for local businesses.',
     description:
-      'Web design from Smiths Station, AL, for businesses around Columbus, Phenix City and Auburn. A one-page site starts at $997.',
+      'Websites designed and written for local businesses around Columbus, Phenix City and Auburn, by a neighbor in Smiths Station, AL.',
     images: ['/api/og'],
   },
   robots: {

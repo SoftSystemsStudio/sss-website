@@ -2,10 +2,9 @@
 
 > Soft Systems Studio LLC is Austin Hodges, a web designer in Smiths Station,
 > Alabama, who builds websites for local businesses. He designs and writes
-> every site himself; a one-page site is $997. He meets people in person
-> around Columbus (GA), Phenix City (AL), Auburn (AL) and Opelika (AL), and
-> works with businesses anywhere else by phone, email and video. Started in
-> 2026.
+> every site himself. He meets people in person around Columbus (GA),
+> Phenix City (AL), Auburn (AL) and Opelika (AL), and works with businesses
+> anywhere else by phone, email and video. Started in 2026.
 
 ## Quick answers
 
@@ -57,8 +56,8 @@ month).
   pricing, Care Plans, process and FAQ.
 - [Pricing](https://softsystemsstudiollc.com/pricing): every package, what
   each one includes and doesn't, add-ons, payment, and Care Plans.
-- [About](https://softsystemsstudiollc.com/about): who Austin is and why the
-  prices are what they are.
+- [About](https://softsystemsstudiollc.com/about): who Austin is and how he
+  works.
 - [Get a quote](https://softsystemsstudiollc.com/intake): a one-minute form,
   then a private link by email to a detailed questionnaire about the site
   you need, so the quote fits it.

@@ -15,7 +15,6 @@ import {
 } from '@/components/StructuredData';
 import {
   ADD_ONS_FROM,
-  BUILD_FROM,
   BUILD_ONLY_HOSTING_DAYS,
   BUILD_PACKAGES,
   BUILD_REVISION_ROUNDS,
@@ -203,9 +202,9 @@ export default function Home() {
           </h1>
           <div className="rise mt-6 flex flex-col gap-6 [--rise-delay:0.3s] lg:mt-10 lg:flex-row lg:items-end lg:justify-between">
             <p className="max-w-[600px] text-[17px] leading-[1.55] text-ink-soft sm:text-[21px]">
-              I’m Austin. I design and write websites for local businesses, starting at {BUILD_FROM}{' '}
-              for one page. If you’re near Columbus, Phenix City or Auburn, let’s meet in person. If
-              not, video works just fine.
+              I’m Austin. I design and write custom websites for local businesses, built around how
+              your customers actually decide who to call. If you’re near Columbus, Phenix City or
+              Auburn, let’s meet in person. If not, video works just fine.
             </p>
             <div className="grid grid-cols-2 gap-2.5 sm:flex sm:items-center sm:gap-8">
               <Button
@@ -395,9 +394,10 @@ export default function Home() {
               person; anywhere else, we work by phone, email and video.
             </p>
             <p className="mt-5 text-lg leading-relaxed text-ink-soft sm:text-[21px]">
-              It’s a new studio, so I charge for the work itself, not for a reputation I haven’t
-              built yet. You deal with the person designing your site from the first call to launch
-              day. I use AI tools to work quickly, and I check every page myself.
+              You work with the person designing your site from the first call to launch day, with
+              no handoffs along the way. I care about the small things: how it reads on a phone, how
+              fast it loads, and whether the next step is obvious. I use AI tools to work quickly,
+              and I check every page myself.
             </p>
             <p className="mt-8 font-serif text-[26px] italic text-ink-soft">— Austin Hodges</p>
           </div>

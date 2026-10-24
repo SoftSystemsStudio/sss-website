@@ -24,7 +24,10 @@ module.exports = {
           DEFAULT: '#C3C8BD', // rules on limestone
           soft: '#DDE0D6', // rules on paper
         },
-        sun: '#F2C230', // the one accent: highlight, CTA on dark sections
+        brass: {
+          DEFAULT: '#A8834B', // the one accent: rules, details, large type only (3.25:1 on paper)
+          light: '#C9A66B', // brass on ink: CTA, focus, small text (6.1:1)
+        },
         'on-ink': '#C4CFCA', // secondary text on ink backgrounds
       },
       maxWidth: {

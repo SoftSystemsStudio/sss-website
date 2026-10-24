@@ -6,11 +6,9 @@ export const runtime = 'edge';
 
 const INK = '#17312B';
 const INK_SOFT = '#3F4B46';
-const INK_MUTED = '#5C6762';
+const BRASS = '#A8834B';
 const PAPER = '#F7F7F3';
-const SUN = '#F2C230';
-
-const EYEBROW = 'Soft Systems Studio';
+const BRASS_WASH = 'rgba(168, 131, 75, 0.38)';
 
 /**
  * Fetch a Google Font subset to exactly the characters we draw.
@@ -35,6 +33,7 @@ async function loadFont(family: string, text: string): Promise<ArrayBuffer | nul
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
+    const logo = new URL('/images/brand/logo-compact-color.svg', req.url).toString();
     const title = searchParams.get('title');
     const line1 = title ?? 'You built the business.';
     const line2 = title ? '' : 'I’ll build the website.';
@@ -43,22 +42,22 @@ export async function GET(req: NextRequest) {
     // Subset fonts only cover the characters they were fetched for, so it's all
     // or nothing: a partial set would mix typefaces glyph by glyph.
     const [serif, serifItalic, sans] = await Promise.all([
-      loadFont('Instrument+Serif', line1),
-      line2 ? loadFont('Instrument+Serif:ital@1', line2) : Promise.resolve(null),
-      loadFont('Instrument+Sans:wght@500', `${EYEBROW.toUpperCase()}${footer}`),
+      loadFont('Cormorant+Garamond:wght@500', line1),
+      line2 ? loadFont('Cormorant+Garamond:ital,wght@1,500', line2) : Promise.resolve(null),
+      loadFont('Instrument+Sans:wght@500', footer),
     ]);
     const fonts =
       serif && sans && (serifItalic || !line2)
         ? [
             { name: 'Sans', data: sans, style: 'normal' as const, weight: 500 as const },
-            { name: 'Serif', data: serif, style: 'normal' as const, weight: 400 as const },
+            { name: 'Serif', data: serif, style: 'normal' as const, weight: 500 as const },
             ...(serifItalic
               ? [
                   {
                     name: 'Serif',
                     data: serifItalic,
                     style: 'italic' as const,
-                    weight: 400 as const,
+                    weight: 500 as const,
                   },
                 ]
               : []),
@@ -79,29 +78,19 @@ export async function GET(req: NextRequest) {
           fontFamily: 'Sans',
         }}
       >
-        <div
-          style={{
-            display: 'flex',
-            fontSize: 22,
-            fontWeight: 500,
-            letterSpacing: '0.14em',
-            color: INK_MUTED,
-          }}
-        >
-          {EYEBROW.toUpperCase()}
-        </div>
+        <img src={logo} alt="Soft Systems Studio" width={261} height={69} />
 
         <div style={{ display: 'flex', flexDirection: 'column', fontFamily: 'Serif' }}>
-          <div style={{ display: 'flex', fontSize: 104, lineHeight: 1, letterSpacing: '-0.015em' }}>
+          <div style={{ display: 'flex', fontSize: 112, lineHeight: 1, letterSpacing: '-0.01em' }}>
             {line1}
           </div>
           {line2 && (
             <div
               style={{
                 display: 'flex',
-                fontSize: 104,
+                fontSize: 112,
                 lineHeight: 1,
-                letterSpacing: '-0.015em',
+                letterSpacing: '-0.01em',
                 fontStyle: 'italic',
                 marginTop: 8,
               }}
@@ -110,7 +99,7 @@ export async function GET(req: NextRequest) {
               <span
                 style={{
                   marginLeft: 26,
-                  backgroundImage: `linear-gradient(transparent 60%, ${SUN} 60%, ${SUN} 88%, transparent 88%)`,
+                  backgroundImage: `linear-gradient(transparent 72%, ${BRASS_WASH} 72%, ${BRASS_WASH} 92%, transparent 92%)`,
                 }}
               >
                 website.
@@ -122,7 +111,7 @@ export async function GET(req: NextRequest) {
         <div
           style={{
             display: 'flex',
-            borderTop: `2px solid ${INK}`,
+            borderTop: `2px solid ${BRASS}`,
             paddingTop: 24,
             fontSize: 24,
             color: INK_SOFT,

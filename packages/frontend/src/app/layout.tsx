@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
-import { Instrument_Sans, Instrument_Serif } from 'next/font/google';
+import { Cormorant_Garamond, Instrument_Sans } from 'next/font/google';
 import '../styles/globals.css';
 import { AppProviders } from './providers';
 import { GoogleAnalytics } from '@/components/GoogleAnalytics';
@@ -11,9 +11,9 @@ const sans = Instrument_Sans({
   variable: '--font-sans',
 });
 
-const serif = Instrument_Serif({
+const serif = Cormorant_Garamond({
   subsets: ['latin'],
-  weight: '400',
+  weight: ['500', '600'],
   style: ['normal', 'italic'],
   display: 'swap',
   variable: '--font-serif',

@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { HOME_BASE, BUSINESS_PHONE, CONTACT_EMAIL, SERVICE_AREA_LABEL } from '@/lib/business';
 
@@ -15,8 +16,14 @@ export default function Footer() {
       <div className="mx-auto max-w-page px-5 pb-10 sm:px-8 lg:px-20">
         <div className="flex flex-col gap-10 border-t border-paper/20 pt-12 md:flex-row md:items-start md:justify-between">
           <div className="flex max-w-md flex-col gap-3">
-            <Link href="/" className="font-serif text-[28px] text-paper">
-              Soft Systems Studio
+            <Link href="/" className="self-start">
+              <Image
+                src="/images/brand/logo-wordmark-reversed.svg"
+                alt="Soft Systems Studio, established 2025"
+                width={403}
+                height={178}
+                className="-ml-4 h-auto w-[240px]"
+              />
             </Link>
             <p className="text-[15px] leading-relaxed">
               Websites for local businesses. Based in {HOME_BASE}.

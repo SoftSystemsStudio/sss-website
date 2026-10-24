@@ -45,7 +45,7 @@ const variantClasses: Record<ButtonVariant, string> = {
   // Ink (river green) is the default action colour on light backgrounds
   primary: 'bg-ink text-paper font-semibold hover:bg-[#23443C]',
   // Sun is reserved for the main action on ink sections
-  accent: 'bg-sun text-ink font-bold hover:bg-[#F5CD55]',
+  accent: 'bg-brass-light text-ink font-bold hover:bg-[#D6B884]',
   secondary: 'bg-limestone text-ink font-semibold hover:bg-[#DDDFD6]',
   ghost: 'text-ink font-semibold underline underline-offset-[6px] hover:text-ink-soft',
   outline: 'border-[1.5px] border-ink text-ink font-semibold hover:bg-ink hover:text-paper',

@@ -6,7 +6,7 @@ import { HOME_BASE, SERVICE_AREA_LABEL } from '@/lib/business';
 
 export const metadata: Metadata = {
   title: 'About Austin',
-  description: `I’m Austin Hodges. I design, write and build websites for local businesses from ${HOME_BASE}. Here’s how I work.`,
+  description: `I’m Austin Hodges. I design, write and build websites for local businesses from ${HOME_BASE}. Here’s who I am and how I work.`,
   alternates: { canonical: '/about' },
 };
 
@@ -16,19 +16,19 @@ const EYEBROW =
 const HOW_I_WORK = [
   {
     title: 'You deal with me',
-    body: 'No account managers and no handoffs. The person on your first call is the person building your site.',
+    body: 'No account managers and no handoffs. The person on your first call is the person building your site, and the one answering your emails after it launches.',
   },
   {
     title: 'I write the words',
-    body: 'You don’t have to supply copy. I draft every page from what you tell me, and you approve it.',
+    body: 'If writing about yourself sounds like a chore, good news: you don’t have to. I draft every page from what you tell me, and you approve it.',
   },
   {
     title: 'AI helps, I check',
-    body: 'I use AI tools to work quickly, and every page is designed and reviewed by me before it ships.',
+    body: 'I use AI tools to work quickly, and every page is designed and reviewed by me before it ships. The software is fast; I’m the one who makes sure it’s right.',
   },
   {
     title: 'You always know where things stand',
-    body: 'You get a written quote and a launch date before you commit, and I keep you posted from the first draft to launch day.',
+    body: 'You get a written quote and a launch date before you commit, and I keep you posted from the first draft to launch day. You’ll never have to wonder whether I fell off the face of the earth.',
   },
 ];
 
@@ -52,7 +52,8 @@ export default function AboutPage() {
             I’m Austin Hodges. I started Soft Systems Studio in 2026 to build websites for local
             businesses. I’m based in {HOME_BASE}, I meet clients in person around{' '}
             {SERVICE_AREA_LABEL}, and I work with businesses anywhere else by phone and video. It’s
-            just me: I design, write, build and support every site myself.
+            just me, which means I design, write, build and support every site myself. It also means
+            you always know exactly who’s responsible.
           </p>
         </Section>
 
@@ -67,14 +68,15 @@ export default function AboutPage() {
             </p>
             <div className="mt-8 space-y-5 text-lg leading-relaxed text-ink-soft">
               <p>
-                Plenty of great businesses have a site that’s out of date, hard to use on a phone,
-                or missing altogether. Usually that isn’t for lack of caring. Building one well
-                takes time most owners don’t have.
+                Plenty of great businesses have a website that’s out of date, painful to use on a
+                phone, or still “coming soon” from a few years back. That’s rarely because the owner
+                doesn’t care. It’s because they’re busy actually running the business.
               </p>
               <p>
                 That’s the part I take off your plate. I learn how your business works and who your
                 customers are, then I design the site, write every word and build it myself, so it
-                sounds like you and works the way your customers expect.
+                sounds like you and works the way your customers expect. You won’t have to stare at
+                a blank page trying to sum yourself up in three sentences. That’s my job.
               </p>
             </div>
             <p className="mt-10 font-serif text-[26px] italic text-ink-soft">

@@ -7,6 +7,7 @@ import {
   BUILD_REVISION_ROUNDS,
   CARE_PLANS,
   CONTACT_EMAIL,
+  HOME_BASE,
   SECURE_CARE_PLAN_RANGE,
 } from '@/lib/business';
 
@@ -29,8 +30,10 @@ export default function TermsPage() {
             <strong className="text-ink">Last updated:</strong> October 2026
           </p>
           <p>
-            By using Soft Systems Studio LLC services, you agree to these terms. Please read them
-            carefully.
+            These terms are between you and Soft Systems Studio LLC (&ldquo;we&rdquo;,
+            &ldquo;us&rdquo;), based in {HOME_BASE}. You agree to them when you accept a quote, pay
+            an invoice or payment link, or start a Care Plan. If your written quote says something
+            different from these terms, the quote wins for that project. Please read them carefully.
           </p>
           <h2 className="pt-6 font-serif text-[32px] leading-tight text-ink">Services</h2>
           <p>
@@ -83,6 +86,35 @@ export default function TermsPage() {
             point your domain to the host of your choice. Your site stays on our hosting for{' '}
             {BUILD_ONLY_HOSTING_DAYS} days after launch (or after cancellation) while you move it.
           </p>
+          <h2 className="pt-6 font-serif text-[32px] leading-tight text-ink">Your Part</h2>
+          <p>
+            You&apos;re responsible for the text, photos, logos and other material you give us, and
+            you confirm you own them or have permission to use them on your site. You&apos;re also
+            responsible for what your business says and sells on the site, and for keeping your
+            domain registration paid. We may decline to publish, or remove, anything that is
+            unlawful or infringes someone else&apos;s rights. If someone makes a claim against us
+            because of material you provided, you agree to cover our reasonable costs of dealing
+            with it.
+          </p>
+          <h2 className="pt-6 font-serif text-[32px] leading-tight text-ink">
+            Timelines and Paused Projects
+          </h2>
+          <p>
+            The launch date in your quote assumes we get your answers, content and feedback when we
+            ask for them. If we&apos;re waiting on you, the launch date moves by the same amount. If
+            we hear nothing from you for 30 days, we pause the project; after 90 days we may close
+            it. Payments already made are kept for the work done, and restarting a closed project
+            may need a new quote.
+          </p>
+          <h2 className="pt-6 font-serif text-[32px] leading-tight text-ink">
+            Third-Party Services
+          </h2>
+          <p>
+            Your site relies on services we don&apos;t control, such as hosting, your domain
+            registrar, email providers and Stripe. We choose reliable ones, but we aren&apos;t
+            responsible for their outages, price changes or policies. Any accounts you hold with
+            them are covered by their own terms.
+          </p>
           <h2 className="pt-6 font-serif text-[32px] leading-tight text-ink">Payment Terms</h2>
           <ul className="list-disc pl-6 space-y-2">
             <li>
@@ -95,30 +127,72 @@ export default function TermsPage() {
             </li>
             <li>Care Plan fees are billed monthly in advance</li>
             <li>All payments are processed via Stripe</li>
+            <li>
+              If a Care Plan payment is more than 14 days late, we may pause edits and support until
+              it&apos;s paid. If it&apos;s more than 30 days late, we may end the plan and, after
+              giving you 7 days&apos; written notice, take the site off our hosting
+            </li>
           </ul>
           <h2 className="pt-6 font-serif text-[32px] leading-tight text-ink">Cancellation</h2>
           <p>
             You may cancel a Care Plan at any time. No refunds for partial months. Build payments
-            (including a 50% deposit) are non-refundable once work has begun.
+            (including a 50% deposit) are non-refundable once work has begun. We may also end a
+            project or Care Plan with written notice; if we end a build before launch for a reason
+            that isn&apos;t yours, we refund what you&apos;ve paid for work not yet done.
           </p>
           <h2 className="pt-6 font-serif text-[32px] leading-tight text-ink">
             Intellectual Property
           </h2>
           <p>
             Upon full payment, you own the final deliverables. We retain rights to reusable code,
-            frameworks, and tools used in development.
+            frameworks, and tools used in development, and you get a permanent license to use them
+            as part of your site. Material you gave us stays yours. We may show your finished site
+            in our portfolio and marketing; tell us if you&apos;d rather we didn&apos;t, and we
+            won&apos;t.
           </p>
           <h2 className="pt-6 font-serif text-[32px] leading-tight text-ink">
             Warranties and Disclaimers
           </h2>
           <p>
-            We provide services &quot;as-is&quot; without warranty. We are not liable for indirect
-            damages, lost profits, or consequential damages.
+            We do the work with reasonable care and skill, and fix anything that doesn&apos;t match
+            your quote when we deliver it. Beyond that, services are provided &quot;as-is&quot;: we
+            don&apos;t promise that a site will be uninterrupted or error-free, or that it will
+            bring in a particular amount of traffic, search ranking or sales.
+          </p>
+          <h2 className="pt-6 font-serif text-[32px] leading-tight text-ink">
+            Limitation of Liability
+          </h2>
+          <p>
+            We are not liable for indirect damages, lost profits, lost data or consequential
+            damages. Our total liability for any claim connected with our services is limited to the
+            amount you paid us in the 12 months before the claim arose. Nothing in these terms
+            limits liability that the law doesn&apos;t allow to be limited.
+          </p>
+          <h2 className="pt-6 font-serif text-[32px] leading-tight text-ink">
+            Governing Law and Disputes
+          </h2>
+          <p>
+            These terms are governed by the laws of the State of Alabama. If something goes wrong,
+            email us first and we&apos;ll try to sort it out directly. If we can&apos;t, any dispute
+            will be handled in the state or federal courts located in Alabama.
           </p>
           <h2 className="pt-6 font-serif text-[32px] leading-tight text-ink">Changes to Terms</h2>
           <p>
-            We may update these terms at any time. Continued use of our services after changes
-            constitutes acceptance.
+            We may update these terms, and we&apos;ll change the date at the top when we do. A build
+            stays under the terms in place when you accepted its quote. For an ongoing Care Plan, we
+            email you about any significant change at least 30 days before it applies; you can
+            cancel before then if you don&apos;t agree.
+          </p>
+          <h2 className="pt-6 font-serif text-[32px] leading-tight text-ink">Privacy</h2>
+          <p>
+            How we handle your information is set out in our{' '}
+            <Link
+              href="/privacy"
+              className="text-ink underline underline-offset-4 hover:text-ink-soft"
+            >
+              privacy policy
+            </Link>
+            .
           </p>
           <h2 className="pt-6 font-serif text-[32px] leading-tight text-ink">Contact</h2>
           <p>

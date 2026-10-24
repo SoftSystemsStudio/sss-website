@@ -203,9 +203,9 @@ export default function Home() {
           </h1>
           <div className="rise mt-6 flex flex-col gap-6 [--rise-delay:0.3s] lg:mt-10 lg:flex-row lg:items-end lg:justify-between">
             <p className="max-w-[600px] text-[17px] leading-[1.55] text-ink-soft sm:text-[21px]">
-              Custom websites for local businesses, designed and written by me, Austin, from{' '}
-              {BUILD_FROM} for a one-page site. In person around Columbus, Phenix City and Auburn;
-              by video everywhere else.
+              I’m Austin. I design and write websites for local businesses, starting at {BUILD_FROM}{' '}
+              for one page. If you’re near Columbus, Phenix City or Auburn, let’s meet in person. If
+              not, video works just fine.
             </p>
             <div className="grid grid-cols-2 gap-2.5 sm:flex sm:items-center sm:gap-8">
               <Button
@@ -231,8 +231,8 @@ export default function Home() {
         {/* Where */}
         <Section>
           <p className="reveal border-y border-line py-7 text-center font-serif text-2xl italic leading-snug tracking-[-0.01em] sm:py-10 sm:text-[30px] lg:text-[34px]">
-            Based in {HOME_BASE}. Meeting in person anywhere from Columbus and Phenix City to Auburn
-            and Opelika, and working by phone and video with businesses everywhere else.
+            I work out of {HOME_BASE}. I’m happy to meet anywhere from Columbus and Phenix City to
+            Auburn and Opelika, and I work with folks farther away by phone and video.
           </p>
         </Section>
 

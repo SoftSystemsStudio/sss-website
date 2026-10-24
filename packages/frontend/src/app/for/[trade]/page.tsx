@@ -25,7 +25,7 @@ export async function generateMetadata({
   const trade = getTrade((await params).trade);
   if (!trade) return {};
   const title = `Websites for ${trade.audience}`;
-  const description = `${trade.promise} Custom websites for ${trade.audience}, anywhere: from ${BUILD_FROM} for a one-page site, designed and written by one person.`;
+  const description = `${trade.promise} I build one-page websites for ${trade.audience} for ${BUILD_FROM}, and I write the words too.`;
   const ogImage = `/api/og?title=${encodeURIComponent(`${title}.`)}`;
   return {
     title,

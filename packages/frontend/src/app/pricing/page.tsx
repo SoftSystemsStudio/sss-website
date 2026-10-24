@@ -23,8 +23,8 @@ const GROWTH = getPackage('growth');
 const CUSTOM = getPackage('custom');
 
 const TITLE = 'Website pricing';
-const DESCRIPTION = `Website packages for local businesses: one page for ${BUILD_FROM}, up to 5 pages for ${BUSINESS.price}, up to 12 pages with booking, payments or a blog for ${GROWTH.price}, and sites with logins quoted from ${CUSTOM.price}. Exactly what each one includes.`;
-const OG_IMAGE = `/api/og?title=${encodeURIComponent('Pay for the site you need.')}`;
+const DESCRIPTION = `What a website costs here: ${BUILD_FROM} for one page, ${BUSINESS.price} for up to 5, ${GROWTH.price} for up to 12, bigger sites from ${CUSTOM.price}. And what each one comes with.`;
+const OG_IMAGE = `/api/og?title=${encodeURIComponent('What a website costs.')}`;
 
 export const metadata: Metadata = {
   title: TITLE,

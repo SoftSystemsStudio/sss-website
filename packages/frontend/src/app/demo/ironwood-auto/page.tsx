@@ -4,7 +4,7 @@ import IronwoodAutoDemo from './ironwood-auto-demo';
 export const metadata: Metadata = {
   title: 'Demo: Ironwood Auto & Tire',
   description:
-    'A fictional auto repair shop website, shown as a design example of what Soft Systems Studio can build for a phone-first, urgency-driven local service business. Not a real business.',
+    'A made-up auto repair shop I designed to show a site built for people who need to call a mechanic today. Not a real business.',
   alternates: { canonical: '/demo/ironwood-auto' },
 };
 

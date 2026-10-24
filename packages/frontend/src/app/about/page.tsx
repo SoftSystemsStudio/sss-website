@@ -12,8 +12,8 @@ import {
 } from '@/lib/business';
 
 export const metadata: Metadata = {
-  title: 'About',
-  description: `Austin Hodges runs Soft Systems Studio, a one-person web design studio in ${HOME_BASE}. Why a website here starts at ${BUILD_FROM} instead of $3,000+.`,
+  title: 'About Austin',
+  description: `I’m Austin Hodges. I build websites for local businesses from ${HOME_BASE}. Here’s how I work and why I charge what I do.`,
   alternates: { canonical: '/about' },
 };
 

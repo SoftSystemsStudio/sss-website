@@ -4,7 +4,7 @@ import GreenBenchDemo from './green-bench-demo';
 export const metadata: Metadata = {
   title: 'Demo: Green Bench Lawn & Landscape',
   description:
-    'A fictional lawn care and landscaping website, shown as a design example of what Soft Systems Studio can build for a portfolio-driven, seasonal local business. Not a real business.',
+    'A made-up lawn care company I designed to show what a site that puts finished yards first could look like. Not a real business.',
   alternates: { canonical: '/demo/green-bench' },
 };
 

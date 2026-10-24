@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     template: '%s | Soft Systems Studio',
   },
   description:
-    'Custom websites for local businesses in Columbus, Phenix City, Auburn and Opelika, from a web designer in Smiths Station, AL. Websites from $997, priced by the size of the site. Care Plans from $150/month.',
+    'I’m Austin, a web designer in Smiths Station, AL. I build websites for local businesses around Columbus, Phenix City, Auburn and Opelika, from $997.',
   keywords: [
     'web designer Columbus GA',
     'web design Phenix City AL',
@@ -46,23 +46,23 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: 'https://softsystemsstudiollc.com',
     siteName: 'Soft Systems Studio',
-    title: 'Web Design for Local Businesses | Soft Systems Studio',
+    title: 'Hi, I’m Austin. I build websites for local businesses.',
     description:
-      'Custom websites for local businesses around Columbus, Phenix City and Auburn, and anywhere else by video. From $997, designed and written by one person.',
+      'Web design from Smiths Station, AL. Glad to meet in person around Columbus, Phenix City and Auburn, or by video if you’re farther out.',
     images: [
       {
         url: '/api/og',
         width: 1200,
         height: 630,
-        alt: 'Soft Systems Studio: web design for local businesses',
+        alt: 'Soft Systems Studio: You built the business. I’ll build the website.',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Web Design for Local Businesses | Soft Systems Studio',
+    title: 'Hi, I’m Austin. I build websites for local businesses.',
     description:
-      'Websites for local businesses from $997, from a web designer in Smiths Station, AL. Care Plans from $150/month.',
+      'Web design from Smiths Station, AL, for businesses around Columbus, Phenix City and Auburn. A one-page site starts at $997.',
     images: ['/api/og'],
   },
   robots: {

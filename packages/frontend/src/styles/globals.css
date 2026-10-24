@@ -23,7 +23,7 @@ body {
 
 /* Dark (ink) sections: the ink outline would disappear */
 .surface-ink :focus-visible {
-  outline-color: #f2c230;
+  outline-color: #c9a66b;
 }
 
 .skip-link {
@@ -41,15 +41,20 @@ body {
   top: 0;
 }
 
-/* Highlighter stroke behind a word (the hero's "website.") */
+/* Brass underline stroke behind a word (the hero's "website.") */
 .marker {
-  background-image: linear-gradient(transparent 60%, #f2c230 60%, #f2c230 88%, transparent 88%);
+  background-image: linear-gradient(
+    transparent 72%,
+    rgb(168 131 75 / 0.38) 72%,
+    rgb(168 131 75 / 0.38) 92%,
+    transparent 92%
+  );
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
 }
 
 ::selection {
-  background-color: #f2c230;
+  background-color: #e3d3b5;
   color: #17312b;
 }
 

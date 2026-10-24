@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import Button from './Button';
 
@@ -39,12 +40,15 @@ export default function Navbar({
       className={`site-header sticky top-0 z-50 border-b border-line-soft bg-paper ${className}`}
     >
       <div className="mx-auto flex h-16 max-w-page items-center justify-between pl-5 pr-3 sm:px-8 lg:h-[88px] lg:px-20">
-        <Link
-          href="/"
-          className="font-serif text-[25px] tracking-[-0.01em] text-ink lg:text-[30px]"
-          onClick={closeMobile}
-        >
-          Soft Systems Studio
+        <Link href="/" className="flex items-center" onClick={closeMobile}>
+          <Image
+            src="/images/brand/logo-compact-color.svg"
+            alt="Soft Systems Studio"
+            width={348}
+            height={92}
+            priority
+            className="-ml-2 h-10 w-auto lg:h-[52px]"
+          />
         </Link>
 
         <nav aria-label="Main" className="hidden items-center gap-9 md:flex">

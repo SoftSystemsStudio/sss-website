@@ -402,6 +402,13 @@ export default function Home() {
             <p className="mt-8 font-serif text-[26px] italic text-ink-soft">— Austin Hodges</p>
           </div>
           <div className="reveal rounded-md bg-limestone p-7 sm:p-10">
+            <Image
+              src="/images/brand/logo-stacked-color.svg"
+              alt="Soft Systems Studio, established 2025"
+              width={361}
+              height={388}
+              className="mx-auto mb-8 h-auto w-[200px]"
+            />
             <dl>
               {[
                 ['Based', HOME_BASE],

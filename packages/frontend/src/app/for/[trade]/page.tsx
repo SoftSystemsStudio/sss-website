@@ -25,7 +25,7 @@ export async function generateMetadata({
   const trade = getTrade((await params).trade);
   if (!trade) return {};
   const title = `Websites for ${trade.audience}`;
-  const description = `${trade.promise} Custom websites for ${trade.audience}, anywhere: from ${BUILD_FROM} for a one-page site, designed and written by one person.`;
+  const description = `${trade.promise} I design and write websites for ${trade.audience}, built around how your customers decide.`;
   const ogImage = `/api/og?title=${encodeURIComponent(`${title}.`)}`;
   return {
     title,
@@ -73,7 +73,7 @@ export default async function TradePage({ params }: { params: Promise<{ trade: s
               {trade.promise}
             </p>
             <p className="rise mt-7 max-w-[560px] text-[17px] leading-[1.55] text-ink-soft [--rise-delay:0.25s] sm:text-[21px]">
-              {trade.intro} One-page sites from {BUILD_FROM}.
+              {trade.intro}
             </p>
             <div className="rise mt-8 flex flex-col gap-4 [--rise-delay:0.35s] sm:flex-row sm:items-center sm:gap-8">
               <Button as="link" href={quote} variant="primary" size="lg">

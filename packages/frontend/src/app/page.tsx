@@ -15,7 +15,6 @@ import {
 } from '@/components/StructuredData';
 import {
   ADD_ONS_FROM,
-  BUILD_FROM,
   BUILD_ONLY_HOSTING_DAYS,
   BUILD_PACKAGES,
   BUILD_REVISION_ROUNDS,
@@ -203,9 +202,10 @@ export default function Home() {
           </h1>
           <div className="rise mt-6 flex flex-col gap-6 [--rise-delay:0.3s] lg:mt-10 lg:flex-row lg:items-end lg:justify-between">
             <p className="max-w-[600px] text-[17px] leading-[1.55] text-ink-soft sm:text-[21px]">
-              Custom websites for local businesses, designed and written by me, Austin, from{' '}
-              {BUILD_FROM} for a one-page site. In person around Columbus, Phenix City and Auburn;
-              by video everywhere else.
+              Hey, I’m Austin. I design and write websites for local businesses, the kind that get a
+              customer to pick up the phone instead of hitting the back button. If you’re near
+              Columbus, Phenix City or Auburn, let’s sit down and talk it through. If not, video
+              works just as well, and you won’t have to find parking.
             </p>
             <div className="grid grid-cols-2 gap-2.5 sm:flex sm:items-center sm:gap-8">
               <Button
@@ -231,8 +231,9 @@ export default function Home() {
         {/* Where */}
         <Section>
           <p className="reveal border-y border-line py-7 text-center font-serif text-2xl italic leading-snug tracking-[-0.01em] sm:py-10 sm:text-[30px] lg:text-[34px]">
-            Based in {HOME_BASE}. Meeting in person anywhere from Columbus and Phenix City to Auburn
-            and Opelika, and working by phone and video with businesses everywhere else.
+            Home base is {HOME_BASE}. I’ll gladly drive anywhere from Columbus and Phenix City to
+            Auburn and Opelika to talk shop, and if you’re farther out, phone and video work just
+            fine.
           </p>
         </Section>
 
@@ -246,8 +247,9 @@ export default function Home() {
               </h2>
             </div>
             <p className="text-[17px] leading-relaxed text-ink-soft sm:text-lg">
-              I built these to show range before I had client sites to show. Each one is designed
-              around how its customers actually decide, and each is labeled as a concept.
+              Before I had client sites to show off, I built these. Each one is designed around how
+              its customers actually decide, and each is clearly labeled as a concept, so nobody
+              goes looking for a flower shop that doesn’t exist.
             </p>
           </div>
 
@@ -390,14 +392,15 @@ export default function Home() {
               Hi, I’m <em>Austin.</em>
             </h2>
             <p className="mt-8 text-lg leading-relaxed text-ink-soft sm:text-[21px]">
-              Soft Systems Studio is one person: me. I’m based in {HOME_BASE}, and I build websites
-              for local businesses. If you’re around {SERVICE_AREA_LABEL}, we can sit down in
-              person; anywhere else, we work by phone, email and video.
+              Soft Systems Studio is one person, and that person is me. I’m based in {HOME_BASE},
+              and I build websites for local businesses. If you’re around {SERVICE_AREA_LABEL}, we
+              can sit down in person. Anywhere else, we’ll do it by phone, email and video.
             </p>
             <p className="mt-5 text-lg leading-relaxed text-ink-soft sm:text-[21px]">
-              It’s a new studio, so I charge for the work itself, not for a reputation I haven’t
-              built yet. You deal with the person designing your site from the first call to launch
-              day. I use AI tools to work quickly, and I check every page myself.
+              You work with the person designing your site from the first call to launch day. No
+              handoffs, and no “let me check with the team.” I’m a little particular about the small
+              stuff: how it reads on a phone, how fast it loads, whether the next step is obvious. I
+              use AI tools to work quickly, and I check every page myself, usually more than once.
             </p>
             <p className="mt-8 font-serif text-[26px] italic text-ink-soft">— Austin Hodges</p>
           </div>
@@ -453,7 +456,8 @@ export default function Home() {
           <div className="reveal">
             <h2 className={SECTION_TITLE}>Questions</h2>
             <p className="mt-5 max-w-xs text-[17px] leading-relaxed text-ink-soft">
-              Something not covered here? Ask it in the quote form or by email.
+              Got a question I didn’t think of? Ask it in the quote form or by email. No question is
+              too small.
             </p>
           </div>
           <div className="reveal">

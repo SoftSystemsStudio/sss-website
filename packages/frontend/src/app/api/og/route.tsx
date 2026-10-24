@@ -1,6 +1,5 @@
 import { ImageResponse } from 'next/og';
 import type { NextRequest } from 'next/server';
-import { BUILD_FROM, RETAINER_MIN } from '@/lib/business';
 
 export const runtime = 'edge';
 
@@ -37,7 +36,7 @@ export async function GET(req: NextRequest) {
     const title = searchParams.get('title');
     const line1 = title ?? 'You built the business.';
     const line2 = title ? '' : 'I’ll build the website.';
-    const footer = `Websites from ${BUILD_FROM} · Care Plans from ${RETAINER_MIN}/mo · Based in Smiths Station, AL`;
+    const footer = 'Austin Hodges · Websites for local businesses · Smiths Station, AL';
 
     // Subset fonts only cover the characters they were fetched for, so it's all
     // or nothing: a partial set would mix typefaces glyph by glyph.

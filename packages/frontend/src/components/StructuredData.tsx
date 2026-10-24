@@ -30,11 +30,10 @@ const BUSINESS_ID = `${SITE_URL}/#business`;
 
 /** The facts search engines and AI answers quote: what, where, who, how much. */
 const BUSINESS_DESCRIPTION =
-  'Custom websites for local businesses, designed and written by one person, from ' +
-  `${BUILD_FROM} for a one-page site and priced by the size of the site, with optional Care ` +
-  'Plans for hosting and edits. Based in Smiths Station, AL, ' +
-  'meeting in person around Columbus, GA, Phenix City, AL, and Auburn and Opelika, AL, and ' +
-  'working with businesses anywhere by phone, email and video.';
+  'Austin Hodges designs, writes and builds websites for local businesses from Smiths ' +
+  'Station, AL, and optional Care Plans cover hosting and edits after launch. He meets people in person around ' +
+  'Columbus, GA, Phenix City, AL, and Auburn and Opelika, AL, and works with businesses ' +
+  'anywhere else by phone, email and video.';
 
 const ADDRESS = {
   '@type': 'PostalAddress',
@@ -129,7 +128,7 @@ export function LocalBusinessSchema() {
       ...BUILD_PACKAGES.map((pkg) => ({
         '@type': 'Offer',
         name: `Website build — ${pkg.name}`,
-        description: `${pkg.summary}. Designed, written and launched on your own domain.`,
+        description: `${pkg.summary}. I design it, write it and launch it on your own domain.`,
         priceCurrency: 'USD',
         ...(pkg.quoted
           ? {

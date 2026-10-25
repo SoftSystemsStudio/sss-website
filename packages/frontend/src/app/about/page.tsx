@@ -49,8 +49,8 @@ export default function AboutPage() {
             <em>Every detail.</em>
           </h1>
           <p className="rise mt-8 max-w-3xl text-lg leading-relaxed text-ink-soft [--rise-delay:0.25s] sm:text-[21px]">
-            I’m Austin Hodges. I started Soft Systems Studio in 2026 to build websites for local
-            businesses. I’m based in {HOME_BASE}, I meet clients in person around{' '}
+            I’m Austin Hodges. I started Soft Systems Studio in December 2025 to build websites for
+            local businesses. I’m based in {HOME_BASE}, I meet clients in person around{' '}
             {SERVICE_AREA_LABEL}, and I work with businesses anywhere else by phone and video. It’s
             just me, which means I design, write, build and support every site myself. It also means
             you always know exactly who’s responsible.

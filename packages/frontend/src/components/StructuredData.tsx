@@ -64,7 +64,7 @@ export function OrganizationSchema() {
     logo: `${SITE_URL}/images/brand/icon-512.png`,
     description: BUSINESS_DESCRIPTION,
     email: CONTACT_EMAIL,
-    foundingDate: '2026',
+    foundingDate: '2025-12',
     founder: FOUNDER,
     address: ADDRESS,
     sameAs: [

@@ -22,6 +22,7 @@ import {
   RETAINER_MAX,
   SERVICE_AREA_CITIES,
   BUSINESS_PHONE,
+  FACEBOOK_URL,
 } from '@/lib/business';
 
 const SITE_URL = 'https://softsystemsstudiollc.com';
@@ -68,7 +69,7 @@ export function OrganizationSchema() {
     founder: FOUNDER,
     address: ADDRESS,
     sameAs: [
-      // Add your social media profiles here
+      FACEBOOK_URL,
       // 'https://twitter.com/softsystems',
       // 'https://linkedin.com/company/soft-systems-studio',
     ],

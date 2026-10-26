@@ -286,3 +286,6 @@ export const START_PROJECT_URL = 'https://tool.softsystemsstudiollc.com/start';
 
 /** The one inbox Austin actually checks — see audit §5 / P5 #16. */
 export const CONTACT_EMAIL = 'austin@softsystemsstudiollc.com';
+
+/** The studio's Facebook page — linked from the footer and the Organization schema. */
+export const FACEBOOK_URL = 'https://www.facebook.com/profile.php?id=61595626299781';

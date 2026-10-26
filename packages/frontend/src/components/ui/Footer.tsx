@@ -1,7 +1,13 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { HOME_BASE, BUSINESS_PHONE, CONTACT_EMAIL, SERVICE_AREA_LABEL } from '@/lib/business';
+import {
+  HOME_BASE,
+  BUSINESS_PHONE,
+  CONTACT_EMAIL,
+  FACEBOOK_URL,
+  SERVICE_AREA_LABEL,
+} from '@/lib/business';
 
 const FOOTER_NAV = [
   { label: 'Work', href: '/#portfolio' },
@@ -68,6 +74,14 @@ export default function Footer() {
         <div className="mt-14 flex flex-col gap-3 text-sm sm:flex-row sm:justify-between">
           <span>&copy; {new Date().getFullYear()} Soft Systems Studio LLC</span>
           <span className="flex gap-6">
+            <a
+              href={FACEBOOK_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-paper"
+            >
+              Facebook
+            </a>
             <Link href="/privacy" className="hover:text-paper">
               Privacy
             </Link>

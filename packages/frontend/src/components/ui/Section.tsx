@@ -18,7 +18,9 @@ export default function Section({
 }: SectionProps) {
   return (
     <section id={id} className={className}>
-      <div className={`mx-auto max-w-page px-5 sm:px-8 lg:px-20 ${innerClassName}`}>{children}</div>
+      <div className={`mx-auto max-w-page px-5 sm:px-8 lg:px-20 2xl:px-24 ${innerClassName}`}>
+        {children}
+      </div>
     </section>
   );
 }

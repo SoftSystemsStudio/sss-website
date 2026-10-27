@@ -31,7 +31,7 @@ module.exports = {
         'on-ink': '#C4CFCA', // secondary text on ink backgrounds
       },
       maxWidth: {
-        page: '90rem', // 1440px: a 1280px column inside the lg gutters
+        page: '112rem', // 1792px: a 1600px column inside the 2xl gutters, so wide screens aren't mostly margin
       },
     },
   },

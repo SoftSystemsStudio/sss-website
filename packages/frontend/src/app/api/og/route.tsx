@@ -77,7 +77,7 @@ export async function GET(req: NextRequest) {
           fontFamily: 'Sans',
         }}
       >
-        <img src={logo} alt="Soft Systems Studio" width={261} height={69} />
+        <img src={logo} alt="Soft Systems Studio" width={261} height={71} />
 
         <div style={{ display: 'flex', flexDirection: 'column', fontFamily: 'Serif' }}>
           <div style={{ display: 'flex', fontSize: 112, lineHeight: 1, letterSpacing: '-0.01em' }}>

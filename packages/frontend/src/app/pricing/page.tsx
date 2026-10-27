@@ -136,7 +136,7 @@ export default function PricingPage() {
         {/* At a glance */}
         <Section
           id="compare"
-          className="scroll-mt-16 border-t border-line-soft py-20 lg:scroll-mt-[88px] lg:py-[120px]"
+          className="scroll-mt-16 border-t border-line-soft py-20 lg:scroll-mt-[96px] lg:py-[120px]"
         >
           <h2 className={`reveal ${SECTION_TITLE}`}>At a glance</h2>
           <p className="reveal mt-4 text-[15px] text-ink-muted lg:hidden">
@@ -207,7 +207,7 @@ export default function PricingPage() {
               <article
                 key={pkg.id}
                 id={pkg.id}
-                className="reveal grid scroll-mt-16 gap-8 border-t border-ink py-10 lg:scroll-mt-[88px] lg:grid-cols-[4fr_8fr] lg:gap-16 lg:py-14"
+                className="reveal grid scroll-mt-16 gap-8 border-t border-ink py-10 lg:scroll-mt-[96px] lg:grid-cols-[4fr_8fr] lg:gap-16 lg:py-14"
               >
                 <div>
                   <h3 className="font-serif text-[48px] leading-none tracking-[-0.015em] sm:text-[56px]">
@@ -320,7 +320,7 @@ export default function PricingPage() {
         {/* Care Plans */}
         <Section
           id="care-plans"
-          className="scroll-mt-16 border-t border-line-soft py-20 lg:scroll-mt-[88px] lg:py-[120px]"
+          className="scroll-mt-16 border-t border-line-soft py-20 lg:scroll-mt-[96px] lg:py-[120px]"
           innerClassName="grid gap-12 lg:grid-cols-2 lg:gap-28"
         >
           <div className="reveal">

@@ -238,7 +238,7 @@ export default function Home() {
         </Section>
 
         {/* Work */}
-        <Section id="portfolio" className="scroll-mt-16 py-20 lg:scroll-mt-[88px] lg:py-[120px]">
+        <Section id="portfolio" className="scroll-mt-16 py-20 lg:scroll-mt-[96px] lg:py-[120px]">
           <div className="reveal grid gap-6 lg:grid-cols-[7fr_5fr] lg:items-end lg:gap-[72px]">
             <div>
               <p className={EYEBROW}>Concept work</p>
@@ -263,7 +263,7 @@ export default function Home() {
         {/* Pricing */}
         <Section
           id="pricing"
-          className="scroll-mt-16 bg-limestone py-20 lg:scroll-mt-[88px] lg:py-[120px]"
+          className="scroll-mt-16 bg-limestone py-20 lg:scroll-mt-[96px] lg:py-[120px]"
         >
           <div className="reveal grid gap-6 lg:grid-cols-[7fr_5fr] lg:items-end lg:gap-[72px]">
             <div>
@@ -362,7 +362,7 @@ export default function Home() {
         </Section>
 
         {/* Process */}
-        <Section id="process" className="scroll-mt-16 py-20 lg:scroll-mt-[88px] lg:py-[120px]">
+        <Section id="process" className="scroll-mt-16 py-20 lg:scroll-mt-[96px] lg:py-[120px]">
           <h2 className={`reveal ${SECTION_TITLE}`}>How it goes</h2>
           <ol className="mt-12 grid gap-10 md:grid-cols-3 lg:mt-14 lg:gap-14">
             {STEPS.map((step, index) => (
@@ -383,7 +383,7 @@ export default function Home() {
         {/* Who */}
         <Section
           id="about"
-          className="scroll-mt-16 border-t border-line-soft py-20 lg:scroll-mt-[88px] lg:py-[120px]"
+          className="scroll-mt-16 border-t border-line-soft py-20 lg:scroll-mt-[96px] lg:py-[120px]"
           innerClassName="grid gap-12 lg:grid-cols-[7fr_5fr] lg:items-center lg:gap-24"
         >
           <div className="reveal">
@@ -408,8 +408,8 @@ export default function Home() {
             <Image
               src="/images/brand/logo-stacked-color.svg"
               alt="Soft Systems Studio, established 2025"
-              width={361}
-              height={388}
+              width={365}
+              height={393}
               className="mx-auto mb-8 h-auto w-[200px]"
             />
             <dl>
@@ -450,7 +450,7 @@ export default function Home() {
         {/* FAQ */}
         <Section
           id="faq"
-          className="scroll-mt-16 pb-24 lg:scroll-mt-[88px] lg:pb-[120px]"
+          className="scroll-mt-16 pb-24 lg:scroll-mt-[96px] lg:pb-[120px]"
           innerClassName="grid gap-10 lg:grid-cols-[4fr_8fr] lg:gap-16"
         >
           <div className="reveal">

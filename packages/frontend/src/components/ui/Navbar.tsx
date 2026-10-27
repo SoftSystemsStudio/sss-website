@@ -39,15 +39,15 @@ export default function Navbar({
     <header
       className={`site-header sticky top-0 z-50 border-b border-line-soft bg-paper ${className}`}
     >
-      <div className="mx-auto flex h-16 max-w-page items-center justify-between pl-5 pr-3 sm:px-8 lg:h-[88px] lg:px-20">
+      <div className="mx-auto flex h-16 max-w-page items-center justify-between pl-5 pr-3 sm:px-8 lg:h-[96px] lg:px-20 2xl:px-24">
         <Link href="/" className="flex items-center" onClick={closeMobile}>
           <Image
             src="/images/brand/logo-compact-color.svg"
             alt="Soft Systems Studio"
-            width={348}
-            height={92}
+            width={351}
+            height={96}
             priority
-            className="-ml-2 h-10 w-auto lg:h-[52px]"
+            className="-ml-2 h-11 w-auto lg:h-[64px]"
           />
         </Link>
 

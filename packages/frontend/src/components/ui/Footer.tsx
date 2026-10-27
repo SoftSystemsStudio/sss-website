@@ -19,16 +19,16 @@ const FOOTER_NAV = [
 export default function Footer() {
   return (
     <footer className="surface-ink bg-ink text-on-ink">
-      <div className="mx-auto max-w-page px-5 pb-10 sm:px-8 lg:px-20">
+      <div className="mx-auto max-w-page px-5 pb-10 sm:px-8 lg:px-20 2xl:px-24">
         <div className="flex flex-col gap-10 border-t border-paper/20 pt-12 md:flex-row md:items-start md:justify-between">
           <div className="flex max-w-md flex-col gap-3">
             <Link href="/" className="self-start">
               <Image
                 src="/images/brand/logo-wordmark-reversed.svg"
                 alt="Soft Systems Studio, established 2025"
-                width={403}
-                height={178}
-                className="-ml-4 h-auto w-[240px]"
+                width={407}
+                height={187}
+                className="-ml-4 h-auto w-[300px]"
               />
             </Link>
             <p className="text-[15px] leading-relaxed">

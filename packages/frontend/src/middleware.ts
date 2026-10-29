@@ -12,6 +12,8 @@ const isPublicRoute = createRouteMatcher([
   '/sign-up(.*)',
   '/demo(.*)', // All demo routes are public
   '/for(.*)', // Trade landing pages (lib/trades.ts), linked from outreach emails
+  '/hi', // Where the business card's QR code lands
+  '/hi/(.*)', // ...and its .vcf contact card
   '/api/cron/(.*)',
   '/api/og',
   '/api/livekit-token',

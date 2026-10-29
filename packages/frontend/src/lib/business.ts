@@ -268,13 +268,14 @@ export const SERVICE_AREA_CITIES = [
 export const SERVICE_AREA_LABEL = 'Columbus, Phenix City, Auburn and Opelika';
 
 /**
- * Austin doesn't have a published business phone number yet. Leave this
- * `null` until he does — never invent one, and never wire up a `tel:` link
- * with a placeholder number. Once a real number exists, set it here
- * (E.164 format, e.g. `'+17065551234'`) and every consumer of this constant
- * (footer, LocalBusiness schema, contact copy) picks it up automatically.
+ * Austin's cell, published 2026-10-29 (it's also on his business card). E.164
+ * for `tel:` links and the LocalBusiness schema; BUSINESS_PHONE_DISPLAY is how
+ * people read it. Every consumer (footer, schema, /hi and its vCard) picks it
+ * up from here; public/llms.txt quotes it by hand. Set it to `null` to
+ * unpublish, never to a placeholder.
  */
-export const BUSINESS_PHONE: string | null = null;
+export const BUSINESS_PHONE: string | null = '+12088132428';
+export const BUSINESS_PHONE_DISPLAY = '(208) 813-2428';
 
 /**
  * Where "Get a quote" goes (2026-10-02): the Lead Tool's sign-up page. A

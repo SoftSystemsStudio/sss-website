@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { Navbar, Footer, Section, Button } from '@/components/ui';
 import {
   BUSINESS_PHONE,
+  BUSINESS_PHONE_DISPLAY,
   CONTACT_EMAIL,
   FACEBOOK_URL,
   HOME_BASE,
@@ -34,7 +35,7 @@ export default function HiPage() {
   const links = [
     { label: 'Email', value: CONTACT_EMAIL, href: `mailto:${CONTACT_EMAIL}` },
     ...(BUSINESS_PHONE
-      ? [{ label: 'Phone', value: BUSINESS_PHONE, href: `tel:${BUSINESS_PHONE}` }]
+      ? [{ label: 'Phone', value: BUSINESS_PHONE_DISPLAY, href: `tel:${BUSINESS_PHONE}` }]
       : []),
     { label: 'Website', value: 'softsystemsstudiollc.com', href: '/' },
     {

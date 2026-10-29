@@ -201,6 +201,7 @@ export const BUILD_ADD_ONS = [
   { name: 'Online payments or deposits', price: '$350' },
   { name: 'Blog', price: '$300' },
   { name: 'Small online store (under 50 products)', price: 'From $1,500' },
+  { name: 'Online ordering for restaurants, set up on Square', price: 'From $500' },
   { name: 'Linking to a client login your software already has', price: 'From $250' },
   { name: 'Extra revision round', price: '$150' },
 ] as const;

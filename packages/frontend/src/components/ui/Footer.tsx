@@ -4,6 +4,7 @@ import Link from 'next/link';
 import {
   HOME_BASE,
   BUSINESS_PHONE,
+  BUSINESS_PHONE_DISPLAY,
   CONTACT_EMAIL,
   FACEBOOK_URL,
   SERVICE_AREA_LABEL,
@@ -38,15 +39,11 @@ export default function Footer() {
                   {' '}
                   Call{' '}
                   <a href={`tel:${BUSINESS_PHONE}`} className="text-paper underline">
-                    {BUSINESS_PHONE}
+                    {BUSINESS_PHONE_DISPLAY}
                   </a>
                   .
                 </>
               )}
-              {/* TODO(Austin): once a business phone number exists, set BUSINESS_PHONE
-                  in src/lib/business.ts (E.164 format) — this line and the
-                  LocalBusiness schema pick it up automatically. Do not hardcode a
-                  number here. */}
             </p>
             <a
               href={`mailto:${CONTACT_EMAIL}`}

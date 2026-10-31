@@ -320,6 +320,9 @@ export default function IronwoodAutoDemo() {
                 </div>
               ))}
             </div>
+            <p className="text-[#6B6F72] text-xs mt-6">
+              Sample figures for this demo. The shop and its rating aren&rsquo;t real.
+            </p>
           </div>
         </div>
       </section>
@@ -351,6 +354,9 @@ export default function IronwoodAutoDemo() {
             <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight">
               From the waiting room.
             </h2>
+            <p className="text-[#6B6F72] text-sm mt-4">
+              Sample reviews written for this demo. These aren&rsquo;t real customers.
+            </p>
           </Reveal>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:divide-x md:divide-[#DEDAD1]">
             {reviews.map((r, i) => (

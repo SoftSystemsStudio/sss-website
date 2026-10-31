@@ -106,8 +106,12 @@ body {
   }
 }
 
+/* Two-tone ring: a near-black lime outline with a white inner ring, so at
+   least one of the two clears 3:1 on every demo background, light or dark
+   (the old #84cc16 outline was 1.83:1 on the light demos). */
 :where(.sss-demo) :focus-visible {
-  outline-color: #84cc16;
+  outline-color: #1a2e05;
+  box-shadow: 0 0 0 3px #ffffff;
 }
 
 :where(.sss-demo) ::selection {

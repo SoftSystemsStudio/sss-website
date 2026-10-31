@@ -82,7 +82,6 @@ node scripts/check-env-committed.js
 | -------------------------------------- | ------------------------------ |
 | `packages/frontend/src/app/`          | Next.js app router pages/routes |
 | `packages/frontend/src/lib/env.ts`    | Typed environment variable access |
-| `packages/frontend/src/middleware.ts` | Clerk auth gating + route matcher |
 | `vercel.json`                         | Vercel build config            |
 | `tsconfig.json`                       | Root TypeScript config (extended by each package) |
 

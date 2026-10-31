@@ -1,9 +1,6 @@
 import type { Metadata } from 'next';
-import { Suspense } from 'react';
 import { Cormorant_Garamond, Instrument_Sans } from 'next/font/google';
 import '../styles/globals.css';
-import { AppProviders } from './providers';
-import { GoogleAnalytics } from '@/components/GoogleAnalytics';
 
 const sans = Instrument_Sans({
   subsets: ['latin'],
@@ -81,14 +78,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${sans.variable} ${serif.variable}`}>
-      <body className="min-h-screen bg-paper font-sans text-ink">
-        <AppProviders>
-          <Suspense>
-            <GoogleAnalytics />
-          </Suspense>
-          {children}
-        </AppProviders>
-      </body>
+      <body className="min-h-screen bg-paper font-sans text-ink">{children}</body>
     </html>
   );
 }

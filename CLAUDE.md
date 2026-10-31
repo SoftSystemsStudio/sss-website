@@ -56,12 +56,12 @@ This file is the repo's operating runbook for Claude Code: how work is planned, 
 - **Framework**: Next.js 16 (App Router), React 18. 16.x postdates most model training data; for any Next API, check the version-matched docs bundled at `packages/frontend/node_modules/next/dist/docs/` (pnpm symlink) rather than memory. `next dev`'s own agent-rules scaffolding is switched off (`agentRules: false` in `next.config.mjs`) so it doesn't create files in the tree.
 - **Package manager**: pnpm@8.11.0 (two-package workspace)
 - **Styling**: Tailwind CSS 3.4
-- **Auth (site)**: Clerk — only gates the (currently empty) signed-in nav state; there is no protected dashboard left in this repo
+- **Auth (site)**: none. Clerk (sign-in/sign-up, middleware) was removed 2026-10-31 (compliance audit): it was a development instance in production gating an empty signed-in state. There is no middleware
 - **Email**: Resend (welcome emails). Quote requests no longer go through this site — the old intake form and `/api/intake` were removed 2026-10-02 in favour of the Lead Tool's sign-up
 - **Mailbox**: Google Workspace — `austin@softsystemsstudiollc.com` (`CONTACT_EMAIL`). The old `softsystemstudioco@gmail.com` was upgraded into the same account and still receives mail. DNS is on Cloudflare; Resend and SendGrid send via their own subdomains, so root SPF lists only Google
 - **Payments**: none on this site — build and Care Plan payments are Stripe Checkout links made in the Lead Tool
-- **Error tracking**: Sentry
-- **Voice demo**: LiveKit (`/api/livekit-token` mints a room-scoped token; `components/VoiceDemo.tsx` connects in-browser) — replaced the Vapi phone-callback demo on 2026-09-01. The agent itself runs as a separate always-on service on LiveKit Cloud (project `sss-receptionist`), not in this repo.
+- **Error tracking**: Sentry, errors only. Session replay and performance tracing are off (sample rates 0 in `sentry.*.config.ts`) because the privacy policy says error monitoring only; keep the two in step
+- **Analytics**: none. Google Analytics was removed 2026-10-31; adding any tracker means a consent banner and a privacy-policy update (sss-hub compliance standard items 4, 5, 8)
 
 ---
 
@@ -70,9 +70,8 @@ This file is the repo's operating runbook for Claude Code: how work is planned, 
 ```text
 Vercel
 ├── Next.js app at packages/frontend/
-├── Edge middleware for Clerk auth
 ├── Daily cron: /api/cron/cleanup-tokens (proxies to the SaaS backend, elsewhere)
-└── API routes for BFF pattern (livekit-token, cron)
+└── API routes (cron)
 ```
 
 There is no backend deployed from this repo. `NEXT_PUBLIC_API_URL` (when set) points at the separate SaaS platform's API for the `/api/v1/*` rewrite and the cleanup-tokens cron proxy — that's a runtime HTTP call, not a build dependency.
@@ -93,7 +92,6 @@ There is no backend deployed from this repo. `NEXT_PUBLIC_API_URL` (when set) po
 
 - `.env*` files — never commit (guarded by pre-commit and `check-env-committed`)
 - `pnpm-lock.yaml` — only update via `pnpm install`
-- `src/app/api/livekit-token/route.ts` — mints tokens server-side only; `LIVEKIT_API_KEY`/`LIVEKIT_API_SECRET` must never reach the client
 
 ---
 
@@ -126,8 +124,8 @@ Native `fetch()` + Next.js API routes. No React Query, SWR, or tRPC.
 
 - 3D/heavy components: Use `dynamic()` with `ssr: false`
 - Forms: HTML forms + Zod validation on API routes
-- Auth: Clerk via `@clerk/nextjs`
-- New public pages must be added to `isPublicRoute` in `src/middleware.ts`. On Vercel (where `CLERK_SECRET_KEY` is set) Clerk rewrites any unlisted route to a 404 for signed-out visitors; locally, without the key, the middleware is a no-op, so the page works in dev and silently 404s in production.
+- Demo sites (`/demo/*`) are fictional businesses: `app/demo/layout.tsx` makes them noindex, they stay out of `app/sitemap.ts`, and any review, rating or testimonial on them is visibly labelled as sample text
+- Legal name, state of formation and mailing address come from `LEGAL_NAME`, `LEGAL_ENTITY` and `MAILING_ADDRESS` in `lib/business.ts` (footer, terms, privacy)
 
 ---
 

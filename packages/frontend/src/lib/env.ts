@@ -25,15 +25,6 @@ const envSchema = z.object({
       return val.startsWith('http') ? val : `https://${val}`;
     }),
 
-  // Analytics
-  NEXT_PUBLIC_GA_MEASUREMENT_ID: z.string().optional(),
-
-  // Stripe
-  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string().optional(),
-
-  // Clerk
-  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string().optional(),
-
   // Sentry
   NEXT_PUBLIC_SENTRY_DSN: z.string().url().optional(),
   SENTRY_ORG: z.string().optional(),
@@ -47,11 +38,6 @@ const envSchema = z.object({
 
   // Cron
   CRON_SECRET: z.string().optional(),
-
-  // LiveKit (server-side only — mints tokens for the in-browser voice demo)
-  LIVEKIT_URL: z.string().optional(),
-  LIVEKIT_API_KEY: z.string().optional(),
-  LIVEKIT_API_SECRET: z.string().optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;
@@ -65,25 +51,15 @@ function validateEnv(): Env {
     // that static analysis, so every NEXT_PUBLIC_* value silently came back
     // `undefined` in the browser (server-side Node always has the real
     // process.env, so this only ever broke client code). Real, observed
-    // impact before this fix: GA4 never received a measurement ID, the
-    // homepage chat widget's apiUrl fell back to localhost in production,
-    // and — the bug that surfaced this — providers.tsx's `if
-    // (!env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY)` check always took the
-    // no-ClerkProvider branch client-side even with a real key configured,
-    // crashing /sign-in and /sign-up with "useSession can only be used
-    // within the <ClerkProvider /> component." (Clerk's own SDK reads the
-    // var via its own correctly-written literal reference, which is why
-    // the key itself really was reaching the browser — just not this
-    // module's copy of it.) Keep every property here a plain
+    // impact before this fix: client-side checks on NEXT_PUBLIC_* values
+    // always saw them as unset, even with a real value configured.
+    // Keep every property here a plain
     // `process.env.LITERAL_NAME`, matching envSchema's keys, if either one
     // changes.
     const raw = {
       NODE_ENV: process.env.NODE_ENV,
       NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
       NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
-      NEXT_PUBLIC_GA_MEASUREMENT_ID: process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID,
-      NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
-      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
       NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
       SENTRY_ORG: process.env.SENTRY_ORG,
       SENTRY_PROJECT: process.env.SENTRY_PROJECT,
@@ -92,9 +68,6 @@ function validateEnv(): Env {
       RESEND_FROM_EMAIL: process.env.RESEND_FROM_EMAIL,
       ADMIN_EMAIL: process.env.ADMIN_EMAIL,
       CRON_SECRET: process.env.CRON_SECRET,
-      LIVEKIT_URL: process.env.LIVEKIT_URL,
-      LIVEKIT_API_KEY: process.env.LIVEKIT_API_KEY,
-      LIVEKIT_API_SECRET: process.env.LIVEKIT_API_SECRET,
     };
 
     // Strip empty-string env vars so .optional() treats them as undefined

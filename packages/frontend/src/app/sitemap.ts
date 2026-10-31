@@ -17,31 +17,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'monthly',
       priority: 0.8,
     },
-    // Demo sites - showcase portfolio
-    {
-      url: `${baseUrl}/demo/kettle-and-grain`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/demo/ironwood-auto`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/demo/green-bench`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/demo/mayhaw`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.7,
-    },
+    // The /demo/* sites are fictional businesses: noindex (app/demo/layout.tsx)
+    // and deliberately left out here.
     // The /for/<trade> outreach pages are deliberately left out: they're
     // noindex (see app/for/[trade]/page.tsx).
     // Legal pages

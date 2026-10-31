@@ -1,19 +1,32 @@
 import type { Metadata } from 'next';
 import { Navbar, Footer } from '@/components/ui';
-import { CONTACT_EMAIL, HOME_BASE } from '@/lib/business';
+import {
+  CONTACT_EMAIL,
+  HOME_BASE,
+  LEGAL_ENTITY,
+  LEGAL_NAME,
+  MAILING_ADDRESS,
+} from '@/lib/business';
 
 export const metadata: Metadata = {
   title: 'Privacy Policy',
   description:
-    "What happens to your information when you use this site, ask for a quote or become a client, and what my own private dashboard's read-only Google Calendar and Gmail access is for.",
+    'What happens to your information when you use this site, ask for a quote or become a client, your privacy rights, and what our private dashboard’s read-only Google Calendar and Gmail access is for.',
   alternates: { canonical: '/privacy' },
 };
+
+const H2 = 'pt-6 font-serif text-[32px] leading-tight text-ink';
+const LINK = 'text-ink underline underline-offset-4 hover:text-ink-soft';
+const CODE = 'break-all rounded bg-limestone px-1.5 py-0.5 text-[15px] text-ink';
 
 export default function PrivacyPage() {
   return (
     <div className="min-h-screen">
+      <a href="#main-content" className="skip-link">
+        Skip to main content
+      </a>
       <Navbar />
-      <main className="mx-auto max-w-3xl px-5 py-16 sm:px-8 sm:py-24">
+      <main id="main-content" className="mx-auto max-w-3xl px-5 py-16 sm:px-8 sm:py-24">
         <h1 className="mb-10 font-serif text-[48px] leading-none tracking-[-0.015em] sm:text-[64px]">
           Privacy Policy
         </h1>
@@ -22,159 +35,201 @@ export default function PrivacyPage() {
             <strong className="text-ink">Last updated:</strong> October 2026
           </p>
           <p>
-            I&apos;m Austin, and I built and run this site myself. Here&apos;s what actually happens
-            to your information when you use it &mdash; no boilerplate, no padding, just what&apos;s
-            true.
+            This page says what actually happens to your information when you use this site or work
+            with us. No boilerplate, just what&apos;s true.
           </p>
           <p>
-            &ldquo;I&rdquo; here means Soft Systems Studio LLC, my business, based in {HOME_BASE}.
-            This policy covers this site, the quote sign-up and questionnaire at{' '}
-            <code className="break-all rounded bg-limestone px-1.5 py-0.5 text-[15px] text-ink">
-              tool.softsystemsstudiollc.com
-            </code>
-            , and the information I handle while building or looking after a client&apos;s site.
+            &ldquo;We&rdquo; means {LEGAL_NAME}, {LEGAL_ENTITY} based in {HOME_BASE}. Austin Hodges
+            runs it. This policy covers this site, the quote sign-up, questionnaire and previews at{' '}
+            <code className={CODE}>tool.softsystemsstudiollc.com</code>, and the information we
+            handle while we build or look after a client&apos;s site.
           </p>
 
-          <h2 className="pt-6 font-serif text-[32px] leading-tight text-ink">Asking for a quote</h2>
+          <h2 className={H2}>Asking for a quote</h2>
           <p>
-            &ldquo;Get a quote&rdquo; takes you to a short sign-up form on my own tool. It asks for
+            &ldquo;Get a quote&rdquo; takes you to a short sign-up form on our own tool. It asks for
             your name, business name, email, phone number, what kind of site you&apos;re after, and
-            when. I then email you a private link to a longer questionnaire about your business; the
-            link is how you get back into it, so don&apos;t forward it to anyone.
+            when. We then email you a private link to a longer questionnaire about your business.
+            The link is how you get back into it, so don&apos;t forward it to anyone.
           </p>
           <p>
-            Everything you enter is saved in that tool&apos;s database so I can follow up, quote
-            your project and build your site from your answers. When you sign up, open the link or
-            send your answers, I get an email and a Discord notification so I don&apos;t miss it.
-            The link itself is sent through Resend, an email delivery service. I don&apos;t sell or
-            rent what you send, and I don&apos;t add you to a mailing list.
-          </p>
-
-          <h2 className="pt-6 font-serif text-[32px] leading-tight text-ink">
-            If I contacted you first
-          </h2>
-          <p>
-            I sometimes email local businesses I think I could help. I find them through public
-            listings such as Google Maps, and I look over what&apos;s already public: the business
-            name, address, phone, reviews and website. Some of my tools use an AI service
-            (Anthropic) to help review a site and draft a suggested preview or email. I only work
-            from public, business information &mdash; nothing personal beyond a business&apos;s
-            published contact details. Every email I send this way has an unsubscribe link, and once
-            you use it, or just reply and ask, I stop.
+            What you enter is saved in that tool&apos;s database so we can follow up, quote your
+            project and build your site from your answers. When you sign up, open the link or send
+            your answers, we get an email and a Discord notification so we don&apos;t miss it. The
+            link is sent through Resend, an email delivery service. We don&apos;t sell or rent what
+            you send, and we don&apos;t add you to a mailing list.
           </p>
 
-          <h2 className="pt-6 font-serif text-[32px] leading-tight text-ink">
-            If you&apos;re a client
-          </h2>
+          <h2 className={H2}>If we contacted you first</h2>
           <p>
-            While I build or look after your site, you&apos;ll send me things like your text,
-            photos, logo and sometimes logins (for your domain or an old site). I use them only for
-            your project, and you&apos;re welcome to change any password as soon as I&apos;m done
+            We sometimes email local businesses we think we could help. We find them through public
+            listings, using Google&apos;s Places service (the data behind Google Maps). We look over
+            what&apos;s already public: the business name, address, phone, rating, reviews and
+            website. Some of our tools use an AI service (Anthropic) to review a site and draft a
+            suggested preview or email. We work only from public business information, nothing
+            personal beyond a business&apos;s published contact details.
+          </p>
+          <p>
+            Every marketing email we send includes an unsubscribe link. Use it, or just reply and
+            ask, and we stop. We keep your email address on a do-not-contact list so we don&apos;t
+            write to you again.
+          </p>
+
+          <h2 className={H2}>Previews we make for you</h2>
+          <p>
+            If we send you a preview of a site we made for your business, the preview tells us when
+            it was opened and how much of it was looked at: which pages, how far down they were
+            scrolled, how long the tab was on screen, and whether it was a phone, tablet or
+            computer. We use this only to know whether the preview was useful and when to follow up.
+            It sets no cookies. It keeps a random visit number in your browser&apos;s session
+            storage, which is cleared when you close the tab.
+          </p>
+
+          <h2 className={H2}>If you&apos;re a client</h2>
+          <p>
+            While we build or look after your site, you&apos;ll send us things like your text,
+            photos, logo and sometimes logins (for your domain or an old site). We use them only for
+            your project, and you&apos;re welcome to change any password as soon as we&apos;re done
             with it.
           </p>
           <p>
-            Payments go through Stripe. I see that you paid and the last four digits of your card; I
-            never see or store the full card number. If your site has its own forms, what your
-            visitors send through them is your information: I handle it only to deliver it to you
-            and keep the form working.
+            Payments go through Stripe. We see that you paid and the last four digits of your card.
+            We never see or store the full card number.
+          </p>
+          <p>
+            If your site has its own contact or quote form, what your visitors send through it is
+            your information. Those forms send messages through Web3Forms, a form delivery service,
+            which emails them to you. We handle that information only to deliver it to you and keep
+            the form working. Sites we build may also load their fonts from Google Fonts, which
+            means a visitor&apos;s browser asks Google for the font files.
           </p>
 
-          <h2 className="pt-6 font-serif text-[32px] leading-tight text-ink">
-            Analytics, error monitoring and cookies
-          </h2>
+          <h2 className={H2}>Error monitoring and hosting</h2>
           <p>
-            This site doesn&apos;t run Google Analytics or any advertising tracker. It does use
-            Sentry to catch errors: when something breaks, Sentry records what went wrong and your
-            browser and device type, and for a small share of visits (and any visit that hits an
-            error) a replay of what happened on the page, with anything typed into a form blanked
-            out. I use it only to fix bugs. The site is hosted on Vercel, which, like any web host,
-            logs basic request details such as your IP address. Clerk, the sign-in service the site
-            uses, may set cookies it needs to work. There are no advertising cookies.
+            This site doesn&apos;t run Google Analytics, advertising trackers or session recording.
+            We use Sentry for error monitoring only: when something breaks, Sentry records the
+            error, the page it happened on, and your browser and device type, so we can fix it. It
+            doesn&apos;t record what you do on the page. The site is hosted on Vercel, which, like
+            any web host, logs basic request details such as your IP address.
           </p>
 
-          <h2 className="pt-6 font-serif text-[32px] leading-tight text-ink">
-            Services that handle your information
-          </h2>
+          <h2 className={H2}>Cookies and storage</h2>
           <p>
-            I don&apos;t share your information with anyone except the services that run my
-            business, and only for that: Vercel and Cloudflare (hosting and domains), Supabase (the
-            database behind my tool), Resend (sending email), Google Workspace (my email), Discord
-            (my own notifications), Stripe (payments), Sentry (error monitoring), Clerk (sign-in)
-            and Anthropic (AI assistance, as described above). I may also disclose information if
-            the law requires it.
+            This site sets no cookies and stores nothing in your browser. The previews described
+            above keep one random visit number in session storage, and nothing else. We use no
+            advertising or analytics cookies anywhere, so there is nothing to opt in to or out of.
           </p>
 
-          <h2 className="pt-6 font-serif text-[32px] leading-tight text-ink">
-            How long I keep it, and your choices
-          </h2>
+          <h2 className={H2}>Services that handle your information</h2>
           <p>
-            I keep quote requests and client records for as long as we&apos;re talking or working
-            together, and afterwards for as long as I need them for my business and tax records. You
-            can ask me at any time to see what I hold about you, correct it, or delete it, and
-            I&apos;ll do it unless the law requires me to keep something (such as payment records).
-            Just email me.
+            We share your information only with the services that run our business, and only for
+            that:
+          </p>
+          <ul className="list-disc space-y-2 pl-6">
+            <li>Vercel and Cloudflare: hosting and domains</li>
+            <li>Supabase: the database behind our tool</li>
+            <li>Resend: sending email from our tool</li>
+            <li>Google Workspace: our email</li>
+            <li>Google Places: finding businesses we might contact</li>
+            <li>Discord: our own notifications</li>
+            <li>Stripe: payments</li>
+            <li>Sentry: error monitoring</li>
+            <li>Anthropic: AI assistance, as described above</li>
+            <li>Web3Forms: delivering form messages on sites we build for clients</li>
+          </ul>
+          <p>We may also disclose information if the law requires it.</p>
+
+          <h2 className={H2}>How long we keep it</h2>
+          <p>
+            We keep quote requests and client records while we&apos;re talking or working together.
+            After that, we keep them only as long as we need them for our business and tax records,
+            or until you ask us to delete them. Payment records are kept as long as tax law
+            requires. Preview visit records are deleted along with the business&apos;s record.
           </p>
 
-          <h2 className="pt-6 font-serif text-[32px] leading-tight text-ink">Children</h2>
+          <h2 className={H2}>Your rights</h2>
+          <p>Wherever you live, you can ask us to:</p>
+          <ul className="list-disc space-y-2 pl-6">
+            <li>tell you what information we hold about you, and give you a copy</li>
+            <li>correct anything that&apos;s wrong</li>
+            <li>delete it</li>
+            <li>stop contacting you</li>
+          </ul>
           <p>
-            This site and my services are for businesses. They aren&apos;t meant for anyone under
-            13, and I don&apos;t knowingly collect information from children.
+            Some US states, such as California, give you these rights by law, along with the right
+            to opt out of the sale or sharing of your personal information. We don&apos;t sell your
+            personal information, and we don&apos;t share it for advertising. We won&apos;t treat
+            you differently for using any of these rights.
+          </p>
+          <p>
+            To make a request, email{' '}
+            <a href={`mailto:${CONTACT_EMAIL}`} className={LINK}>
+              {CONTACT_EMAIL}
+            </a>
+            . We check that a request is really from you by replying to the email address we have on
+            file for you. We answer within 45 days.
+          </p>
+          <p>
+            A deletion request covers our tool&apos;s database (your sign-up, questionnaire answers
+            and preview visits), our email inbox, the email records at Resend, and our Discord
+            notifications. Stripe keeps the payment records tax law requires, and we keep your email
+            address on our do-not-contact list so we don&apos;t write to you again.
           </p>
 
-          <h2 className="pt-6 font-serif text-[32px] leading-tight text-ink">
-            SSS Hub, and my own Google Calendar and Gmail
-          </h2>
+          <h2 className={H2}>Children</h2>
           <p>
-            This part isn&apos;t about you or anything you do on this site &mdash; it&apos;s here
-            because Google requires a public privacy policy before I&apos;m allowed to connect a
-            private tool to my own Google account. If you&apos;re a visitor or a client, none of
-            this involves your information.
+            This site and our services are for businesses. They aren&apos;t meant for anyone under
+            13, and we don&apos;t knowingly collect information from children.
+          </p>
+
+          <h2 className={H2}>SSS Hub, and Austin&apos;s own Google Calendar and Gmail</h2>
+          <p>
+            This part isn&apos;t about you or anything you do on this site. It&apos;s here because
+            Google requires a public privacy policy before a private tool can connect to a Google
+            account. If you&apos;re a visitor or a client, none of this involves your information.
           </p>
           <p>
-            I run a private dashboard for my own business called SSS Hub. It&apos;s not a public
-            product, it has no other users, and it runs on my own computer &mdash; nobody else can
-            sign into it.
+            Austin runs a private dashboard for the business called SSS Hub. It&apos;s not a public
+            product, it has no other users, and it runs on his own computer. Nobody else can sign
+            into it.
           </p>
-          <p>To show me my own day at a glance, SSS Hub asks my Google account for two things:</p>
-          <ul className="list-disc pl-6 space-y-2">
+          <p>
+            To show Austin his own day at a glance, SSS Hub asks his Google account for two things:
+          </p>
+          <ul className="list-disc space-y-2 pl-6">
             <li>
-              <code className="break-all rounded bg-limestone px-1.5 py-0.5 text-[15px] text-ink">
-                https://www.googleapis.com/auth/calendar.readonly
-              </code>{' '}
-              &mdash; read-only access to my calendar
+              <code className={CODE}>https://www.googleapis.com/auth/calendar.readonly</code>{' '}
+              &mdash; read-only access to his calendar
             </li>
             <li>
-              <code className="break-all rounded bg-limestone px-1.5 py-0.5 text-[15px] text-ink">
-                https://www.googleapis.com/auth/gmail.readonly
-              </code>{' '}
-              &mdash; read-only access to my Gmail
+              <code className={CODE}>https://www.googleapis.com/auth/gmail.readonly</code> &mdash;
+              read-only access to his Gmail
             </li>
           </ul>
           <p>
-            Both are strictly read-only. SSS Hub cannot send, delete, or change anything in my
-            calendar or my inbox &mdash; it can only look.
+            Both are strictly read-only. SSS Hub can&apos;t send, delete or change anything in the
+            calendar or the inbox. It can only look.
           </p>
           <p>
-            What it looks at, and what it does with it: it shows my next few upcoming calendar
-            events, how many emails arrived in the last day, and the subject line and sender of the
-            handful Gmail has already marked important &mdash; never the body of an email.
-            That&apos;s the extent of it. All of it renders on a dashboard that&apos;s
-            password-protected and reachable only by me. Once a day, that same summary is folded
-            into a short note I keep for myself and an email I send to my own inbox, so I have a
-            record of my own day &mdash; it doesn&apos;t go anywhere beyond that.
+            What it looks at, and what it does with it: it shows the next few calendar events, how
+            many emails arrived in the last day, and the subject line and sender of the handful
+            Gmail has already marked important. It never reads the body of an email. All of it shows
+            on a password-protected dashboard only Austin can reach. Once a day, the same summary
+            goes into a short note he keeps for himself and an email to his own inbox. It goes
+            nowhere else.
           </p>
           <p>
-            The sign-in token that keeps this connected lives in a file on my own computer. It is
-            excluded from source control and is never sent back out through anything the dashboard
-            shows in a browser.
+            The sign-in token that keeps this connected lives in a file on Austin&apos;s own
+            computer. It is kept out of source control and is never sent out through anything the
+            dashboard shows in a browser.
           </p>
           <p>None of it is sold, shared with anyone else, or used for advertising.</p>
           <p>
-            You can see or revoke anything connected to a Google account, mine included, from
-            Google&apos;s own permissions page:{' '}
+            You can see or revoke anything connected to a Google account from Google&apos;s own
+            permissions page:{' '}
             <a
               href="https://myaccount.google.com/permissions"
-              className="text-ink underline underline-offset-4 hover:text-ink-soft"
+              className={LINK}
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -183,60 +238,51 @@ export default function PrivacyPage() {
             .
           </p>
 
-          <h2 className="pt-6 font-serif text-[32px] leading-tight text-ink">
-            Docklight Lo-Fi, and TikTok/YouTube
-          </h2>
+          <h2 className={H2}>Docklight Lo-Fi, and TikTok/YouTube</h2>
           <p>
-            Same as the section above &mdash; this isn&apos;t about you or anything you do on this
-            site. Docklight Lo-Fi is an ambient music channel I run (
+            Same as the section above: this isn&apos;t about you or anything you do on this site.
+            Docklight Lo-Fi is an ambient music channel we run (
             <a
               href="https://www.tiktok.com/@docklightlo-fi"
-              className="text-ink underline underline-offset-4 hover:text-ink-soft"
+              className={LINK}
               target="_blank"
               rel="noopener noreferrer"
             >
               @docklightlo-fi
             </a>
-            ), and part of publishing it is automated. Both TikTok and YouTube require a public
-            privacy policy before they&apos;ll let an app like that connect to an account at all.
+            ), and part of publishing it is automated. TikTok and YouTube both require a public
+            privacy policy before they let an app like that connect to an account.
           </p>
           <p>
-            The automation authenticates as the @docklightlo-fi account itself, on each platform,
-            and asks for only what it needs to publish video there:
+            The automation signs in as the @docklightlo-fi account itself, on each platform, and
+            asks only for what it needs to publish video there:
           </p>
-          <ul className="list-disc pl-6 space-y-2">
+          <ul className="list-disc space-y-2 pl-6">
             <li>
-              <code className="break-all rounded bg-limestone px-1.5 py-0.5 text-[15px] text-ink">
-                video.upload
-              </code>{' '}
-              &mdash; upload a video to the account, as a draft
+              <code className={CODE}>video.upload</code> &mdash; upload a video to the account, as a
+              draft
             </li>
             <li>
-              <code className="break-all rounded bg-limestone px-1.5 py-0.5 text-[15px] text-ink">
-                video.publish
-              </code>{' '}
-              &mdash; post a video directly to the account&apos;s own profile
+              <code className={CODE}>video.publish</code> &mdash; post a video directly to the
+              account&apos;s own profile
             </li>
             <li>
-              <code className="break-all rounded bg-limestone px-1.5 py-0.5 text-[15px] text-ink">
-                user.info.basic
-              </code>{' '}
-              &mdash; read the account&apos;s own basic profile info (open id, display name,
-              avatar), so the automation can confirm which account it&apos;s about to post as before
-              it does
+              <code className={CODE}>user.info.basic</code> &mdash; read the account&apos;s own
+              basic profile info (open id, display name, avatar), so the automation can confirm
+              which account it&apos;s about to post as before it does
             </li>
           </ul>
           <p>
-            It never touches any account but that one, and it doesn&apos;t read, collect, or store
-            anything belonging to @docklightlo-fi&apos;s viewers, commenters, or followers.
+            It never touches any other account, and it doesn&apos;t read, collect or store anything
+            belonging to @docklightlo-fi&apos;s viewers, commenters or followers.
           </p>
           <p>
-            You can see or revoke this connection from each platform&apos;s own settings &mdash; on
-            TikTok, under Settings and privacy &rarr; Security and login &rarr; Manage app
-            permissions; on YouTube/Google, from{' '}
+            You can see or revoke this connection from each platform&apos;s own settings. On TikTok,
+            go to Settings and privacy &rarr; Security and login &rarr; Manage app permissions. On
+            YouTube/Google, use{' '}
             <a
               href="https://myaccount.google.com/permissions"
-              className="text-ink underline underline-offset-4 hover:text-ink-soft"
+              className={LINK}
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -245,25 +291,20 @@ export default function PrivacyPage() {
             .
           </p>
 
-          <h2 className="pt-6 font-serif text-[32px] leading-tight text-ink">
-            Changes to this policy
-          </h2>
+          <h2 className={H2}>Changes to this policy</h2>
           <p>
-            If what this site, my tools or SSS Hub do with information changes, I&apos;ll update
-            this page and the date at the top to match &mdash; it&apos;s meant to describe
-            what&apos;s actually true, not what was true when I first wrote it.
+            If what this site, our tools or SSS Hub do with information changes, we&apos;ll update
+            this page and the date at the top to match. It&apos;s meant to describe what&apos;s true
+            now.
           </p>
 
-          <h2 className="pt-6 font-serif text-[32px] leading-tight text-ink">Contact</h2>
+          <h2 className={H2}>Contact</h2>
           <p>
-            Questions about any of this? Email me at{' '}
-            <a
-              href={`mailto:${CONTACT_EMAIL}`}
-              className="text-ink underline underline-offset-4 hover:text-ink-soft"
-            >
+            Questions about any of this? Email us at{' '}
+            <a href={`mailto:${CONTACT_EMAIL}`} className={LINK}>
               {CONTACT_EMAIL}
             </a>
-            .
+            , or write to {LEGAL_NAME}, {MAILING_ADDRESS}.
           </p>
         </div>
       </main>

@@ -350,6 +350,9 @@ export default function GreenBenchDemo() {
               month since.&rdquo;
             </blockquote>
             <p className="text-sm text-[#A7B09D]">Priya N., Smiths Station</p>
+            <p className="text-xs text-[#A7B09D] mt-2">
+              Sample review written for this demo, not a real customer.
+            </p>
           </Reveal>
           <Reveal delay={0.1} className="relative aspect-[4/3] rounded-xl overflow-hidden">
             <Image

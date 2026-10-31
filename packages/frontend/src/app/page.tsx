@@ -354,8 +354,9 @@ export default function Home() {
               </ul>
               <p className="mt-6 text-[15px] leading-relaxed text-ink-muted">
                 Every plan includes hosting and uptime monitoring, content and text updates, small
-                design tweaks and email support. Optional. Cancel anytime. Unused hours don’t roll
-                over. Sites with logins or a store need a Care Plan, quoted with the build.
+                design tweaks and email support. Optional. Cancel anytime by email or your billing
+                link. Unused hours don’t roll over. Sites with logins or a store need a Care Plan,
+                quoted with the build.
               </p>
             </div>
           </div>

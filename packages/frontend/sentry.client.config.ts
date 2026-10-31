@@ -2,8 +2,9 @@
  * Sentry Client-Side Configuration
  *
  * This file configures the Sentry SDK for client-side (browser) error tracking.
- * It runs on every page load and captures JavaScript errors, performance data,
- * and session replays.
+ * It captures JavaScript errors only. Session replay and performance tracing
+ * are deliberately off: the privacy policy says Sentry is used for error
+ * monitoring only (compliance audit 2026-10-31). Keep the two in step.
  *
  * @see https://docs.sentry.io/platforms/javascript/guides/nextjs/
  */
@@ -17,14 +18,10 @@ Sentry.init({
   environment: process.env.NODE_ENV,
   release: process.env.VERCEL_GIT_COMMIT_SHA || process.env.NEXT_PUBLIC_RELEASE_VERSION,
 
-  // Performance Monitoring
-  // Capture 10% of transactions in production, 100% in development
-  tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
-
-  // Session Replay for debugging user issues
-  // Capture 10% of all sessions, 100% of sessions with errors
-  replaysSessionSampleRate: 0.1,
-  replaysOnErrorSampleRate: 1.0,
+  // Error monitoring only: no performance tracing, no session replay.
+  tracesSampleRate: 0,
+  replaysSessionSampleRate: 0,
+  replaysOnErrorSampleRate: 0,
 
   // Enable Sentry (set to true to test in development)
   enabled: true,
@@ -100,24 +97,6 @@ Sentry.init({
     return event;
   },
 
-  // Add integrations
-  integrations: [
-    Sentry.replayIntegration({
-      // Block capturing text content of elements with sensitive data
-      maskAllText: false,
-      blockAllMedia: false,
-      // Mask inputs by default for privacy
-      maskAllInputs: true,
-    }),
-    Sentry.browserTracingIntegration({
-      // Trace requests to our API
-      tracePropagationTargets: [
-        'localhost',
-        /^\//,
-        /softsystems\.studio/,
-        /softsystemsstudiollc\.com/,
-        /vercel\.app/,
-      ],
-    }),
-  ],
+  // No Replay or BrowserTracing integration (see the header comment).
+  integrations: [],
 });

@@ -2,7 +2,13 @@ import { Button } from '@/components/ui';
 
 export default function NotFound() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center px-5 text-center">
+    <main
+      id="main-content"
+      className="flex min-h-screen flex-col items-center justify-center px-5 text-center"
+    >
+      <a href="#main-content" className="skip-link">
+        Skip to main content
+      </a>
       <p className="text-[13px] font-semibold uppercase tracking-[0.14em] text-ink-muted">404</p>
       <h1 className="mt-4 font-serif text-[56px] leading-none tracking-[-0.015em] sm:text-[72px]">
         This page <em>doesn’t exist.</em>
@@ -13,6 +19,6 @@ export default function NotFound() {
       <Button as="link" href="/" variant="primary" size="md">
         Go to the homepage
       </Button>
-    </div>
+    </main>
   );
 }

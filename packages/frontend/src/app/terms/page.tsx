@@ -8,6 +8,9 @@ import {
   CARE_PLANS,
   CONTACT_EMAIL,
   HOME_BASE,
+  LEGAL_ENTITY,
+  LEGAL_NAME,
+  MAILING_ADDRESS,
   SECURE_CARE_PLAN_RANGE,
 } from '@/lib/business';
 
@@ -20,8 +23,11 @@ export const metadata: Metadata = {
 export default function TermsPage() {
   return (
     <div className="min-h-screen">
+      <a href="#main-content" className="skip-link">
+        Skip to main content
+      </a>
       <Navbar />
-      <main className="mx-auto max-w-3xl px-5 py-16 sm:px-8 sm:py-24">
+      <main id="main-content" className="mx-auto max-w-3xl px-5 py-16 sm:px-8 sm:py-24">
         <h1 className="mb-10 font-serif text-[48px] leading-none tracking-[-0.015em] sm:text-[64px]">
           Terms of Service
         </h1>
@@ -30,7 +36,7 @@ export default function TermsPage() {
             <strong className="text-ink">Last updated:</strong> October 2026
           </p>
           <p>
-            These terms are between you and Soft Systems Studio LLC (&ldquo;we&rdquo;,
+            These terms are between you and {LEGAL_NAME}, {LEGAL_ENTITY} (&ldquo;we&rdquo;,
             &ldquo;us&rdquo;), based in {HOME_BASE}. You agree to them when you accept a quote, pay
             an invoice or payment link, or start a Care Plan. If your written quote says something
             different from these terms, the quote wins for that project. Please read them carefully.
@@ -243,7 +249,7 @@ export default function TermsPage() {
             >
               {CONTACT_EMAIL}
             </a>
-            .
+            . Our mailing address is {LEGAL_NAME}, {MAILING_ADDRESS}.
           </p>
         </div>
       </main>

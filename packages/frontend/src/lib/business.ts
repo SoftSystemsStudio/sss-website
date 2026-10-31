@@ -255,8 +255,8 @@ export const HOME_BASE_SHORT = 'Smiths Station, AL';
 
 /**
  * The in-person area: where meetings can happen face to face. Also the
- * LocalBusiness schema's `areaServed`. No street address is published
- * (home-based), only the town.
+ * LocalBusiness schema's `areaServed`. The schema still gives only the
+ * town; the mailing address below is for the legal pages and footer.
  */
 export const SERVICE_AREA_CITIES = [
   { name: 'Smiths Station', state: 'Alabama', stateCode: 'AL' },
@@ -285,6 +285,15 @@ export const BUSINESS_PHONE_DISPLAY = '(208) 813-2428';
  * trade pages, outreach emails — lands on it, with `?type=` carried along.
  */
 export const START_PROJECT_URL = 'https://tool.softsystemsstudiollc.com/start';
+
+/**
+ * The legal entity and its mailing address (compliance standard item 14),
+ * shown in the footer and the terms. The address is the same one already
+ * public as the Stripe support address.
+ */
+export const LEGAL_NAME = 'Soft Systems Studio LLC';
+export const LEGAL_ENTITY = 'an Alabama limited liability company';
+export const MAILING_ADDRESS = '3720 Lee Rd 379, Smiths Station, AL 36877';
 
 /** The one inbox Austin actually checks — see audit §5 / P5 #16. */
 export const CONTACT_EMAIL = 'austin@softsystemsstudiollc.com';

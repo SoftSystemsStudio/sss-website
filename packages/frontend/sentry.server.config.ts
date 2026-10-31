@@ -16,9 +16,8 @@ Sentry.init({
   environment: process.env.NODE_ENV,
   release: process.env.VERCEL_GIT_COMMIT_SHA || process.env.NEXT_PUBLIC_RELEASE_VERSION,
 
-  // Performance Monitoring
-  // Capture 10% of transactions in production, 100% in development
-  tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
+  // Error monitoring only: no performance tracing (matches the privacy policy).
+  tracesSampleRate: 0,
 
   // Only enable in production/staging
   enabled: process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging',

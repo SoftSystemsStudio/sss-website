@@ -72,7 +72,7 @@ const SCOPE_RULES = [
   },
   {
     title: 'Paying',
-    body: 'Pay in full before work starts, or half to start and half at launch — your choice, on any package. Either way, your site goes live once it’s paid in full. Payments go through Stripe.',
+    body: 'Pay in full before work starts, or half to start and half at launch — your choice, on any package. Either way, your site goes live once it’s paid in full. Cancel before work starts for a full refund. Payments go through Stripe.',
   },
   {
     title: 'Your domain',
@@ -361,7 +361,16 @@ export default function PricingPage() {
               <li>
                 Unused hours don’t roll over. Work beyond your hours is quoted before it starts.
               </li>
-              <li>Billed monthly in advance. Cancel anytime; no refunds for part of a month.</li>
+              <li>
+                Billed monthly in advance and renews until you cancel. Cancel anytime by email or
+                your billing link; no refunds for part of a month.{' '}
+                <Link
+                  href="/terms#refunds"
+                  className="text-ink underline underline-offset-4 hover:text-ink-soft"
+                >
+                  Refund terms
+                </Link>
+              </li>
               <li>
                 No plan? You get your finished site files, and your site stays on my hosting for{' '}
                 {BUILD_ONLY_HOSTING_DAYS} days after launch while you move it.

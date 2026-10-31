@@ -56,7 +56,7 @@ export const BUILD_PACKAGES: BuildPackage[] = [
       'More pages or forms, booking, payments, a blog or a store: add-ons, or a bigger package',
       'Logins, portals or memberships: Custom',
     ],
-    payment: 'Paid in full before work starts',
+    payment: 'In full up front, or half to start and half at launch',
   },
   {
     id: 'business',
@@ -77,7 +77,7 @@ export const BUILD_PACKAGES: BuildPackage[] = [
       'Online booking, payments, a blog or a store: add-ons',
       'Logins, portals or memberships: Custom',
     ],
-    payment: 'Paid in full before work starts',
+    payment: 'In full up front, or half to start and half at launch',
   },
   {
     id: 'growth',
@@ -98,7 +98,7 @@ export const BUILD_PACKAGES: BuildPackage[] = [
       'A store: an add-on under 50 products, Custom above that',
       'Logins, portals or memberships: Custom',
     ],
-    payment: 'Half to start, half at launch',
+    payment: 'In full up front, or half to start and half at launch',
   },
   {
     id: 'custom',
@@ -118,7 +118,7 @@ export const BUILD_PACKAGES: BuildPackage[] = [
     notIncluded: [
       'Running it after launch: sites with logins, a store or sensitive information need a Care Plan, quoted with the build',
     ],
-    payment: 'Half to start, half at launch',
+    payment: 'In full up front, or half to start and half at launch',
   },
 ];
 
@@ -176,10 +176,10 @@ export const PACKAGE_COMPARISON: { label: string; values: Record<PackageId, stri
   {
     label: 'Payment',
     values: {
-      starter: 'In full, up front',
-      business: 'In full, up front',
-      growth: 'Half now, half at launch',
-      custom: 'Half now, half at launch',
+      starter: 'In full, or half now and half at launch',
+      business: 'In full, or half now and half at launch',
+      growth: 'In full, or half now and half at launch',
+      custom: 'In full, or half now and half at launch',
     },
   },
 ];

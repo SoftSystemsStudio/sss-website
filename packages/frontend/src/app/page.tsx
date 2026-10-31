@@ -61,7 +61,7 @@ const FAQS = [
   {
     question: 'How do I pay?',
     answer:
-      'Pay in full before work starts, or half to start and half at launch — your choice, on any package. Either way, your site goes live once it’s paid in full. Payments go through Stripe.',
+      'Pay in full before work starts, or half to start and half at launch — your choice, on any package. Either way, your site goes live once it’s paid in full. Cancel before work starts for a full refund. Payments go through Stripe.',
   },
   {
     question: 'How long does a website build take?',

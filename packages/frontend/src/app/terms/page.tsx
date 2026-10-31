@@ -133,12 +133,52 @@ export default function TermsPage() {
               giving you 7 days&apos; written notice, take the site off our hosting
             </li>
           </ul>
-          <h2 className="pt-6 font-serif text-[32px] leading-tight text-ink">Cancellation</h2>
+          <h2 id="refunds" className="pt-6 font-serif text-[32px] leading-tight text-ink">
+            Refunds and Cancellation
+          </h2>
           <p>
-            You may cancel a Care Plan at any time. No refunds for partial months. Build payments
-            (including a 50% deposit) are non-refundable once work has begun. We may also end a
-            project or Care Plan with written notice; if we end a build before launch for a reason
-            that isn&apos;t yours, we refund what you&apos;ve paid for work not yet done.
+            <strong className="text-ink">Builds.</strong> After you pay, we confirm in writing the
+            date work starts.
+          </p>
+          <ul className="list-disc pl-6 space-y-2">
+            <li>
+              <strong className="text-ink">Before work starts:</strong> cancel for a full refund of
+              whatever you&apos;ve paid.
+            </li>
+            <li>
+              <strong className="text-ink">Once work has started:</strong> build payments, whether
+              paid in full or as a 50% deposit, aren&apos;t refundable. In return, we finish the
+              scope in your quote, including your {BUILD_REVISION_ROUNDS} rounds of revisions.
+            </li>
+            <li>
+              <strong className="text-ink">If we can&apos;t finish:</strong> if we end a build
+              before launch for a reason that isn&apos;t yours, we refund what you&apos;ve paid for
+              work not yet done.
+            </li>
+            <li>
+              <strong className="text-ink">If a project goes quiet:</strong> if we&apos;re waiting
+              on you (content, photos, feedback or the launch payment) and don&apos;t hear from you
+              for 60 days, we email a final reminder. If there&apos;s still no reply 14 days later,
+              the project closes without a refund. You can restart it later at the then-current
+              price, less what you&apos;ve already paid.
+            </li>
+          </ul>
+          <p>
+            <strong className="text-ink">Care Plans.</strong> Care Plans renew automatically every
+            month until you cancel. Cancel anytime by emailing{' '}
+            <a
+              href={`mailto:${CONTACT_EMAIL}`}
+              className="text-ink underline underline-offset-4 hover:text-ink-soft"
+            >
+              {CONTACT_EMAIL}
+            </a>{' '}
+            or through the billing link we send you. Your plan keeps running to the end of the month
+            you&apos;ve paid for, with no further charges. There are no refunds for part of a month.
+          </p>
+          <p>
+            To ask for a refund, email {CONTACT_EMAIL}. Approved refunds go back to the card you
+            paid with, usually within 5–10 business days. We may also end a project or Care Plan
+            with written notice.
           </p>
           <h2 className="pt-6 font-serif text-[32px] leading-tight text-ink">
             Intellectual Property

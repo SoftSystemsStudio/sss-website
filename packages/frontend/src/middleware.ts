@@ -17,8 +17,6 @@ const isPublicRoute = createRouteMatcher([
   '/api/cron/(.*)',
   '/api/og',
   '/api/livekit-token',
-  '/api/send-email',
-  '/api/test-email',
 ]);
 
 // Skip Clerk middleware entirely when CLERK_SECRET_KEY is not configured

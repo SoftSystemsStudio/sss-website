@@ -32,7 +32,7 @@ export default function PrivacyPage() {
         </h1>
         <div className="space-y-6 text-[17px] leading-relaxed text-ink-soft">
           <p>
-            <strong className="text-ink">Last updated:</strong> October 2026
+            <strong className="text-ink">Last updated:</strong> November 2026
           </p>
           <p>
             This page says what actually happens to your information when you use this site or work
@@ -68,6 +68,12 @@ export default function PrivacyPage() {
             website. Some of our tools use an AI service (Anthropic) to review a site and draft a
             suggested preview or email. We work only from public business information, nothing
             personal beyond a business&apos;s published contact details.
+          </p>
+          <p>
+            When a business lists an Instagram account, we may look up its public numbers
+            (followers, number of posts, when it last posted, and its bio) through Instagram&apos;s
+            official business API from Meta. That only works for business and creator accounts, and
+            the only thing we send Meta is the account&apos;s public username.
           </p>
           <p>
             Every marketing email we send includes an unsubscribe link. Use it, or just reply and
@@ -131,6 +137,10 @@ export default function PrivacyPage() {
             <li>Resend: sending email from our tool</li>
             <li>Google Workspace: our email</li>
             <li>Google Places: finding businesses we might contact</li>
+            <li>
+              Meta (Instagram): looking up the public numbers of a business&apos;s Instagram account
+              through Meta&apos;s official API
+            </li>
             <li>Discord: our own notifications</li>
             <li>Stripe: payments</li>
             <li>Sentry: error monitoring</li>

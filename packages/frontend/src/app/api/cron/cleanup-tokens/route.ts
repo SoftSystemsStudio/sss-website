@@ -22,7 +22,9 @@ export async function GET(request: NextRequest) {
   const authHeader = request.headers.get('authorization');
   const cronSecret = env.CRON_SECRET;
 
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+  // Fail closed: with no CRON_SECRET configured this used to let anyone on the
+  // internet run the cleanup (2026-11-05 security audit).
+  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -41,10 +43,8 @@ export async function GET(request: NextRequest) {
     if (!response.ok) {
       const errorText = await response.text();
       console.error('[cron/cleanup-tokens] Backend error:', errorText);
-      return NextResponse.json(
-        { error: 'Backend cleanup failed', details: errorText },
-        { status: response.status },
-      );
+      // The backend's error text stays in the logs, not in the response.
+      return NextResponse.json({ error: 'Backend cleanup failed' }, { status: response.status });
     }
 
     const result = (await response.json()) as Record<string, unknown>;
@@ -57,12 +57,6 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('[cron/cleanup-tokens] Error:', error);
-    return NextResponse.json(
-      {
-        error: 'Cleanup failed',
-        message: error instanceof Error ? error.message : 'Unknown error',
-      },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: 'Cleanup failed' }, { status: 500 });
   }
 }

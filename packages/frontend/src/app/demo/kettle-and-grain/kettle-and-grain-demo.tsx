@@ -2,19 +2,60 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { Cormorant_Garamond, Manrope } from 'next/font/google';
+import localFont from 'next/font/local';
 import { useEffect, useRef, useState } from 'react';
 
-const display = Cormorant_Garamond({
-  subsets: ['latin'],
-  weight: ['400', '500', '600'],
-  style: ['normal', 'italic'],
+// Self-hosted fonts (src/fonts, latin subset); see scripts/fetch-fonts.mjs.
+// next/font options must be literals, hence the repeated paths.
+const display = localFont({
+  src: [
+    {
+      path: '../../../fonts/cormorant-garamond/cormorant-garamond-latin-normal.woff2',
+      weight: '400',
+      style: 'normal',
+    },
+    {
+      path: '../../../fonts/cormorant-garamond/cormorant-garamond-latin-normal.woff2',
+      weight: '500',
+      style: 'normal',
+    },
+    {
+      path: '../../../fonts/cormorant-garamond/cormorant-garamond-latin-normal.woff2',
+      weight: '600',
+      style: 'normal',
+    },
+    {
+      path: '../../../fonts/cormorant-garamond/cormorant-garamond-latin-italic.woff2',
+      weight: '400',
+      style: 'italic',
+    },
+    {
+      path: '../../../fonts/cormorant-garamond/cormorant-garamond-latin-italic.woff2',
+      weight: '500',
+      style: 'italic',
+    },
+    {
+      path: '../../../fonts/cormorant-garamond/cormorant-garamond-latin-italic.woff2',
+      weight: '600',
+      style: 'italic',
+    },
+  ],
+  // Metric-matched fallback from src/fonts/fallbacks.css.
+  adjustFontFallback: false,
+  fallback: ['Cormorant Garamond Fallback'],
   variable: '--font-display',
 });
 
-const body = Manrope({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
+const body = localFont({
+  src: [
+    { path: '../../../fonts/manrope/manrope-latin-normal.woff2', weight: '400', style: 'normal' },
+    { path: '../../../fonts/manrope/manrope-latin-normal.woff2', weight: '500', style: 'normal' },
+    { path: '../../../fonts/manrope/manrope-latin-normal.woff2', weight: '600', style: 'normal' },
+    { path: '../../../fonts/manrope/manrope-latin-normal.woff2', weight: '700', style: 'normal' },
+  ],
+  // Metric-matched fallback from src/fonts/fallbacks.css.
+  adjustFontFallback: false,
+  fallback: ['Manrope Fallback'],
   variable: '--font-body',
 });
 

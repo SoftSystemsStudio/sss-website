@@ -1,18 +1,53 @@
 import type { Metadata } from 'next';
-import { Cormorant_Garamond, Instrument_Sans } from 'next/font/google';
+import localFont from 'next/font/local';
+import '../fonts/fallbacks.css';
 import '../styles/globals.css';
 
-const sans = Instrument_Sans({
-  subsets: ['latin'],
+// Fonts are self-hosted (src/fonts, latin subset, OFL) so the build never
+// downloads from Google Fonts. scripts/fetch-fonts.mjs refreshes the files.
+// fallbacks.css holds every family's metric-matched fallback face, demos too.
+const sans = localFont({
+  src: [
+    {
+      path: '../fonts/instrument-sans/instrument-sans-latin-normal.woff2',
+      weight: '400 700',
+      style: 'normal',
+    },
+  ],
   display: 'swap',
+  // Metric-matched fallback from src/fonts/fallbacks.css.
+  adjustFontFallback: false,
+  fallback: ['Instrument Sans Fallback'],
   variable: '--font-sans',
 });
 
-const serif = Cormorant_Garamond({
-  subsets: ['latin'],
-  weight: ['500', '600'],
-  style: ['normal', 'italic'],
+const serif = localFont({
+  src: [
+    {
+      path: '../fonts/cormorant-garamond/cormorant-garamond-latin-normal.woff2',
+      weight: '500',
+      style: 'normal',
+    },
+    {
+      path: '../fonts/cormorant-garamond/cormorant-garamond-latin-normal.woff2',
+      weight: '600',
+      style: 'normal',
+    },
+    {
+      path: '../fonts/cormorant-garamond/cormorant-garamond-latin-italic.woff2',
+      weight: '500',
+      style: 'italic',
+    },
+    {
+      path: '../fonts/cormorant-garamond/cormorant-garamond-latin-italic.woff2',
+      weight: '600',
+      style: 'italic',
+    },
+  ],
   display: 'swap',
+  // Metric-matched fallback from src/fonts/fallbacks.css.
+  adjustFontFallback: false,
+  fallback: ['Cormorant Garamond Fallback'],
   variable: '--font-serif',
 });
 

@@ -106,9 +106,10 @@ const nextConfig = {
             value: [
               "default-src 'self'",
               "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://vercel.live",
-              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+              "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: https: blob:",
-              "font-src 'self' data: https://fonts.gstatic.com",
+              // Fonts are self-hosted (src/fonts via next/font/local); no Google Fonts origins.
+              "font-src 'self' data:",
               "connect-src 'self' https: http://localhost:* ws://localhost:*",
               "frame-src 'self'",
               "worker-src 'self' blob:",
@@ -182,7 +183,6 @@ const nextConfig = {
   // (one-way: apex → www for LLC domain)
   // Keeping old softsystems.studio → softsystemsstudiollc.com migration at Vercel level
 
-
   // Experimental features for better performance
   experimental: {
     // Disable CSS optimization - causes media="print" bug with critters
@@ -192,7 +192,6 @@ const nextConfig = {
       bodySizeLimit: '2mb',
     },
   },
-
 };
 
 // Sentry configuration for error monitoring and source maps

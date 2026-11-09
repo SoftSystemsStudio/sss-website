@@ -1,0 +1,50 @@
+# Every commit on main that passes CI becomes a release: a tag named after the
+# day (v2026.11.09.1, then .2 for a second release that day) and a GitHub
+# Release whose notes list the pull requests merged since the last one. That
+# gives every version a name, a changelog and a known-good point to roll back
+# to (see docs/runbooks/rollback.md where the repo has one).
+#
+# Runs after CI finishes, never instead of it: a red build on main gets no tag.
+# It only ever sees code that is already on main, so it needs no checkout and
+# runs nothing from the repo.
+name: Release
+
+on:
+  workflow_run:
+    workflows: ['Core CI']
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Tag the commit and publish release notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+
+          # A re-run of CI on an already-released commit must not release it twice.
+          if gh api "repos/$REPO/tags?per_page=100" --jq '.[].commit.sha' | grep -qx "$SHA"; then
+            echo "$SHA is already tagged, nothing to do."
+            exit 0
+          fi
+
+          day="v$(date -u +%Y.%m.%d)"
+          count=$(gh api "repos/$REPO/git/matching-refs/tags/$day." --jq 'length')
+          tag="$day.$((count + 1))"
+
+          gh release create "$tag" --repo "$REPO" --target "$SHA"             --title "$tag" --generate-notes --latest
+          echo "Released $tag at $SHA" >> "$GITHUB_STEP_SUMMARY"

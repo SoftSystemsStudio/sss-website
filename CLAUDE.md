@@ -76,6 +76,8 @@ Vercel
 
 There is no backend deployed from this repo. `NEXT_PUBLIC_API_URL` (when set) points at the separate SaaS platform's API for the `/api/v1/*` rewrite and the cleanup-tokens cron proxy — that's a runtime HTTP call, not a build dependency.
 
+**Releases and rollback:** every green Core CI run on `main` is tagged and published as a GitHub Release (`.github/workflows/release.yml`, tags like `v2026.11.09.1`). How to roll back: `docs/runbooks/rollback.md`. Dependabot opens grouped dependency PRs monthly (`.github/dependabot.yml`).
+
 ---
 
 ## Architecture Map

@@ -11,7 +11,7 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
-    "@sentry/nextjs": "^10.28.0",
+    "@sentry/nextjs": "^11.11.0",
     "@softsystems/ui-components": "workspace:^",
     "framer-motion": "^12.23.25",
     "next": "^16.4.5",

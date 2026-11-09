@@ -117,11 +117,12 @@ pnpm --filter @softsystems/ui-components add <package>
 ## Testing
 
 ```bash
-pnpm test        # per-package test scripts — frontend's is currently a stub; ui-components has none
-pnpm test:ci
+pnpm build                                          # the smoke tests run against the production build
+pnpm --filter frontend exec playwright install chromium   # once
+pnpm test                                           # = pnpm --filter frontend test:e2e
 ```
 
-There's no meaningful automated test coverage here yet. If you're adding non-trivial logic (a new API route, a shared component with real behavior), consider adding a test alongside it rather than treating this as precedent to skip tests.
+`packages/frontend/e2e/` holds Playwright smoke tests: every page route returns 200, shows its heading, has its footer links, and logs no browser errors; plus the `/hi` vCard, the `/intake` and `/q|p|s` redirects (read with `maxRedirects: 0`, never followed) and a 375px overflow check on the homepage. Add a page to `PAGES` in `e2e/pages.spec.ts` when you add a route. ui-components has no tests.
 
 ---
 

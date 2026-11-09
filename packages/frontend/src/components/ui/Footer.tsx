@@ -60,11 +60,20 @@ export default function Footer() {
               aria-label="Footer"
               className="flex flex-wrap gap-x-8 gap-y-3 text-[15px] font-medium"
             >
-              {FOOTER_NAV.map((item) => (
-                <Link key={item.href} href={item.href} className="nav-link text-paper">
-                  {item.label}
-                </Link>
-              ))}
+              {FOOTER_NAV.map((item) =>
+                // /intake redirects off-site (next.config.mjs), so it gets a
+                // plain <a>: a <Link> prefetches it, and the prefetch's
+                // cross-origin redirect fails CORS and logs a console error.
+                item.href === '/intake' ? (
+                  <a key={item.href} href={item.href} className="nav-link text-paper">
+                    {item.label}
+                  </a>
+                ) : (
+                  <Link key={item.href} href={item.href} className="nav-link text-paper">
+                    {item.label}
+                  </Link>
+                ),
+              )}
             </nav>
             <p className="max-w-sm text-[15px] md:text-right">
               In person around {SERVICE_AREA_LABEL}. By phone and video everywhere else.

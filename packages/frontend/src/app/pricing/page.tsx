@@ -121,7 +121,7 @@ export default function PricingPage() {
             your written quote lists exactly what’s included before you pay anything.
           </p>
           <div className="rise mt-8 flex flex-col gap-4 [--rise-delay:0.35s] sm:flex-row sm:items-center sm:gap-8">
-            <Button as="link" href="/intake" variant="primary" size="lg">
+            <Button as="anchor" href="/intake" variant="primary" size="lg">
               Get a quote
               <span className="nudge ml-2" aria-hidden="true">
                 →

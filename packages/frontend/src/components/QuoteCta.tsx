@@ -18,7 +18,7 @@ export default function QuoteCta({ href = '/intake' }: { href?: string }) {
           A minute to start. I reply within 24 hours.
         </p>
         <div className="flex flex-col gap-5 sm:flex-row-reverse sm:items-center sm:gap-8">
-          <Button as="link" href={href} variant="accent" size="lg">
+          <Button as="anchor" href={href} variant="accent" size="lg">
             Start your quote
             <span className="nudge ml-2" aria-hidden="true">
               →

@@ -17,7 +17,7 @@
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "test": "pnpm -r test",
-    "test:ci": "pnpm -r test -- --ci --coverage",
+    "test:ci": "pnpm -r test",
     "sync-env": "node scripts/sync-env.js",
     "check-env-committed": "node scripts/check-env-committed.js",
     "secretlint": "secretlint \"**/*\" --ignore-path .secretlintignore",
@@ -26,7 +26,7 @@
     "security-audit": "bash scripts/security-audit.sh",
     "audit": "pnpm audit && bash scripts/security-audit.sh",
     "prepare": "husky install",
-    "ci": "pnpm lint && pnpm typecheck && pnpm test && pnpm build"
+    "ci": "pnpm lint && pnpm typecheck && pnpm build && pnpm test"
   },
   "devDependencies": {
     "@secretlint/secretlint-rule-preset-recommend": "8.2.0",

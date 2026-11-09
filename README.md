@@ -60,7 +60,7 @@ The LiveKit voice demo (`VoiceDemo.tsx` and `/api/livekit-token`) was no longer 
 ```bash
 pnpm lint              # ESLint across workspace packages
 pnpm typecheck         # tsc --noEmit across workspace packages
-pnpm test              # per-package test scripts (frontend has none yet; ui-components has none)
+pnpm test              # Playwright smoke tests (frontend; run `pnpm build` first)
 pnpm format            # Prettier
 pnpm secretlint        # secret scanning
 pnpm scan-placeholders # find placeholder values left in source

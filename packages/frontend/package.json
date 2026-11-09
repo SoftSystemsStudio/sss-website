@@ -7,7 +7,8 @@
     "build": "pnpm --filter @softsystems/ui-components build && next build",
     "start": "next start",
     "lint": "eslint . --ext .ts,.tsx",
-    "test": "echo \"No frontend tests yet\""
+    "test": "pnpm run test:e2e",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@sentry/nextjs": "^10.28.0",
@@ -20,6 +21,7 @@
     "zod": "^4.3.2"
   },
   "devDependencies": {
+    "@playwright/test": "^1.65.0",
     "@types/node": "^20.0.0",
     "@types/react": "^18.2.0",
     "autoprefixer": "^10.4.22",

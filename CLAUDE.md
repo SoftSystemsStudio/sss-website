@@ -155,7 +155,7 @@ pnpm lint:fix
 pnpm typecheck         # tsc --noEmit across workspace packages
 pnpm format
 pnpm format:check
-pnpm test              # per-package test scripts (none meaningful yet)
+pnpm test              # Playwright smoke tests (frontend e2e/); needs `pnpm build` first
 pnpm build              # pnpm -r build (ui-components then frontend, dependency order)
 
 # Security / hygiene
@@ -197,7 +197,11 @@ pnpm scan-placeholders
 
 ### CI (`.github/workflows/ci.yml`)
 
-Install → build (`pnpm -w -r build`) → lint → typecheck `@softsystems/ui-components` → `frontend` test script. `.github/workflows/security.yml` runs gitleaks + secretlint + the env/placeholder scanners on a schedule and on push/PR to `main`.
+Install → build (`pnpm -w -r build`) → lint → typecheck `@softsystems/ui-components` → Playwright smoke tests (`pnpm --filter frontend test:e2e`, Chromium, against `next start` on port 3100; HTML report uploaded as an artifact on failure).
+
+### Browser smoke tests (`packages/frontend/e2e/`)
+
+Every page route is listed in `PAGES` in `e2e/pages.spec.ts` (status 200, its `<h1>`, footer Privacy/Terms links); add new routes there. `e2e/fixtures.ts` fails any test whose page throws, logs a console error, or gets a 4xx/5xx from its own origin; `ALLOWED_CONSOLE_ERRORS` there is empty and each entry must say why it's unavoidable. Links to `/intake` must be plain `<a>` (`Button as="anchor"`), not `<Link>`: it redirects off-site, and a `<Link>` prefetch of that redirect fails CORS and logs a console error. The site has no forms; nothing in the suite submits anything or follows a redirect to the Lead Tool. `.github/workflows/security.yml` runs gitleaks + secretlint + the env/placeholder scanners on a schedule and on push/PR to `main`.
 
 ---
 
@@ -205,7 +209,7 @@ Install → build (`pnpm -w -r build`) → lint → typecheck `@softsystems/ui-c
 
 | Issue                                                        | Impact | Notes                                                                                  |
 | ------------------------------------------------------------- | ------ | --------------------------------------------------------------------------------------- |
-| No frontend tests                                              | Low    | `frontend`'s `test` script is a stub                                                    |
+| Smoke tests only                                               | Low    | `e2e/` checks every page renders cleanly; there are no unit tests and no visual checks |
 | `/api/cron/cleanup-tokens` and the `/api/v1/*` rewrite depend on a backend that no longer lives in this repo | Medium | They no-op gracefully without `NEXT_PUBLIC_API_URL`, but confirm the target service's URL before relying on either |
 | `docker-compose*.yml`, root `Dockerfile`, `railway.json`, `infra/` were removed 2026-08-31 | — | They existed only for the now-removed SaaS backend |
 

@@ -1,0 +1,26 @@
+# Keeps dependencies current without a flood of PRs. Once a month: one grouped
+# PR for every minor and patch update, and one for the GitHub Actions used by
+# the workflows. Major versions get a PR each, because they can break things
+# and deserve their own review. CI runs on every one of these PRs like any other.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: chore(deps)
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: ci(deps)
+    groups:
+      actions:
+        patterns: ['*']

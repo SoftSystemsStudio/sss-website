@@ -27,6 +27,9 @@ const SITE_NAV: NavItem[] = [
 export default function Navbar({
   items = SITE_NAV,
   ctaLabel = 'Get a quote',
+  // Rendered as a plain <a>, not a <Link>: /intake (and /intake?type=)
+  // redirects to the Lead Tool, and a <Link> prefetch of a cross-origin
+  // redirect fails CORS and logs a console error on every page.
   ctaHref = '/intake',
   className = '',
 }: NavbarProps) {
@@ -76,7 +79,7 @@ export default function Navbar({
               {item.label}
             </Link>
           ))}
-          <Button as="link" href={ctaHref} variant="primary" size="sm">
+          <Button as="anchor" href={ctaHref} variant="primary" size="sm">
             {ctaLabel}
           </Button>
         </nav>
@@ -121,7 +124,7 @@ export default function Navbar({
               {item.label}
             </Link>
           ))}
-          <Button as="link" href={ctaHref} variant="primary" size="md" className="mt-6 w-full">
+          <Button as="anchor" href={ctaHref} variant="primary" size="md" className="mt-6 w-full">
             {ctaLabel}
           </Button>
         </nav>

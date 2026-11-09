@@ -209,7 +209,7 @@ export default function Home() {
             </p>
             <div className="grid grid-cols-2 gap-2.5 sm:flex sm:items-center sm:gap-8">
               <Button
-                as="link"
+                as="anchor"
                 href="/intake"
                 variant="primary"
                 size="lg"

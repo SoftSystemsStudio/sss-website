@@ -76,7 +76,7 @@ export default async function TradePage({ params }: { params: Promise<{ trade: s
               {trade.intro}
             </p>
             <div className="rise mt-8 flex flex-col gap-4 [--rise-delay:0.35s] sm:flex-row sm:items-center sm:gap-8">
-              <Button as="link" href={quote} variant="primary" size="lg">
+              <Button as="anchor" href={quote} variant="primary" size="lg">
                 Get a quote
                 <span className="nudge ml-2" aria-hidden="true">
                   →

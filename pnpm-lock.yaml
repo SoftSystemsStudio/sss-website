@@ -9,8 +9,8 @@ importers:
   .:
     devDependencies:
       '@secretlint/secretlint-rule-preset-recommend':
-        specifier: 8.2.0
-        version: 8.2.0
+        specifier: 13.1.0
+        version: 13.1.0
       '@types/node':
         specifier: ^20.19.43
         version: 20.19.43
@@ -1123,9 +1123,9 @@ packages:
     resolution: {integrity: sha512-xa4eBR1UbH/dieZEdZ2+cor9mT6IYgFJWfLGEH+XqFl0EmxnIg/RUjOMV2HvZvmmA3tRjhyP1ko6CEsYaBoULQ==}
     dev: true
 
-  /@secretlint/secretlint-rule-preset-recommend@8.2.0:
-    resolution: {integrity: sha512-VyIj3dX+U2CdCfDzeC8qlpNFpZ+Wifx1JU/+uKqLB7DkAVkLDMdsD4ELdbcl2nHHG1knzQh82G+8NPR3QRXCaA==}
-    engines: {node: ^14.13.1 || >=16.0.0}
+  /@secretlint/secretlint-rule-preset-recommend@13.1.0:
+    resolution: {integrity: sha512-dPnplMyjJYpVCJDNTjpUA8c/AfoHbWANJJJWKroK50DGGhAB4Oumzk+XinBMyMMAwgOsjU9CB9lUHXDvObMVCg==}
+    engines: {node: '>=22.0.0'}
     dev: true
 
   /@secretlint/source-creator@8.5.0:

@@ -15,8 +15,8 @@
     "@softsystems/ui-components": "workspace:^",
     "framer-motion": "^14.10.1",
     "next": "^16.4.5",
-    "react": "18.3.0",
-    "react-dom": "18.3.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
     "resend": "^6.37.0",
     "zod": "^4.6.7"
   },

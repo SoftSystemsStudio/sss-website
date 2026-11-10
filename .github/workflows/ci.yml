@@ -88,6 +88,22 @@ jobs:
       - name: Smoke tests (frontend)
         run: pnpm --filter frontend test:e2e
 
+      # Lighthouse on the built site (2026-11-09). Warnings only for now:
+      # scores print in the log and the HTML reports are uploaded; nothing
+      # fails the build until we've seen a few runs' baseline.
+      - name: Lighthouse (frontend)
+        working-directory: packages/frontend
+        run: npx --yes @lhci/cli@0.14.0 autorun
+
+      - name: Upload Lighthouse report
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: lighthouse-report
+          path: packages/frontend/lighthouse-report/
+          retention-days: 14
+          if-no-files-found: ignore
+
       - name: Upload Playwright report
         if: ${{ failure() }}
         uses: actions/upload-artifact@v7

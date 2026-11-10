@@ -57,7 +57,7 @@ This file is the repo's operating runbook for Claude Code: how work is planned, 
 - **Package manager**: pnpm@8.11.0 (two-package workspace)
 - **Styling**: Tailwind CSS 3.4
 - **Auth (site)**: none. Clerk (sign-in/sign-up, middleware) was removed 2026-10-31 (compliance audit): it was a development instance in production gating an empty signed-in state. There is no middleware
-- **Email**: Resend (welcome emails). Quote requests no longer go through this site — the old intake form and `/api/intake` were removed 2026-10-02 in favour of the Lead Tool's sign-up
+- **Email**: none sent from this site (the unused `resend` package was removed 2026-11-09). Quote requests no longer go through this site — the old intake form and `/api/intake` were removed 2026-10-02 in favour of the Lead Tool's sign-up
 - **Mailbox**: Google Workspace — `austin@softsystemsstudiollc.com` (`CONTACT_EMAIL`). The old `softsystemstudioco@gmail.com` was upgraded into the same account and still receives mail. DNS is on Cloudflare; Resend and SendGrid send via their own subdomains, so root SPF lists only Google
 - **Payments**: none on this site — build and Care Plan payments are Stripe Checkout links made in the Lead Tool
 - **Error tracking**: Sentry, errors only. Session replay and performance tracing are off (sample rates 0 in `sentry.*.config.ts`) because the privacy policy says error monitoring only; keep the two in step

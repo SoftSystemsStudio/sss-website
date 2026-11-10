@@ -1,4 +1,4 @@
-import Image from 'next/image';
+import Image, { getImageProps } from 'next/image';
 import Link from 'next/link';
 import { Navbar, Footer, Section, Button } from '@/components/ui';
 import Faq from '@/components/Faq';
@@ -111,10 +111,52 @@ const EYEBROW =
 const SECTION_TITLE =
   'font-serif text-[48px] leading-[0.98] tracking-[-0.015em] sm:text-[64px] lg:text-[76px]';
 
+const HERO_MOBILE_SRC = '/images/work/ironwood-auto-mobile.jpg';
+const HERO_DESKTOP_SRC = '/images/work/ironwood-auto-desktop.jpg';
+const HERO_DESKTOP_SIZES = '(min-width: 1440px) 820px, (min-width: 1024px) 64vw, 70vw';
+
+/**
+ * Preload only the hero screenshot this screen actually shows (perf,
+ * 2026-11-09). Eager images were preloaded for both, so phones fetched the
+ * 2880px desktop shot at high priority and desktops fetched a hidden phone
+ * shot. Both images are now lazy (a hidden lazy image is never fetched) and
+ * each preload carries the same media query as its md:hidden / md:block.
+ */
+function HeroPreloads() {
+  const mobile = getImageProps({ src: HERO_MOBILE_SRC, alt: '', fill: true, sizes: '220px' }).props;
+  const desktop = getImageProps({
+    src: HERO_DESKTOP_SRC,
+    alt: '',
+    fill: true,
+    sizes: HERO_DESKTOP_SIZES,
+  }).props;
+  return (
+    <>
+      <link
+        rel="preload"
+        as="image"
+        media="(max-width: 767.98px)"
+        imageSrcSet={mobile.srcSet}
+        imageSizes={mobile.sizes}
+        fetchPriority="high"
+      />
+      <link
+        rel="preload"
+        as="image"
+        media="(min-width: 768px)"
+        imageSrcSet={desktop.srcSet}
+        imageSizes={desktop.sizes}
+        fetchPriority="high"
+      />
+    </>
+  );
+}
+
 /** The hero stage: the three concept sites on a laptop-width browser and two phones. */
 function Showcase() {
   return (
     <ShowcaseParallax className="rise relative mt-10 h-[360px] overflow-hidden rounded-md bg-limestone [--rise-delay:0.45s] sm:h-[460px] lg:mt-14 lg:h-[580px]">
+      <HeroPreloads />
       <p className="absolute left-4 top-4 z-30 rounded-full bg-paper px-3.5 py-2 text-[13px] font-medium text-ink-soft sm:left-6 sm:top-6">
         Concept sites
         <span className="hidden sm:inline"> · the businesses are invented, the design is real</span>
@@ -122,11 +164,7 @@ function Showcase() {
 
       {/* Phone-sized screens: one phone, centred */}
       <div className="rise absolute left-1/2 top-[72px] z-20 w-[200px] -translate-x-1/2 [--rise-delay:0.65s] md:hidden">
-        <PhoneFrame
-          src="/images/work/ironwood-auto-mobile.jpg"
-          alt="The Ironwood Auto & Tire concept site on a phone"
-          eager
-        />
+        <PhoneFrame src={HERO_MOBILE_SRC} alt="The Ironwood Auto & Tire concept site on a phone" />
       </div>
 
       {/* Tablet and up: the browser, plus phones either side */}
@@ -145,13 +183,11 @@ function Showcase() {
           </div>
           <div className="relative aspect-[1440/900]">
             <Image
-              src="/images/work/ironwood-auto-desktop.jpg"
+              src={HERO_DESKTOP_SRC}
               alt="The Ironwood Auto & Tire concept site on a laptop"
               fill
-              sizes="(min-width: 1440px) 820px, (min-width: 1024px) 64vw, 70vw"
+              sizes={HERO_DESKTOP_SIZES}
               className="object-cover object-top"
-              loading="eager"
-              fetchPriority="high"
             />
           </div>
         </div>

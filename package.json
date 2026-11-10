@@ -39,7 +39,7 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.7",
     "eslint-plugin-security": "^4.2.1",
-    "husky": "^8.0.0",
+    "husky": "^9.1.7",
     "next": "^16.4.5",
     "prettier": "^3.9.10",
     "secretlint": "8.2.0",

@@ -43,6 +43,6 @@
     "next": "^16.4.5",
     "prettier": "^3.9.10",
     "secretlint": "8.2.0",
-    "typescript": "^5.3.0"
+    "typescript": "^7.0.2"
   }
 }

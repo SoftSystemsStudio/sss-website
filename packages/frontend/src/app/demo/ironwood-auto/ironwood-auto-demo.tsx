@@ -2,17 +2,40 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { Archivo, JetBrains_Mono } from 'next/font/google';
+import localFont from 'next/font/local';
 import { useEffect, useRef, useState } from 'react';
 
-const display = Archivo({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700', '800'],
+// Self-hosted fonts (src/fonts, latin subset); see scripts/fetch-fonts.mjs.
+// next/font options must be literals, hence the repeated paths.
+const display = localFont({
+  src: [
+    { path: '../../../fonts/archivo/archivo-latin-normal.woff2', weight: '400', style: 'normal' },
+    { path: '../../../fonts/archivo/archivo-latin-normal.woff2', weight: '500', style: 'normal' },
+    { path: '../../../fonts/archivo/archivo-latin-normal.woff2', weight: '600', style: 'normal' },
+    { path: '../../../fonts/archivo/archivo-latin-normal.woff2', weight: '700', style: 'normal' },
+    { path: '../../../fonts/archivo/archivo-latin-normal.woff2', weight: '800', style: 'normal' },
+  ],
+  // Metric-matched fallback from src/fonts/fallbacks.css.
+  adjustFontFallback: false,
+  fallback: ['Archivo Fallback'],
   variable: '--font-display',
 });
-const mono = JetBrains_Mono({
-  subsets: ['latin'],
-  weight: ['500', '600'],
+const mono = localFont({
+  src: [
+    {
+      path: '../../../fonts/jetbrains-mono/jetbrains-mono-latin-normal.woff2',
+      weight: '500',
+      style: 'normal',
+    },
+    {
+      path: '../../../fonts/jetbrains-mono/jetbrains-mono-latin-normal.woff2',
+      weight: '600',
+      style: 'normal',
+    },
+  ],
+  // Metric-matched fallback from src/fonts/fallbacks.css.
+  adjustFontFallback: false,
+  fallback: ['JetBrains Mono Fallback'],
   variable: '--font-mono',
 });
 

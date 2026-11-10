@@ -2,15 +2,33 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { Outfit, Karla } from 'next/font/google';
+import localFont from 'next/font/local';
 import { useEffect, useRef, useState } from 'react';
 
-const display = Outfit({
-  subsets: ['latin'],
-  weight: ['500', '600', '700'],
+// Self-hosted fonts (src/fonts, latin subset); see scripts/fetch-fonts.mjs.
+// next/font options must be literals, hence the repeated paths.
+const display = localFont({
+  src: [
+    { path: '../../../fonts/outfit/outfit-latin-normal.woff2', weight: '500', style: 'normal' },
+    { path: '../../../fonts/outfit/outfit-latin-normal.woff2', weight: '600', style: 'normal' },
+    { path: '../../../fonts/outfit/outfit-latin-normal.woff2', weight: '700', style: 'normal' },
+  ],
+  // Metric-matched fallback from src/fonts/fallbacks.css.
+  adjustFontFallback: false,
+  fallback: ['Outfit Fallback'],
   variable: '--font-display',
 });
-const body = Karla({ subsets: ['latin'], weight: ['400', '500', '700'], variable: '--font-body' });
+const body = localFont({
+  src: [
+    { path: '../../../fonts/karla/karla-latin-normal.woff2', weight: '400', style: 'normal' },
+    { path: '../../../fonts/karla/karla-latin-normal.woff2', weight: '500', style: 'normal' },
+    { path: '../../../fonts/karla/karla-latin-normal.woff2', weight: '700', style: 'normal' },
+  ],
+  // Metric-matched fallback from src/fonts/fallbacks.css.
+  adjustFontFallback: false,
+  fallback: ['Karla Fallback'],
+  variable: '--font-body',
+});
 
 function useReveal(threshold = 0.15) {
   const ref = useRef<HTMLDivElement>(null);

@@ -21,6 +21,20 @@ const PAGES: PageCase[] = [
   { path: '/privacy', heading: 'Privacy Policy', siteFooter: true },
   { path: '/terms', heading: 'Terms of Service', siteFooter: true },
   { path: '/hi', heading: 'Austin Hodges', siteFooter: true },
+  // One page per in-person town; slugs from lib/cities.ts.
+  { path: '/web-design/columbus-ga', heading: 'Web design in Columbus, Georgia', siteFooter: true },
+  {
+    path: '/web-design/phenix-city-al',
+    heading: 'Web design in Phenix City, Alabama',
+    siteFooter: true,
+  },
+  { path: '/web-design/auburn-al', heading: 'Web design in Auburn, Alabama', siteFooter: true },
+  { path: '/web-design/opelika-al', heading: 'Web design in Opelika, Alabama', siteFooter: true },
+  {
+    path: '/web-design/smiths-station-al',
+    heading: 'Web design in Smiths Station, Alabama',
+    siteFooter: true,
+  },
   // Outreach-only trade page; slug from lib/trades.ts.
   { path: '/for/lawn-care', heading: 'Websites for lawn care companies.', siteFooter: true },
   // The /demo/* pages are fictional businesses with their own footers (no
@@ -62,7 +76,11 @@ for (const { path, heading, siteFooter } of PAGES) {
 
 test('unknown routes return the 404 page', async ({ request }) => {
   // request (not page) so the expected 404 isn't counted as a page problem.
-  for (const path of ['/this-page-does-not-exist', '/for/not-a-real-trade']) {
+  for (const path of [
+    '/this-page-does-not-exist',
+    '/for/not-a-real-trade',
+    '/web-design/not-a-real-town',
+  ]) {
     const res = await request.get(path);
     expect(res.status(), path).toBe(404);
     expect(await res.text()).toContain('doesn’t exist.');

@@ -1,5 +1,20 @@
 import { withSentryConfig } from '@sentry/nextjs';
 
+/**
+ * Exact-match domains (2026-11-12): each forwards every path to its town's
+ * page on the main site (src/lib/cities.ts). They only fire for a request whose
+ * Host is that domain, so they are inert until the domain is added to this
+ * Vercel project. Permanent (308): these domains have no other purpose.
+ * When one is registered, add it to the project, with its www form.
+ */
+const CITY_DOMAINS = {
+  'columbusgawebdesign.com': 'columbus-ga',
+  'phenixcitywebdesign.com': 'phenix-city-al',
+  'auburnalwebdesign.com': 'auburn-al',
+  'opelikawebdesign.com': 'opelika-al',
+  'smithsstationwebdesign.com': 'smiths-station-al',
+};
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -37,6 +52,14 @@ const nextConfig = {
   // in src/lib/business.ts. Temporary (307) so it can be pointed elsewhere.
   async redirects() {
     return [
+      ...Object.entries(CITY_DOMAINS).flatMap(([domain, slug]) =>
+        [domain, `www.${domain}`].map((host) => ({
+          source: '/:path*',
+          has: [{ type: 'host', value: host }],
+          destination: `https://softsystemsstudiollc.com/web-design/${slug}`,
+          permanent: true,
+        })),
+      ),
       {
         source: '/intake',
         destination: 'https://tool.softsystemsstudiollc.com/start',

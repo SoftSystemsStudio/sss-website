@@ -1,4 +1,5 @@
 import type { MetadataRoute } from 'next';
+import { CITY_PAGES } from '@/lib/cities';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = 'https://softsystemsstudiollc.com';
@@ -17,6 +18,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'monthly',
       priority: 0.8,
     },
+    // One page per in-person town (lib/cities.ts)
+    ...CITY_PAGES.map((city) => ({
+      url: `${baseUrl}/web-design/${city.slug}`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.8,
+    })),
     // The /demo/* sites are fictional businesses: noindex (app/demo/layout.tsx)
     // and deliberately left out here.
     // The /for/<trade> outreach pages are deliberately left out: they're

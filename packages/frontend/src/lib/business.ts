@@ -259,11 +259,11 @@ export const HOME_BASE_SHORT = 'Smiths Station, AL';
  * town; the mailing address below is for the legal pages and footer.
  */
 export const SERVICE_AREA_CITIES = [
-  { name: 'Smiths Station', state: 'Alabama', stateCode: 'AL' },
-  { name: 'Phenix City', state: 'Alabama', stateCode: 'AL' },
-  { name: 'Columbus', state: 'Georgia', stateCode: 'GA' },
-  { name: 'Auburn', state: 'Alabama', stateCode: 'AL' },
-  { name: 'Opelika', state: 'Alabama', stateCode: 'AL' },
+  { slug: 'smiths-station-al', name: 'Smiths Station', state: 'Alabama', stateCode: 'AL' },
+  { slug: 'phenix-city-al', name: 'Phenix City', state: 'Alabama', stateCode: 'AL' },
+  { slug: 'columbus-ga', name: 'Columbus', state: 'Georgia', stateCode: 'GA' },
+  { slug: 'auburn-al', name: 'Auburn', state: 'Alabama', stateCode: 'AL' },
+  { slug: 'opelika-al', name: 'Opelika', state: 'Alabama', stateCode: 'AL' },
 ] as const;
 export const SERVICE_AREA_LABEL = 'Columbus, Phenix City, Auburn and Opelika';
 

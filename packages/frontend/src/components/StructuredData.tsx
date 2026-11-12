@@ -70,6 +70,7 @@ export function OrganizationSchema() {
     address: ADDRESS,
     sameAs: [
       FACEBOOK_URL,
+      'https://nextdoor.com/page/soft-systems-studio-llc/',
       // 'https://twitter.com/softsystems',
       // 'https://linkedin.com/company/soft-systems-studio',
     ],

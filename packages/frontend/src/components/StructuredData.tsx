@@ -198,6 +198,46 @@ export function FAQSchema({ faqs }: { faqs: FAQ[] }) {
 }
 
 /**
+ * Service Schema for a /web-design/<city> page: the same business
+ * (BUSINESS_ID) offering website design in that one town. No ratings,
+ * reviews or prices beyond what lib/business.ts publishes.
+ */
+export function CityServiceSchema({
+  name,
+  state,
+  stateCode,
+  path,
+}: {
+  name: string;
+  state: string;
+  stateCode: string;
+  path: string;
+}) {
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    '@id': `${SITE_URL}${path}#service`,
+    name: `Web design in ${name}, ${stateCode}`,
+    serviceType: 'Website design',
+    url: `${SITE_URL}${path}`,
+    provider: { '@id': BUSINESS_ID },
+    areaServed: {
+      '@type': 'City',
+      name: `${name}, ${stateCode}`,
+      containedInPlace: { '@type': 'State', name: state },
+    },
+  };
+
+  return (
+    <script
+      id="city-service-schema"
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+    />
+  );
+}
+
+/**
  * WebSite Schema - basic site identity for search engines.
  *
  * No `potentialAction`/`SearchAction` here on purpose: the site has no

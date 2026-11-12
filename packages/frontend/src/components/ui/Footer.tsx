@@ -10,6 +10,7 @@ import {
   LEGAL_ENTITY,
   LEGAL_NAME,
   MAILING_ADDRESS,
+  SERVICE_AREA_CITIES,
   SERVICE_AREA_LABEL,
 } from '@/lib/business';
 
@@ -78,6 +79,20 @@ export default function Footer() {
             <p className="max-w-sm text-[15px] md:text-right">
               In person around {SERVICE_AREA_LABEL}. By phone and video everywhere else.
             </p>
+            <nav
+              aria-label="Web design by town"
+              className="flex flex-wrap gap-x-6 gap-y-2 text-[15px] md:justify-end"
+            >
+              {SERVICE_AREA_CITIES.map((city) => (
+                <Link
+                  key={city.slug}
+                  href={`/web-design/${city.slug}`}
+                  className="nav-link text-paper"
+                >
+                  {city.name}
+                </Link>
+              ))}
+            </nav>
           </div>
         </div>
         <div className="mt-14 flex flex-col gap-3 text-sm sm:flex-row sm:justify-between">

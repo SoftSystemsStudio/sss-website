@@ -45,6 +45,39 @@ test('mangled Lead Tool links forward to tool.', async ({ request }) => {
   }
 });
 
+test('exact-match domains forward to their town page', async ({ request }) => {
+  // Host-matched redirects (next.config.mjs CITY_DOMAINS). maxRedirects: 0
+  // reads the Location header without following it off to the live site.
+  const cases: [string, string][] = [
+    ['columbusgawebdesign.com', 'columbus-ga'],
+    ['www.columbusgawebdesign.com', 'columbus-ga'],
+    ['phenixcitywebdesign.com', 'phenix-city-al'],
+    ['auburnalwebdesign.com', 'auburn-al'],
+    ['opelikawebdesign.com', 'opelika-al'],
+    ['smithsstationwebdesign.com', 'smiths-station-al'],
+  ];
+  for (const [host, slug] of cases) {
+    const res = await request.get('/anything', { maxRedirects: 0, headers: { host } });
+    expect(res.status(), host).toBe(308);
+    expect(res.headers()['location'], host).toBe(
+      `https://softsystemsstudiollc.com/web-design/${slug}`,
+    );
+  }
+});
+
+test('sitemap lists every town page', async ({ request }) => {
+  const xml = await (await request.get('/sitemap.xml')).text();
+  for (const slug of [
+    'columbus-ga',
+    'phenix-city-al',
+    'auburn-al',
+    'opelika-al',
+    'smiths-station-al',
+  ]) {
+    expect(xml, slug).toContain(`https://softsystemsstudiollc.com/web-design/${slug}`);
+  }
+});
+
 test('home page has no horizontal overflow at 375px', async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 });
   await page.goto('/', { waitUntil: 'networkidle' });

@@ -139,11 +139,37 @@ export default function PricingPage() {
           className="scroll-mt-16 border-t border-line-soft py-20 lg:scroll-mt-[96px] lg:py-[120px]"
         >
           <h2 className={`reveal ${SECTION_TITLE}`}>At a glance</h2>
-          <p className="reveal mt-4 text-[15px] text-ink-muted lg:hidden">
-            Swipe the table to see all four packages.
-          </p>
-          <div className="reveal mt-8 overflow-x-auto lg:mt-14">
-            <table className="w-full min-w-[720px] border-collapse text-left text-[17px]">
+
+          {/* Phones and small tablets: one card per package, no sideways swiping */}
+          <ul className="mt-8 space-y-6 lg:hidden">
+            {BUILD_PACKAGES.map((pkg) => (
+              <li key={pkg.id} className="reveal border-t border-ink pt-5">
+                <h3 className="font-serif text-[40px] leading-none tracking-[-0.015em]">
+                  <a href={`#${pkg.id}`} className="hover:underline">
+                    {pkg.name}
+                  </a>
+                </h3>
+                <p className="mt-2 font-serif text-[32px] leading-none">{priceLabel(pkg)}</p>
+                <dl className="mt-5 border-t border-line">
+                  {PACKAGE_COMPARISON.map((row) => (
+                    <div
+                      key={row.label}
+                      className="grid grid-cols-[1fr_1fr] gap-x-5 border-b border-line py-3 text-[16px] sm:grid-cols-[3fr_2fr]"
+                    >
+                      <dt className="text-ink-soft">{row.label}</dt>
+                      <dd className={row.values[pkg.id] === 'No' ? 'text-ink-muted' : ''}>
+                        {row.values[pkg.id]}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              </li>
+            ))}
+          </ul>
+
+          {/* Large screens: the side-by-side table */}
+          <div className="reveal mt-14 hidden overflow-x-auto lg:block">
+            <table className="w-full border-collapse text-left text-[17px]">
               <caption className="sr-only">The four website packages side by side</caption>
               <thead>
                 <tr className="border-b border-ink">

@@ -4,10 +4,27 @@ import { Navbar, Footer, Section } from '@/components/ui';
 import QuoteCta from '@/components/QuoteCta';
 import { HOME_BASE, SERVICE_AREA_LABEL } from '@/lib/business';
 
+const TITLE = 'About Austin';
+const DESCRIPTION = `I’m Austin Hodges. I design, write and build websites for local businesses from ${HOME_BASE}. Here’s who I am and how I work.`;
+const OG_IMAGE = `/api/og?title=${encodeURIComponent('About Austin')}`;
+
 export const metadata: Metadata = {
-  title: 'About Austin',
-  description: `I’m Austin Hodges. I design, write and build websites for local businesses from ${HOME_BASE}. Here’s who I am and how I work.`,
+  title: TITLE,
+  description: DESCRIPTION,
   alternates: { canonical: '/about' },
+  openGraph: {
+    type: 'website',
+    siteName: 'Soft Systems Studio',
+    title: TITLE,
+    description: DESCRIPTION,
+    images: [{ url: OG_IMAGE, width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: TITLE,
+    description: DESCRIPTION,
+    images: [OG_IMAGE],
+  },
 };
 
 const EYEBROW =

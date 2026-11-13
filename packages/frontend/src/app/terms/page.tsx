@@ -14,10 +14,27 @@ import {
   SECURE_CARE_PLAN_RANGE,
 } from '@/lib/business';
 
+const TITLE = 'Terms of Service';
+const DESCRIPTION =
+  'The terms for quotes, payments, revisions, hosting and Care Plans with Soft Systems Studio LLC, a web design studio in Smiths Station, AL.';
+
 export const metadata: Metadata = {
-  title: 'Terms of Service',
-  description: 'Terms of service for Soft Systems Studio LLC.',
+  title: TITLE,
+  description: DESCRIPTION,
   alternates: { canonical: '/terms' },
+  openGraph: {
+    type: 'website',
+    siteName: 'Soft Systems Studio',
+    title: TITLE,
+    description: DESCRIPTION,
+    images: [{ url: '/api/og', width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: TITLE,
+    description: DESCRIPTION,
+    images: ['/api/og'],
+  },
 };
 
 export default function TermsPage() {

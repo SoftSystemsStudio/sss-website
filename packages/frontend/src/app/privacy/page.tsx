@@ -8,11 +8,27 @@ import {
   MAILING_ADDRESS,
 } from '@/lib/business';
 
+const TITLE = 'Privacy Policy';
+const DESCRIPTION =
+  'What happens to your information when you use this site, ask for a quote or become a client, and the privacy rights you have.';
+
 export const metadata: Metadata = {
-  title: 'Privacy Policy',
-  description:
-    'What happens to your information when you use this site, ask for a quote or become a client, your privacy rights, and what our private dashboard’s read-only Google Calendar and Gmail access is for.',
+  title: TITLE,
+  description: DESCRIPTION,
   alternates: { canonical: '/privacy' },
+  openGraph: {
+    type: 'website',
+    siteName: 'Soft Systems Studio',
+    title: TITLE,
+    description: DESCRIPTION,
+    images: [{ url: '/api/og', width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: TITLE,
+    description: DESCRIPTION,
+    images: ['/api/og'],
+  },
 };
 
 const H2 = 'pt-6 font-serif text-[32px] leading-tight text-ink';

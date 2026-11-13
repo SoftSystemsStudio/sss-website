@@ -61,7 +61,7 @@ This file is the repo's operating runbook for Claude Code: how work is planned, 
 - **Mailbox**: Google Workspace — `austin@softsystemsstudiollc.com` (`CONTACT_EMAIL`). The old `softsystemstudioco@gmail.com` was upgraded into the same account and still receives mail. DNS is on Cloudflare; Resend and SendGrid send via their own subdomains, so root SPF lists only Google
 - **Payments**: none on this site — build and Care Plan payments are Stripe Checkout links made in the Lead Tool
 - **Error tracking**: Sentry, errors only. Session replay and performance tracing are off (sample rates 0 in `sentry.*.config.ts`) because the privacy policy says error monitoring only; keep the two in step
-- **Analytics**: none. Google Analytics was removed 2026-10-31; adding any tracker means a consent banner and a privacy-policy update (sss-hub compliance standard items 4, 5, 8)
+- **Analytics**: Vercel Web Analytics, page views only (added 2026-11-13): `<Analytics />` in `app/layout.tsx`. It needs Web Analytics switched on in the Vercel project's Analytics tab; until then `/_vercel/insights/script.js` 404s, which is harmless. No consent banner, because it sets no cookies and stores nothing in the browser (compliance standard item 5); it is named in the privacy policy and the sss-hub `docs/compliance/sdk-inventory.md`, and `e2e/analytics.spec.ts` guards the no-cookies, no-storage claim (`e2e/fixtures.ts` stubs the script, since `next start` doesn't serve it). Google Analytics was removed 2026-10-31. Adding anything else (click maps, session replay, a pixel) means a consent banner and a privacy-policy rewrite (items 4, 5, 8)
 
 ---
 

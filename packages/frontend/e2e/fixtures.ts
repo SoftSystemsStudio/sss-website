@@ -21,6 +21,13 @@ export const test = base.extend<Fixtures>({
       const problems: string[] = [];
       const origin = new URL(baseURL ?? 'http://127.0.0.1').origin;
 
+      // Vercel Web Analytics (app/layout.tsx) loads /_vercel/insights/script.js, which only
+      // Vercel's edge serves; `next start` would 404 it and trip the same-origin check below.
+      // Fulfil it with an empty script so the page still requests it but nothing else runs.
+      await page.route('**/_vercel/insights/**', (route) =>
+        route.fulfill({ status: 200, contentType: 'application/javascript', body: '' }),
+      );
+
       page.on('pageerror', (err) => problems.push(`pageerror: ${err.message}`));
       page.on('console', (msg) => {
         if (msg.type() !== 'error') return;

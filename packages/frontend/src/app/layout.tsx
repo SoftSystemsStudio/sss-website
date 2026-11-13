@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
+import { Analytics } from '@vercel/analytics/next';
 import '../fonts/fallbacks.css';
 import '../styles/globals.css';
 
@@ -113,7 +114,13 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${sans.variable} ${serif.variable}`}>
-      <body className="min-h-screen bg-paper font-sans text-ink">{children}</body>
+      <body className="min-h-screen bg-paper font-sans text-ink">
+        {children}
+        {/* Vercel Web Analytics: cookieless page views, so no consent banner (compliance
+            standard item 5). It must stay named in app/privacy/page.tsx and in the sss-hub
+            docs/compliance/sdk-inventory.md; keep the three in step. */}
+        <Analytics />
+      </body>
     </html>
   );
 }

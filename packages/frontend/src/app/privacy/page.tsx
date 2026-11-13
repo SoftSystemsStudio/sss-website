@@ -126,9 +126,18 @@ export default function PrivacyPage() {
             means a visitor&apos;s browser asks Google for the font files.
           </p>
 
-          <h2 className={H2}>Error monitoring and hosting</h2>
+          <h2 className={H2}>Visit counts, error monitoring and hosting</h2>
           <p>
             This site doesn&apos;t run Google Analytics, advertising trackers or session recording.
+            To see which pages people read, we use Vercel Web Analytics, which counts page views.
+            For each view it records the page, the site you came from, your approximate location
+            (country, state and city), and your browser, operating system and device type. It sets
+            no cookies and stores nothing in your browser. A visit is told apart from another by a
+            code made from the request itself, which Vercel discards after 24 hours. It doesn&apos;t
+            follow you from site to site or build a profile of you, and it doesn&apos;t record what
+            you click or type.
+          </p>
+          <p>
             We use Sentry for error monitoring only: when something breaks, Sentry records the
             error, the page it happened on, and your browser and device type, so we can fix it. It
             doesn&apos;t record what you do on the page. The site is hosted on Vercel, which, like
@@ -137,9 +146,10 @@ export default function PrivacyPage() {
 
           <h2 className={H2}>Cookies and storage</h2>
           <p>
-            This site sets no cookies and stores nothing in your browser. The previews described
-            above keep one random visit number in session storage, and nothing else. We use no
-            advertising or analytics cookies anywhere, so there is nothing to opt in to or out of.
+            This site sets no cookies and stores nothing in your browser, and that includes the
+            visit counts above. The previews described above keep one random visit number in session
+            storage, and nothing else. We use no advertising or analytics cookies anywhere, so there
+            is nothing to opt in to or out of.
           </p>
 
           <h2 className={H2}>Services that handle your information</h2>
@@ -149,6 +159,7 @@ export default function PrivacyPage() {
           </p>
           <ul className="list-disc space-y-2 pl-6">
             <li>Vercel and Cloudflare: hosting and domains</li>
+            <li>Vercel Web Analytics: counting page views on this site, without cookies</li>
             <li>Supabase: the database behind our tool</li>
             <li>Resend: sending email from our tool</li>
             <li>Google Workspace: our email</li>

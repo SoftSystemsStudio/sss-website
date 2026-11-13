@@ -13,6 +13,7 @@
   "dependencies": {
     "@sentry/nextjs": "^10.78.0",
     "@softsystems/ui-components": "workspace:^",
+    "@vercel/analytics": "^2.0.1",
     "next": "^16.4.5",
     "react": "18.3.1",
     "react-dom": "18.3.1",

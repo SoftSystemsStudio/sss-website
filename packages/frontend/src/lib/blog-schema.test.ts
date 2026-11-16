@@ -37,6 +37,41 @@ const bad: [string, Record<string, unknown>][] = [
   ['empty tags', { tags: [] }],
 ];
 
+// Characters that could break out of JSON-LD/HTML or make the RSS feed invalid XML.
+const BAD_CHARS: [string, string][] = [
+  ['<', '<'],
+  ['>', '>'],
+  ['NUL', '\u0000'],
+  ['tab', '\t'],
+  ['newline', '\n'],
+  ['US (0x1F)', '\u001F'],
+  ['DEL', '\u007F'],
+  ['U+2028', '\u2028'],
+  ['U+2029', '\u2029'],
+];
+
+for (const [label, ch] of BAD_CHARS) {
+  test(`rejects ${label} in title, description and tags`, () => {
+    const cases: Record<string, unknown>[] = [
+      { title: `${valid.title}${ch}x` },
+      { description: `${valid.description}${ch}x` },
+      { tags: ['pricing', `bad${ch}tag`] },
+    ];
+    for (const patch of cases) {
+      assert.equal(
+        postFrontmatterSchema.safeParse({ ...valid, ...patch }).success,
+        false,
+        JSON.stringify(patch),
+      );
+    }
+  });
+}
+
+test('a </script> title is rejected', () => {
+  const r = postFrontmatterSchema.safeParse({ ...valid, title: 'Hi </script><script>alert(1)' });
+  assert.equal(r.success, false);
+});
+
 for (const [name, patch] of bad) {
   test(`rejects ${name}`, () => {
     assert.equal(postFrontmatterSchema.safeParse({ ...valid, ...patch }).success, false);

@@ -24,6 +24,7 @@ import {
   BUSINESS_PHONE,
   FACEBOOK_URL,
 } from '@/lib/business';
+import { jsonLd } from '@/lib/json-ld';
 
 const SITE_URL = 'https://softsystemsstudiollc.com';
 /** One `@id` for the business, so every schema on the site describes the same entity. */
@@ -87,7 +88,7 @@ export function OrganizationSchema() {
     <script
       id="organization-schema"
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      dangerouslySetInnerHTML={{ __html: jsonLd(schema) }}
     />
   );
 }
@@ -168,7 +169,7 @@ export function LocalBusinessSchema() {
     <script
       id="local-business-schema"
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      dangerouslySetInnerHTML={{ __html: jsonLd(schema) }}
     />
   );
 }
@@ -194,7 +195,7 @@ export function FAQSchema({ faqs }: { faqs: FAQ[] }) {
     <script
       id="faq-schema"
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      dangerouslySetInnerHTML={{ __html: jsonLd(schema) }}
     />
   );
 }
@@ -234,7 +235,7 @@ export function CityServiceSchema({
     <script
       id="city-service-schema"
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      dangerouslySetInnerHTML={{ __html: jsonLd(schema) }}
     />
   );
 }
@@ -260,7 +261,7 @@ export function WebSiteSchema() {
     <script
       id="website-schema"
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      dangerouslySetInnerHTML={{ __html: jsonLd(schema) }}
     />
   );
 }
@@ -307,7 +308,7 @@ export function ArticleSchema({
     <script
       id="article-schema"
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      dangerouslySetInnerHTML={{ __html: jsonLd(schema) }}
     />
   );
 }
@@ -329,7 +330,7 @@ export function BreadcrumbSchema({ items }: { items: { name: string; path: strin
     <script
       id="breadcrumb-schema"
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      dangerouslySetInnerHTML={{ __html: jsonLd(schema) }}
     />
   );
 }

@@ -1,18 +1,10 @@
 import { getAllPosts } from '@/lib/blog';
+import { escapeXml as esc } from '@/lib/blog-format';
 
 const SITE_URL = 'https://softsystemsstudiollc.com';
 
 // Built once at build time, like the pages: the deployed function has no content/blog to read.
 export const dynamic = 'force-static';
-
-function esc(value: string): string {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
-}
 
 const rfc822 = (date: string) => new Date(`${date}T12:00:00Z`).toUTCString();
 

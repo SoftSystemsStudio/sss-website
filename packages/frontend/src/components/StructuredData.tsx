@@ -72,6 +72,7 @@ export function OrganizationSchema() {
       FACEBOOK_URL,
       'https://nextdoor.com/page/soft-systems-studio-llc/',
       'https://www.linkedin.com/company/soft-systems-studio-llc/',
+      'https://www.yelp.com/biz/soft-systems-studio-smiths-station',
       // 'https://twitter.com/softsystems',
     ],
     contactPoint: {

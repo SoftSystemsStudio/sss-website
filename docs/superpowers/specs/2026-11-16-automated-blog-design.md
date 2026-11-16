@@ -178,8 +178,9 @@ skip days. Austin sets a monthly spend limit on the Anthropic key as a hard cap.
 2. Create an Anthropic API key for this pipeline and set a monthly spend limit
    (secret: it never goes through chat; I'll open the console page and a hidden-prompt
    script so he pastes it once).
-3. Create a fine-grained GitHub token (repo contents + pull requests write) for
-   opening PRs that trigger CI, and add both as repo secrets.
+3. Create a fine-grained GitHub token (repo contents, pull requests and issues
+   write; issues for the run log and PR labels) for opening PRs that trigger CI,
+   and add both as repo secrets.
 4. (Done: author is Soft Systems Studio, one post a day.)
 (Search Console and Bing already hold the sitemap, per CLAUDE.md, so no submission step.)
 

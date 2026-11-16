@@ -36,6 +36,9 @@ const envSchema = z.object({
   RESEND_FROM_EMAIL: z.string().optional(),
   ADMIN_EMAIL: z.string().optional(),
 
+  // Blog content directory override (defaults to content/blog under cwd)
+  BLOG_CONTENT_DIR: z.string().optional(),
+
   // Cron
   CRON_SECRET: z.string().optional(),
 });
@@ -67,6 +70,7 @@ function validateEnv(): Env {
       RESEND_API_KEY: process.env.RESEND_API_KEY,
       RESEND_FROM_EMAIL: process.env.RESEND_FROM_EMAIL,
       ADMIN_EMAIL: process.env.ADMIN_EMAIL,
+      BLOG_CONTENT_DIR: process.env.BLOG_CONTENT_DIR,
       CRON_SECRET: process.env.CRON_SECRET,
     };
 

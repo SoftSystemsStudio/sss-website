@@ -5,7 +5,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { CallModel, ModelRequest } from './models';
-import type { DraftPr, GitHubClient, LogEntry } from './github';
+import { LOG_ISSUE_TITLE } from './config';
+import { createGitHubClient, type DraftPr, type GitHubClient, type LogEntry } from './github';
 import { formatLogLines, loadExistingPosts, LogWriteError, reportRun, runPipeline } from './run';
 import { ModelOutputError, slugify } from './stages';
 import { CHECKLIST_KEYS, type Brief } from './types';
@@ -547,6 +548,181 @@ test('every logged entry has a short single-line detail', async () => {
   await runPipeline(deps(call, gh));
   assert.ok(logged[0].detail.length <= 300);
   assert.equal(logged[0].detail.includes('\n'), false);
+});
+
+// ---------- stale / gate boundaries ----------
+
+test('exactly 14 days old is NOT stale (strict older-than), so it still counts', async () => {
+  const edge = pr(1, { createdAt: new Date(NOW.getTime() - 14 * DAY).toISOString() });
+  const { call, calls } = scripted([]);
+  const { gh, calls: ghCalls } = fakeGh({ prs: [edge, pr(2), pr(3)] });
+  const outcome = await runPipeline(deps(call, gh));
+  assert.equal(outcome.kind === 'skipped' && outcome.reason, 'gate-full');
+  assert.equal(methods(ghCalls).includes('closeStale'), false);
+  assert.equal(calls.length, 0);
+});
+
+test('exactly 3 open drafts -> gate-full even with a 4th stale one, which is closed first', async () => {
+  const stale = pr(4, { createdAt: new Date(NOW.getTime() - 14 * DAY - 1).toISOString() });
+  const { call, calls } = scripted([]);
+  const { gh, calls: ghCalls } = fakeGh({ prs: [pr(1), pr(2), pr(3), stale] });
+  const outcome = await runPipeline(deps(call, gh));
+  assert.deepEqual(outcome, {
+    kind: 'skipped',
+    reason: 'gate-full',
+    detail: '3 draft PRs already open',
+  });
+  assert.deepEqual(
+    ghCalls.filter((c) => c.method === 'closeStale').map((c) => (c.args[0] as DraftPr).number),
+    [4],
+  );
+  assert.ok(methods(ghCalls).indexOf('closeStale') < methods(ghCalls).indexOf('appendLog'));
+  assert.equal(calls.length, 0);
+});
+
+// ---------- real client + fake GitHub: unlabelled drafts and label rollback ----------
+
+const REPO = 'acme/site';
+const LOG_NO = 500;
+
+interface GhSent {
+  method: string;
+  path: string;
+  body: unknown;
+}
+
+/** A fake GitHub REST API for createGitHubClient, so the orchestrator runs end to end. */
+function fakeGitHubApi(
+  opts: { labelled?: unknown[]; open?: unknown[]; labelStatus?: number } = {},
+) {
+  const sent: GhSent[] = [];
+  const fetchFn = (async (input: string | URL | Request, init?: RequestInit) => {
+    const method = (init?.method ?? 'GET').toUpperCase();
+    const path = String(input).replace('https://api.github.com', '');
+    const body = init?.body ? JSON.parse(String(init.body)) : undefined;
+    sent.push({ method, path, body });
+    const r = (status: number, json?: unknown) =>
+      new Response(json === undefined ? null : JSON.stringify(json), {
+        status,
+        headers: { 'content-type': 'application/json' },
+      });
+    const base = `/repos/${REPO}`;
+    if (method === 'GET' && path.startsWith(`${base}/issues?`)) return r(200, opts.labelled ?? []);
+    if (method === 'GET' && path.startsWith(`${base}/pulls?`)) return r(200, opts.open ?? []);
+    if (method === 'GET' && path.startsWith('/search/issues'))
+      return r(200, {
+        items: [{ number: LOG_NO, title: LOG_ISSUE_TITLE, author_association: 'OWNER' }],
+      });
+    if (method === 'GET' && path === `${base}/issues/${LOG_NO}`) return r(200, { comments: 0 });
+    if (method === 'GET' && path === `${base}/git/ref/heads/main`)
+      return r(200, { object: { sha: 'abc123' } });
+    if (method === 'GET' && path.startsWith(`${base}/git/ref/heads/`)) return r(404, {});
+    if (method === 'POST' && path === `${base}/git/refs`) return r(201, {});
+    if (method === 'PUT') return r(201, {});
+    if (method === 'POST' && path === `${base}/pulls`)
+      return r(201, { number: 42, html_url: 'https://github.com/acme/site/pull/42' });
+    if (method === 'POST' && path === `${base}/issues/42/labels`)
+      return r(opts.labelStatus ?? 200, { message: 'Resource not accessible by integration' });
+    if (method === 'POST' && /\/issues\/\d+\/comments$/.test(path)) return r(201, {});
+    if (method === 'PATCH') return r(200, {});
+    if (method === 'DELETE') return r(204);
+    return r(404, { message: 'Not Found' });
+  }) as typeof fetch;
+  return { gh: createGitHubClient('github_pat_FAKE', REPO, fetchFn), sent };
+}
+
+const daysAgo = (d: number) => new Date(NOW.getTime() - d * DAY).toISOString();
+function openPull(n: number, ref: string, createdAt = daysAgo(2)) {
+  return {
+    number: n,
+    title: `Blog: Open ${n}`,
+    body: `Target query: open query ${n}`,
+    state: 'open',
+    created_at: createdAt,
+    head: { ref },
+  };
+}
+function labelledOpen(n: number, createdAt = daysAgo(2)) {
+  return {
+    number: n,
+    title: `Blog: Open ${n}`,
+    body: `Target query: open query ${n}`,
+    state: 'open',
+    created_at: createdAt,
+    pull_request: { merged_at: null },
+  };
+}
+const patched = (sent: GhSent[]) =>
+  sent.filter((s) => s.method === 'PATCH').map((s) => Number(s.path.split('/').pop()));
+
+test('label failure end to end: PR rolled back, error logged, exit 1 with no outcome line', async () => {
+  const { call } = scripted([TOPIC, writerReply(), reviewReply('pass')]);
+  const { gh, sent } = fakeGitHubApi({ labelStatus: 403 });
+  const c = capture();
+  const code = await reportRun(() => runPipeline(deps(call, gh)), c.sink);
+  assert.equal(code, 1);
+  assert.equal(c.out.length, 0);
+  assert.match(c.err[0], /labels failed: HTTP 403/);
+  assert.equal(sent.filter((s) => s.method === 'POST' && s.path.endsWith('/pulls')).length, 1);
+  assert.deepEqual(patched(sent), [42]);
+  assert.ok(sent.some((s) => s.method === 'DELETE' && s.path.endsWith(`/heads/${BRANCH}`)));
+  const logged = sent.find((s) => s.path === `/repos/${REPO}/issues/${LOG_NO}/comments`);
+  assert.match((logged?.body as { body: string }).body, /"outcome":"error"/);
+});
+
+test('an unlabelled open blog/ PR counts toward the gate; a human PR never does', async () => {
+  const { call, calls } = scripted([]);
+  const { gh, sent } = fakeGitHubApi({
+    labelled: [labelledOpen(1), labelledOpen(2)],
+    open: [
+      openPull(1, 'blog/2026-11-14-one'),
+      openPull(2, 'blog/2026-11-14-two'),
+      openPull(3, 'blog/2026-11-15-label-failed'), // unlabelled draft
+      openPull(9, 'feat/human-change', daysAgo(40)), // old human PR
+    ],
+  });
+  const outcome = await runPipeline(deps(call, gh));
+  assert.deepEqual(outcome, {
+    kind: 'skipped',
+    reason: 'gate-full',
+    detail: '3 draft PRs already open',
+  });
+  assert.equal(calls.length, 0);
+  assert.deepEqual(patched(sent), []);
+});
+
+test('an unlabelled blog/ PR older than 14 days is closed stale; an old human PR is not', async () => {
+  const { call } = scripted([JSON.stringify({ kind: 'none', reason: 'nothing' })]);
+  const { gh, sent } = fakeGitHubApi({
+    open: [
+      openPull(5, 'blog/2026-10-30-orphan', daysAgo(15)),
+      openPull(9, 'feat/human-change', daysAgo(40)),
+    ],
+  });
+  const outcome = await runPipeline(deps(call, gh));
+  assert.equal(outcome.kind === 'skipped' && outcome.reason, 'no-topic');
+  assert.deepEqual(patched(sent), [5]);
+  assert.ok(
+    sent.some((s) => s.method === 'DELETE' && s.path.endsWith('/heads/blog/2026-10-30-orphan')),
+  );
+  assert.equal(
+    sent.some((s) => s.path.includes('/issues/9/') || s.path.endsWith('/pulls/9')),
+    false,
+  );
+});
+
+test('an unlabelled open blog/ PR with the same slug -> slug-collision, no new PR', async () => {
+  const { call, calls } = scripted([TOPIC, writerReply(), reviewReply('pass')]);
+  const { gh, sent } = fakeGitHubApi({ open: [openPull(6, `blog/2026-11-10-${SLUG}`)] });
+  const outcome = await runPipeline(deps(call, gh));
+  assert.equal(outcome.kind === 'skipped' && outcome.reason, 'slug-collision');
+  if (outcome.kind === 'skipped') assert.match(outcome.detail, /PR #6/);
+  assert.equal(
+    sent.some((s) => s.method === 'POST' && s.path.endsWith('/pulls')),
+    false,
+  );
+  // its query reached the researcher's history
+  assert.ok(calls[0].user.includes('open draft: open query 6'));
 });
 
 // ---------- existing posts ----------

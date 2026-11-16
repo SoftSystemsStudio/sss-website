@@ -138,6 +138,65 @@ test('createDraftPr deletes the new branch when opening the PR fails, and the er
   assert.equal(routes(sent).at(-1), `DELETE /repos/${REPO}/git/refs/heads/blog/2026-11-16-x`);
 });
 
+/** A repo where everything works up to the PR, and the label call answers `labelStatus`. */
+function labelFailRepo(labelStatus: number, rollbackStatus: number) {
+  return fakeFetch((method, path) => {
+    if (method === 'GET' && path.endsWith('/git/ref/heads/main'))
+      return { status: 200, json: { object: { sha: 'abc123' } } };
+    if (method === 'POST' && path.endsWith('/git/refs')) return { status: 201, json: {} };
+    if (method === 'PUT') return { status: 201, json: {} };
+    if (method === 'POST' && path === `/repos/${REPO}/pulls`)
+      return {
+        status: 201,
+        json: { number: 42, html_url: 'https://github.com/acme/site/pull/42' },
+      };
+    if (path.endsWith('/issues/42/labels'))
+      return { status: labelStatus, json: { message: 'Resource not accessible by integration' } };
+    // rollback calls: comment, close, delete branch
+    return { status: rollbackStatus, json: { message: 'rollback answer' } };
+  });
+}
+const DRAFT_INPUT = {
+  branch: 'blog/2026-11-16-x',
+  path: 'packages/frontend/content/blog/x.md',
+  content: 'x',
+  title: 'Blog: X',
+  body: 'Target query: x',
+};
+
+test('createDraftPr: a failed label rolls the PR back (comment, close, delete branch) and rethrows', async () => {
+  const { fetchFn, sent } = labelFailRepo(403, 200);
+  await assert.rejects(
+    createGitHubClient(TOKEN, REPO, fetchFn).createDraftPr(DRAFT_INPUT),
+    (err: Error) => {
+      assert.match(err.message, /labels failed: HTTP 403 Resource not accessible/);
+      assert.equal(err.message.includes(TOKEN), false);
+      return true;
+    },
+  );
+  assert.deepEqual(routes(sent).slice(-4), [
+    `POST /repos/${REPO}/issues/42/labels`,
+    `POST /repos/${REPO}/issues/42/comments`,
+    `PATCH /repos/${REPO}/pulls/42`,
+    `DELETE /repos/${REPO}/git/refs/heads/blog/2026-11-16-x`,
+  ]);
+  assert.deepEqual(sent.at(-2)?.body, { state: 'closed' });
+});
+
+test('createDraftPr: when label AND rollback fail, the original label error still propagates', async () => {
+  const { fetchFn, sent } = labelFailRepo(403, 500);
+  await assert.rejects(
+    createGitHubClient(TOKEN, REPO, fetchFn).createDraftPr(DRAFT_INPUT),
+    /labels failed: HTTP 403/,
+  );
+  // every rollback step was still attempted
+  assert.deepEqual(routes(sent).slice(-3), [
+    `POST /repos/${REPO}/issues/42/comments`,
+    `PATCH /repos/${REPO}/pulls/42`,
+    `DELETE /repos/${REPO}/git/refs/heads/blog/2026-11-16-x`,
+  ]);
+});
+
 test('createDraftPr refuses a branch or path outside the blog namespace', async () => {
   const { fetchFn, sent } = fakeFetch(() => undefined);
   const gh = createGitHubClient(TOKEN, REPO, fetchFn);
@@ -176,6 +235,8 @@ test('listDraftPrs maps merged_at, target query and state, and reads the branch 
   ];
   const { fetchFn, sent } = fakeFetch((method, path) => {
     if (path.startsWith(`/repos/${REPO}/issues?`)) return { status: 200, json: items };
+    if (path.startsWith(`/repos/${REPO}/pulls?`)) return { status: 200, json: [] };
+    // #3 is open but missing from the open list (a race): its branch is looked up directly.
     if (path === `/repos/${REPO}/pulls/3`)
       return { status: 200, json: { head: { ref: 'blog/2026-11-14-post-3' } } };
     return undefined;
@@ -209,20 +270,88 @@ test('listDraftPrs paginates and stops at a hard cap', async () => {
       const page = Number(new URL(`https://x${path}`).searchParams.get('page'));
       return { status: 200, json: full(page) };
     }
+    if (path.startsWith(`/repos/${REPO}/pulls?`)) return { status: 200, json: [] };
     return undefined;
   });
   const prs = await createGitHubClient(TOKEN, REPO, fetchFn).listDraftPrs();
-  assert.equal(sent.length, 3);
+  assert.equal(sent.filter((s) => s.path.startsWith(`/repos/${REPO}/issues?`)).length, 3);
   assert.equal(prs.length, 300);
 });
 
 test('listDraftPrs stops after a short page', async () => {
   const { fetchFn, sent } = fakeFetch((method, path) => {
     if (path.startsWith(`/repos/${REPO}/issues?`)) return { status: 200, json: [issueItem(1)] };
+    if (path.startsWith(`/repos/${REPO}/pulls?`)) return { status: 200, json: [] };
     return undefined;
   });
   await createGitHubClient(TOKEN, REPO, fetchFn).listDraftPrs();
-  assert.equal(sent.length, 1);
+  assert.deepEqual(routes(sent), [`GET /repos/${REPO}/issues`, `GET /repos/${REPO}/pulls`]);
+});
+
+function openPull(n: number, ref: string, over: Record<string, unknown> = {}) {
+  return {
+    number: n,
+    title: `Blog: Open ${n}`,
+    body: `Target query: open query ${n}`,
+    state: 'open',
+    created_at: '2026-11-10T06:00:00Z',
+    head: { ref },
+    ...over,
+  };
+}
+
+test('listDraftPrs adds unlabelled open PRs on a blog/ branch and never a human PR', async () => {
+  const { fetchFn, sent } = fakeFetch((method, path) => {
+    if (path.startsWith(`/repos/${REPO}/issues?`))
+      return { status: 200, json: [issueItem(1, { state: 'open' }), issueItem(2)] };
+    if (path.startsWith(`/repos/${REPO}/pulls?`))
+      return {
+        status: 200,
+        json: [
+          openPull(1, 'blog/2026-11-12-labelled'), // labelled: branch taken from here
+          openPull(7, 'blog/2026-11-14-unlabelled-orphan'), // label failed: still a draft
+          openPull(8, 'fix/some-human-change'), // a human's PR: never a draft
+          openPull(9, 'blog/not-a-date'), // near miss: not a draft
+          { number: 'bad' },
+        ],
+      };
+    return undefined;
+  });
+  const prs = await createGitHubClient(TOKEN, REPO, fetchFn).listDraftPrs();
+  assert.deepEqual(
+    prs.map((p) => [p.number, p.state, p.branch, p.targetQuery]),
+    [
+      [1, 'open', 'blog/2026-11-12-labelled', 'query 1'],
+      [2, 'closed', '', 'query 2'],
+      [7, 'open', 'blog/2026-11-14-unlabelled-orphan', 'open query 7'],
+    ],
+  );
+  const openList = sent.find((s) => s.path.startsWith(`/repos/${REPO}/pulls?`));
+  assert.equal(new URL(openList!.url).searchParams.get('state'), 'open');
+  // no per-PR lookup when the open list already gave the branch
+  assert.equal(
+    sent.some((s) => /\/pulls\/\d+$/.test(s.path)),
+    false,
+  );
+});
+
+test('the open-PR list is not limited by the 300 history cap but has a hard stop', async () => {
+  const { fetchFn, sent } = fakeFetch((method, path) => {
+    if (path.startsWith(`/repos/${REPO}/issues?`)) return { status: 200, json: [] };
+    if (path.startsWith(`/repos/${REPO}/pulls?`)) {
+      const page = Number(new URL(`https://x${path}`).searchParams.get('page'));
+      return {
+        status: 200,
+        json: Array.from({ length: 100 }, (_, i) =>
+          openPull(page * 1000 + i, i === 0 ? `blog/2026-11-14-p${page}` : `feat/x-${i}`),
+        ),
+      };
+    }
+    return undefined;
+  });
+  const prs = await createGitHubClient(TOKEN, REPO, fetchFn).listDraftPrs();
+  assert.equal(sent.filter((s) => s.path.startsWith(`/repos/${REPO}/pulls?`)).length, 50);
+  assert.equal(prs.length, 50); // one blog/ branch per page, including pages past 3
 });
 
 // ---------- branchExists / closeStale ----------

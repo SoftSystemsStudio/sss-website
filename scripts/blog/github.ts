@@ -45,6 +45,8 @@ export const GITHUB_API_VERSION = '2022-11-28';
 const PER_PAGE = 100;
 /** Hard cap on listed draft PRs, so a misbehaving API can never loop forever. */
 export const MAX_LISTED_PRS = 300;
+/** Hard stop for the open-PR list (5,000 PRs): generous, but it can never loop forever. */
+export const MAX_OPEN_PR_PAGES = 50;
 const MAX_LOG_PAGES = 5;
 const MAX_COMMENT_CHARS = 4000;
 const BASE_BRANCH = 'main';
@@ -105,6 +107,13 @@ const issueItemSchema = z.object({
 const refSchema = z.object({ object: z.object({ sha: z.string().regex(/^[0-9a-f]{6,64}$/i) }) });
 const pullSchema = z.object({ number: z.number().int().positive(), html_url: z.string().url() });
 const pullHeadSchema = z.object({ head: z.object({ ref: z.string() }) });
+const openPullSchema = z.object({
+  number: z.number().int().positive(),
+  title: z.string(),
+  body: z.string().nullish(),
+  created_at: z.string(),
+  head: z.object({ ref: z.string() }),
+});
 const searchSchema = z.object({ items: z.array(z.unknown()) });
 const logIssueSchema = z.object({
   number: z.number().int().positive(),
@@ -213,6 +222,7 @@ export function createGitHubClient(
 
   return {
     async listDraftPrs() {
+      // 1. History: every PR labelled blog-draft (open, merged, closed), capped.
       const out: DraftPr[] = [];
       for (let page = 1; page * PER_PAGE <= MAX_LISTED_PRS; page++) {
         const params = new URLSearchParams({
@@ -241,11 +251,55 @@ export function createGitHubClient(
         }
         if (items.length < PER_PAGE) break;
       }
-      // The issues endpoint has no head ref; look it up only for the few open drafts.
+
+      // 2. Every OPEN PR, without the history cap: open drafts are found by head branch
+      // too, so a draft whose label is missing (e.g. labelling failed and the rollback
+      // failed) is still gated, closed when stale and seen by the twin-slug check.
+      const openByNumber = new Map<number, { ref: string; draft: DraftPr }>();
+      for (let page = 1; page <= MAX_OPEN_PR_PAGES; page++) {
+        const params = new URLSearchParams({
+          state: 'open',
+          sort: 'created',
+          direction: 'desc',
+          per_page: String(PER_PAGE),
+          page: String(page),
+        });
+        const { json } = await request('GET', `${repoPath}/pulls?${params}`);
+        const items = parse(z.array(z.unknown()), json, 'pull list');
+        for (const raw of items) {
+          const r = openPullSchema.safeParse(raw);
+          if (!r.success) continue;
+          const p = r.data;
+          openByNumber.set(p.number, {
+            ref: p.head.ref,
+            draft: {
+              number: p.number,
+              title: p.title.replace(/\s+/g, ' ').trim().slice(0, LOG_TOPIC_MAX),
+              targetQuery: targetQueryOf(p.body),
+              state: 'open',
+              merged: false,
+              createdAt: p.created_at,
+              branch: p.head.ref,
+            },
+          });
+        }
+        if (items.length < PER_PAGE) break;
+      }
+
+      const seen = new Set(out.map((p) => p.number));
       for (const pr of out) {
         if (pr.state !== 'open') continue;
-        const { json } = await request('GET', `${repoPath}/pulls/${pr.number}`);
-        pr.branch = parse(pullHeadSchema, json, 'pull').head.ref;
+        const open = openByNumber.get(pr.number);
+        if (open) {
+          pr.branch = open.ref;
+        } else {
+          // Labelled but not in the open list (a race or past the hard stop): look it up.
+          const { json } = await request('GET', `${repoPath}/pulls/${pr.number}`);
+          pr.branch = parse(pullHeadSchema, json, 'pull').head.ref;
+        }
+      }
+      for (const { ref, draft } of openByNumber.values()) {
+        if (!seen.has(draft.number) && BLOG_BRANCH_RE.test(ref)) out.push(draft);
       }
       return out;
     },
@@ -298,11 +352,20 @@ export function createGitHubClient(
       try {
         await request('POST', `${repoPath}/issues/${pr.number}/labels`, { labels: [LABEL_DRAFT] });
       } catch (err) {
-        const why = err instanceof Error ? err.message : String(err);
-        throw new GitHubError(
-          0,
-          `PR #${pr.number} opened but labelling it ${LABEL_DRAFT} failed (${why}); add the label by hand`,
-        );
+        // An unlabelled draft must not stay open: roll it back, best effort, and
+        // rethrow the original error (cleanup failures never mask it). If the
+        // rollback fails too, listDraftPrs still finds it by its blog/ branch.
+        const rollback = async (): Promise<void> => {
+          await request('POST', `${repoPath}/issues/${pr.number}/comments`, {
+            body: `Closed automatically: adding the \`${LABEL_DRAFT}\` label failed, so this draft was rolled back. The next run starts fresh.`,
+          }).catch(() => undefined);
+          await request('PATCH', `${repoPath}/pulls/${pr.number}`, { state: 'closed' }).catch(
+            () => undefined,
+          );
+          await deleteBranch(branch).catch(() => undefined);
+        };
+        await rollback().catch(() => undefined);
+        throw err;
       }
       return { url: pr.html_url };
     },

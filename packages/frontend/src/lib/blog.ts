@@ -58,10 +58,17 @@ function countWords(md: string): number {
 
 export function getAllPosts(dir?: string): Post[] {
   const root = contentDir(dir);
-  if (!fs.existsSync(root)) return [];
+  if (!fs.existsSync(/*turbopackIgnore: true*/ root)) return [];
   const posts: Post[] = [];
-  for (const file of fs.readdirSync(root).filter((f) => f.endsWith('.md'))) {
-    const parsed = matter(fs.readFileSync(path.join(root, file), 'utf8'));
+  for (const file of fs
+    .readdirSync(/*turbopackIgnore: true*/ root)
+    .filter((f) => f.endsWith('.md'))) {
+    const parsed = matter(
+      fs.readFileSync(
+        /*turbopackIgnore: true*/ path.join(/*turbopackIgnore: true*/ root, file),
+        'utf8',
+      ),
+    );
     // YAML turns an unquoted 2026-11-16 into a Date; the schema wants the string.
     const data: Record<string, unknown> = { ...parsed.data };
     if (data.date instanceof Date) data.date = data.date.toISOString().slice(0, 10);

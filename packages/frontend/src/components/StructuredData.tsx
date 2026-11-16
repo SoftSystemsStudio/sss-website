@@ -264,3 +264,72 @@ export function WebSiteSchema() {
     />
   );
 }
+
+/**
+ * Article Schema - one per blog post. Author and publisher are the studio's
+ * Organization (same @id as OrganizationSchema), so no personal byline is invented.
+ */
+export function ArticleSchema({
+  title,
+  description,
+  path,
+  datePublished,
+}: {
+  title: string;
+  description: string;
+  path: string;
+  datePublished: string;
+}) {
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    '@id': `${SITE_URL}${path}#article`,
+    headline: title,
+    description,
+    url: `${SITE_URL}${path}`,
+    mainEntityOfPage: `${SITE_URL}${path}`,
+    datePublished,
+    dateModified: datePublished,
+    image: `${SITE_URL}/api/og?title=${encodeURIComponent(title)}`,
+    author: {
+      '@type': 'Organization',
+      '@id': `${SITE_URL}/#organization`,
+      name: 'Soft Systems Studio',
+    },
+    publisher: {
+      '@type': 'Organization',
+      '@id': `${SITE_URL}/#organization`,
+      name: 'Soft Systems Studio',
+    },
+  };
+
+  return (
+    <script
+      id="article-schema"
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+    />
+  );
+}
+
+/** BreadcrumbList Schema - `path` is site-relative (`/blog`). */
+export function BreadcrumbSchema({ items }: { items: { name: string; path: string }[] }) {
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: items.map((item, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: item.name,
+      item: `${SITE_URL}${item.path}`,
+    })),
+  };
+
+  return (
+    <script
+      id="breadcrumb-schema"
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+    />
+  );
+}

@@ -1,3 +1,4 @@
+import path from 'node:path';
 import { defineConfig, devices } from '@playwright/test';
 
 /**
@@ -29,6 +30,8 @@ export default defineConfig({
     command: `pnpm exec next start -p ${PORT} -H 127.0.0.1`,
     url: BASE_URL,
     reuseExistingServer: !isCI,
+    // Blog pages read their posts from the fixture dir, so the suite never depends on real content.
+    env: { BLOG_CONTENT_DIR: path.resolve(process.cwd(), 'e2e/fixtures/blog') },
     timeout: 60_000,
     stdout: 'pipe',
     stderr: 'pipe',

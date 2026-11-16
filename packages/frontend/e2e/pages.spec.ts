@@ -20,6 +20,7 @@ const PAGES: PageCase[] = [
   { path: '/pricing', heading: 'Pay for the site', siteFooter: true },
   { path: '/privacy', heading: 'Privacy Policy', siteFooter: true },
   { path: '/terms', heading: 'Terms of Service', siteFooter: true },
+  { path: '/blog', heading: 'Notes for local business owners', siteFooter: true },
   { path: '/hi', heading: 'Austin Hodges', siteFooter: true },
   // One page per in-person town; slugs from lib/cities.ts.
   { path: '/web-design/columbus-ga', heading: 'Web design in Columbus, Georgia', siteFooter: true },
@@ -80,6 +81,7 @@ test('unknown routes return the 404 page', async ({ request }) => {
     '/this-page-does-not-exist',
     '/for/not-a-real-trade',
     '/web-design/not-a-real-town',
+    '/blog/not-a-real-post',
   ]) {
     const res = await request.get(path);
     expect(res.status(), path).toBe(404);

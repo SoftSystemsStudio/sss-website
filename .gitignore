@@ -74,3 +74,6 @@ gitleaks-report*.json
 
 # TypeScript incremental build info
 *.tsbuildinfo
+
+# Blog pipeline dry-run output (scripts/blog/cli.ts --dry-run)
+blog-dry-run/

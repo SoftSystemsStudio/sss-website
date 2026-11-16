@@ -1,8 +1,8 @@
 # Tell IndexNow about new blog posts once they are live (added 2026-11-16).
 #
 # Runs when a push to main touches packages/frontend/content/blog/. For every
-# .md file ADDED in that push it waits (up to 10 minutes) for the post's URL to
-# return 200 after the Vercel deploy, then submits /blog and each new post with
+# .md file ADDED in that push it waits (one shared 10 minute deadline) for each post's URL
+# to return 200 after the Vercel deploy, then submits /blog and each new post with
 # scripts/indexnow.mjs. Edits and deletions are ignored. No secrets needed: the
 # IndexNow key file is public. If a post never goes live the job fails so it
 # shows up red in the Actions tab. Runbook: docs/runbooks/blog-pipeline.md
@@ -29,10 +29,12 @@ jobs:
     timeout-minutes: 20
 
     steps:
+      # Full history, so `github.event.before` exists even when a push carries
+      # several new commits (rebase merge, fast-forward).
       - name: Checkout
         uses: actions/checkout@v7
         with:
-          fetch-depth: 2
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v7
@@ -46,12 +48,20 @@ jobs:
           AFTER: ${{ github.sha }}
         run: |
           set -euo pipefail
-          if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+          # First push (all zeros) or a `before` we cannot reach (force-push):
+          # fall back to the last commit alone.
+          if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ] \
+            || ! git cat-file -e "${BEFORE}^{commit}" 2>/dev/null; then
+            echo "Base commit unavailable; comparing with the previous commit only."
             BEFORE="${AFTER}^"
           fi
+          # Captured first so a failing git diff stops the step (set -e does not
+          # see failures inside a process substitution).
+          files="$(git diff --name-only --diff-filter=A "$BEFORE" "$AFTER" -- packages/frontend/content/blog/)"
           slugs=""
           while IFS= read -r file; do
             case "$file" in
+              packages/frontend/content/blog/*/*) continue ;;
               packages/frontend/content/blog/*.md) ;;
               *) continue ;;
             esac
@@ -61,7 +71,7 @@ jobs:
             else
               echo "Skipping file with an unexpected name"
             fi
-          done < <(git diff --name-only --diff-filter=A "$BEFORE" "$AFTER" -- packages/frontend/content/blog/)
+          done <<< "$files"
           slugs="${slugs# }"
           echo "slugs=$slugs" >> "$GITHUB_OUTPUT"
           if [ -z "$slugs" ]; then
@@ -70,40 +80,51 @@ jobs:
             echo "New posts: $slugs"
           fi
 
-      - name: Wait for posts to go live
+      # One shared deadline for every slug. POLL_DEADLINE_SECS and
+      # POLL_SLEEP_SECS exist only so the script can be tested locally; the
+      # workflow never sets them.
+      - name: Wait for posts, then submit to IndexNow
         if: steps.posts.outputs.slugs != ''
         env:
           SLUGS: ${{ steps.posts.outputs.slugs }}
         run: |
           set -euo pipefail
-          failed=0
-          for slug in $SLUGS; do
-            live=0
-            for attempt in $(seq 1 20); do
-              code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "https://softsystemsstudiollc.com/blog/${slug}" || true)"
+          deadline="${POLL_DEADLINE_SECS:-600}"
+          pause="${POLL_SLEEP_SECS:-30}"
+          end=$((SECONDS + deadline))
+          pending="$SLUGS"
+          live=""
+          while :; do
+            still=""
+            for slug in $pending; do
+              if [ "$SECONDS" -ge "$end" ]; then
+                still="$still $slug"
+                continue
+              fi
+              code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 "https://softsystemsstudiollc.com/blog/${slug}" || true)"
               if [ "$code" = "200" ]; then
                 echo "Live: /blog/${slug}"
-                live=1
-                break
+                live="$live $slug"
+              else
+                echo "/blog/${slug} returned ${code:-none}"
+                still="$still $slug"
               fi
-              echo "Attempt ${attempt}/20: /blog/${slug} returned ${code:-none}; retrying in 30s"
-              sleep 30
             done
-            if [ "$live" != "1" ]; then
-              echo "::error::/blog/${slug} was not live after 10 minutes. Check the Vercel deployment."
-              failed=1
-            fi
+            pending="${still# }"
+            [ -z "$pending" ] && break
+            # No sleep once the next attempt would land past the deadline.
+            [ $((SECONDS + pause)) -ge "$end" ] && break
+            sleep "$pause"
           done
-          exit "$failed"
-
-      - name: Submit to IndexNow
-        if: steps.posts.outputs.slugs != ''
-        env:
-          SLUGS: ${{ steps.posts.outputs.slugs }}
-        run: |
-          set -euo pipefail
-          args=(/blog)
-          for slug in $SLUGS; do
-            args+=("/blog/${slug}")
-          done
-          node scripts/indexnow.mjs "${args[@]}"
+          live="${live# }"
+          if [ -n "$live" ]; then
+            args=(/blog)
+            for slug in $live; do
+              args+=("/blog/${slug}")
+            done
+            node scripts/indexnow.mjs "${args[@]}"
+          fi
+          if [ -n "$pending" ]; then
+            echo "::error::Not live within ${deadline}s: ${pending}. Check the Vercel deployment."
+            exit 1
+          fi

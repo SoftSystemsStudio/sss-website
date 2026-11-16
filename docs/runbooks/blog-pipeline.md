@@ -29,6 +29,8 @@ Repo Settings, Secrets and variables, Actions:
 
 To rotate: create the new key or token, paste it over the secret (Settings, Secrets, update), run a dry run, then revoke the old one. `blog-published.yml` needs no secrets.
 
+GitHub disables scheduled workflows after 60 days of repo inactivity; if the daily run stops, re-enable **Blog draft** in the Actions tab. In `blog-published.yml`, posts that are not live within 10 minutes fail the job (red run), but posts that did go live are still sent to IndexNow first.
+
 ## Exit codes
 
 `cli.ts` exits 0 for every normal outcome, including skips (no topic, checks failed, a draft PR already open). It exits 1 when something threw (missing secret, API or GitHub error) or when the run could not be written to the log issue. A red run means look at the Actions log and the log issue.

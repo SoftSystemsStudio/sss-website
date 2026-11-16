@@ -238,7 +238,10 @@ test('listDraftPrs maps merged_at, target query and state, and reads the branch 
     if (path.startsWith(`/repos/${REPO}/pulls?`)) return { status: 200, json: [] };
     // #3 is open but missing from the open list (a race): its branch is looked up directly.
     if (path === `/repos/${REPO}/pulls/3`)
-      return { status: 200, json: { head: { ref: 'blog/2026-11-14-post-3' } } };
+      return {
+        status: 200,
+        json: { head: { ref: 'blog/2026-11-14-post-3', repo: { full_name: REPO } } },
+      };
     return undefined;
   });
   const prs = await createGitHubClient(TOKEN, REPO, fetchFn).listDraftPrs();
@@ -295,10 +298,63 @@ function openPull(n: number, ref: string, over: Record<string, unknown> = {}) {
     body: `Target query: open query ${n}`,
     state: 'open',
     created_at: '2026-11-10T06:00:00Z',
-    head: { ref },
+    head: { ref, repo: { full_name: REPO } },
     ...over,
   };
 }
+
+test('listDraftPrs only treats PRs whose head is in this repo as ours (forks, deleted forks excluded)', async () => {
+  const head = (ref: string, repo: unknown) => ({ head: { ref, repo } });
+  const { fetchFn, sent } = fakeFetch((method, path) => {
+    if (path.startsWith(`/repos/${REPO}/issues?`))
+      return {
+        status: 200,
+        json: [
+          issueItem(1, { state: 'open' }), // labelled, but its head is a fork
+          issueItem(2, { state: 'open' }), // labelled, missing from list; lookup says fork
+          issueItem(3), // labelled closed history: kept
+        ],
+      };
+    if (path.startsWith(`/repos/${REPO}/pulls?`))
+      return {
+        status: 200,
+        json: [
+          openPull(
+            1,
+            'blog/2026-11-12-labelled-fork',
+            head('blog/2026-11-12-labelled-fork', { full_name: 'evil/site' }),
+          ),
+          openPull(
+            7,
+            'blog/2026-11-14-same-repo',
+            head('blog/2026-11-14-same-repo', { full_name: 'ACME/Site' }),
+          ),
+          openPull(
+            8,
+            'blog/2026-11-14-fork',
+            head('blog/2026-11-14-fork', { full_name: 'evil/site' }),
+          ),
+          openPull(9, 'blog/2026-11-14-deleted-fork', head('blog/2026-11-14-deleted-fork', null)),
+          openPull(10, 'blog/2026-11-14-no-repo', { head: { ref: 'blog/2026-11-14-no-repo' } }),
+        ],
+      };
+    if (path === `/repos/${REPO}/pulls/2`)
+      return { status: 200, json: head('blog/2026-11-13-other', { full_name: 'evil/site' }) };
+    return undefined;
+  });
+  const prs = await createGitHubClient(TOKEN, REPO, fetchFn).listDraftPrs();
+  assert.deepEqual(
+    prs.map((p) => [p.number, p.state, p.branch]),
+    [
+      [3, 'closed', ''],
+      [7, 'open', 'blog/2026-11-14-same-repo'], // case-insensitive repo match
+    ],
+  );
+  assert.equal(
+    sent.some((s) => s.method !== 'GET'),
+    false,
+  );
+});
 
 test('listDraftPrs adds unlabelled open PRs on a blog/ branch and never a human PR', async () => {
   const { fetchFn, sent } = fakeFetch((method, path) => {

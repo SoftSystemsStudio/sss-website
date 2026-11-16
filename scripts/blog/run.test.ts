@@ -632,14 +632,15 @@ function fakeGitHubApi(
 }
 
 const daysAgo = (d: number) => new Date(NOW.getTime() - d * DAY).toISOString();
-function openPull(n: number, ref: string, createdAt = daysAgo(2)) {
+/** `headRepo` null = deleted fork; another name = a fork PR. */
+function openPull(n: number, ref: string, createdAt = daysAgo(2), headRepo: string | null = REPO) {
   return {
     number: n,
     title: `Blog: Open ${n}`,
     body: `Target query: open query ${n}`,
     state: 'open',
     created_at: createdAt,
-    head: { ref },
+    head: { ref, repo: headRepo === null ? null : { full_name: headRepo } },
   };
 }
 function labelledOpen(n: number, createdAt = daysAgo(2)) {
@@ -723,6 +724,62 @@ test('an unlabelled open blog/ PR with the same slug -> slug-collision, no new P
   );
   // its query reached the researcher's history
   assert.ok(calls[0].user.includes('open draft: open query 6'));
+});
+
+// ---------- fork PRs on a blog/ branch are never ours ----------
+
+const touched = (sent: GhSent[], n: number) =>
+  sent.some(
+    (s) =>
+      s.method !== 'GET' && (s.path.includes(`/issues/${n}/`) || s.path.endsWith(`/pulls/${n}`)),
+  );
+
+test('fork PRs on blog/ branches: not gated, not in history, never commented on or closed', async () => {
+  const { call, calls } = scripted([JSON.stringify({ kind: 'none', reason: 'nothing' })]);
+  const { gh, sent } = fakeGitHubApi({
+    open: [
+      openPull(1, 'blog/2026-11-14-mine'), // same repo: counts (regression)
+      openPull(21, 'blog/2026-11-14-f1', daysAgo(2), 'evil/site'),
+      openPull(22, 'blog/2026-11-14-f2', daysAgo(2), 'evil/site'),
+      openPull(23, 'blog/2026-10-01-old-fork', daysAgo(40), 'evil/site'),
+      openPull(24, 'blog/2026-10-01-deleted-fork', daysAgo(40), null),
+    ],
+  });
+  const outcome = await runPipeline(deps(call, gh));
+  // 1 of ours open, so the gate (3) is not full: forks did not count
+  assert.equal(outcome.kind === 'skipped' && outcome.reason, 'no-topic');
+  assert.equal(calls.length, 1);
+  const user = calls[0].user;
+  assert.ok(user.includes('open draft: open query 1'));
+  for (const n of [21, 22, 23, 24]) {
+    assert.equal(user.includes(`open query ${n}`), false, `fork #${n} in history`);
+    assert.equal(touched(sent, n), false, `fork #${n} was written to`);
+  }
+  assert.equal(
+    sent.some((s) => s.method === 'DELETE'),
+    false,
+  );
+});
+
+test('a fork PR (or deleted fork) with the same slug does not cause slug-collision', async () => {
+  for (const headRepo of ['evil/site', null]) {
+    const { call } = scripted([TOPIC, writerReply(), reviewReply('pass')]);
+    const { gh, sent } = fakeGitHubApi({
+      open: [openPull(6, `blog/2026-11-10-${SLUG}`, daysAgo(2), headRepo)],
+    });
+    const outcome = await runPipeline(deps(call, gh));
+    assert.deepEqual(outcome, { kind: 'pr', url: 'https://github.com/acme/site/pull/42' });
+    assert.equal(touched(sent, 6), false);
+  }
+});
+
+test('a same-repo PR is matched case-insensitively and still triggers slug-collision', async () => {
+  const { call } = scripted([TOPIC, writerReply(), reviewReply('pass')]);
+  const { gh } = fakeGitHubApi({
+    open: [openPull(6, `blog/2026-11-10-${SLUG}`, daysAgo(2), 'Acme/SITE')],
+  });
+  const outcome = await runPipeline(deps(call, gh));
+  assert.equal(outcome.kind === 'skipped' && outcome.reason, 'slug-collision');
 });
 
 // ---------- existing posts ----------

@@ -106,13 +106,18 @@ const issueItemSchema = z.object({
 });
 const refSchema = z.object({ object: z.object({ sha: z.string().regex(/^[0-9a-f]{6,64}$/i) }) });
 const pullSchema = z.object({ number: z.number().int().positive(), html_url: z.string().url() });
-const pullHeadSchema = z.object({ head: z.object({ ref: z.string() }) });
+/** head.repo is null for a deleted fork; a missing or null repo is never treated as ours. */
+const headSchema = z.object({
+  ref: z.string(),
+  repo: z.object({ full_name: z.string() }).nullish(),
+});
+const pullHeadSchema = z.object({ head: headSchema });
 const openPullSchema = z.object({
   number: z.number().int().positive(),
   title: z.string(),
   body: z.string().nullish(),
   created_at: z.string(),
-  head: z.object({ ref: z.string() }),
+  head: headSchema,
 });
 const searchSchema = z.object({ items: z.array(z.unknown()) });
 const logIssueSchema = z.object({
@@ -255,7 +260,12 @@ export function createGitHubClient(
       // 2. Every OPEN PR, without the history cap: open drafts are found by head branch
       // too, so a draft whose label is missing (e.g. labelling failed and the rollback
       // failed) is still gated, closed when stale and seen by the twin-slug check.
-      const openByNumber = new Map<number, { ref: string; draft: DraftPr }>();
+      // Only PRs whose head branch lives in THIS repo are ours: anyone can open a fork PR
+      // with a blog/ branch name, and a deleted fork has head.repo null.
+      const ownRepo = repo.toLowerCase();
+      const isOurs = (head: { repo?: { full_name: string } | null }) =>
+        head.repo?.full_name.toLowerCase() === ownRepo;
+      const openByNumber = new Map<number, { ref: string; ours: boolean; draft: DraftPr }>();
       for (let page = 1; page <= MAX_OPEN_PR_PAGES; page++) {
         const params = new URLSearchParams({
           state: 'open',
@@ -272,6 +282,7 @@ export function createGitHubClient(
           const p = r.data;
           openByNumber.set(p.number, {
             ref: p.head.ref,
+            ours: isOurs(p.head),
             draft: {
               number: p.number,
               title: p.title.replace(/\s+/g, ' ').trim().slice(0, LOG_TOPIC_MAX),
@@ -287,21 +298,28 @@ export function createGitHubClient(
       }
 
       const seen = new Set(out.map((p) => p.number));
+      const kept: DraftPr[] = [];
       for (const pr of out) {
-        if (pr.state !== 'open') continue;
-        const open = openByNumber.get(pr.number);
-        if (open) {
-          pr.branch = open.ref;
-        } else {
+        if (pr.state !== 'open') {
+          kept.push(pr); // closed history: only read for titles and queries, never acted on
+          continue;
+        }
+        let head = openByNumber.get(pr.number);
+        if (!head) {
           // Labelled but not in the open list (a race or past the hard stop): look it up.
           const { json } = await request('GET', `${repoPath}/pulls/${pr.number}`);
-          pr.branch = parse(pullHeadSchema, json, 'pull').head.ref;
+          const h = parse(pullHeadSchema, json, 'pull').head;
+          head = { ref: h.ref, ours: isOurs(h), draft: pr };
         }
+        // An open labelled PR from a fork is not ours: never counted, closed or branch-deleted.
+        if (!head.ours) continue;
+        pr.branch = head.ref;
+        kept.push(pr);
       }
-      for (const { ref, draft } of openByNumber.values()) {
-        if (!seen.has(draft.number) && BLOG_BRANCH_RE.test(ref)) out.push(draft);
+      for (const { ref, ours, draft } of openByNumber.values()) {
+        if (ours && !seen.has(draft.number) && BLOG_BRANCH_RE.test(ref)) kept.push(draft);
       }
-      return out;
+      return kept;
     },
 
     async closeStale(pr, reason) {

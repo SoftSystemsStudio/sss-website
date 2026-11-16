@@ -13,7 +13,7 @@
     "start": "pnpm --filter frontend start",
     "lint:fix": "pnpm -r --if-present lint -- --fix",
     "lint": "pnpm -r --if-present lint",
-    "typecheck": "pnpm -r exec tsc --noEmit",
+    "typecheck": "pnpm -r exec tsc --noEmit && tsc --noEmit -p scripts/blog",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "test": "pnpm -r test",

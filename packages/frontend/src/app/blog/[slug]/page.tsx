@@ -75,7 +75,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
             <Link href="/blog" className="link-underline">
               Notes
             </Link>
-            {' · '}
+            {' · Soft Systems Studio · '}
             <time dateTime={post.date}>{formatPostDate(post.date)}</time>
           </p>
           <h1 className="rise mt-4 max-w-[900px] text-balance font-serif text-[40px] leading-[1] tracking-[-0.015em] [--rise-delay:0.1s] sm:text-[60px] lg:text-[72px]">

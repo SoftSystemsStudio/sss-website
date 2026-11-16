@@ -11,6 +11,8 @@ test('/blog renders its heading', async ({ page }) => {
 test('first post (or the empty state) renders', async ({ page }) => {
   await page.goto('/blog', { waitUntil: 'networkidle' });
   const links = page.locator('main a[href^="/blog/"]:not([href$="feed.xml"])');
+  // CI builds with the fixture dir, so an empty index there means BLOG_CONTENT_DIR was lost.
+  if (process.env.CI) expect(await links.count(), 'fixture post link').toBeGreaterThan(0);
   if ((await links.count()) === 0) {
     await expect(page.getByText('The first posts are on the way.')).toBeVisible();
     return;
@@ -25,6 +27,9 @@ test('first post (or the empty state) renders', async ({ page }) => {
   expect(canonical?.endsWith(`/blog/${slug}`)).toBe(true);
   const ld = await page.locator('script[type="application/ld+json"]').allTextContents();
   expect(ld.some((t) => t.includes('"@type":"Article"'))).toBe(true);
+  // Posts are the studio's, with no personal byline.
+  await expect(page.locator('main')).toContainText('Soft Systems Studio');
+  await expect(page.locator('main article')).not.toContainText('Austin');
   await expect(page.locator('main a[href="/pricing"]').first()).toBeVisible();
 });
 

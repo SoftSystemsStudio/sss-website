@@ -8,7 +8,7 @@ import { formatPostDate } from '@/lib/blog-format';
 
 const TITLE = 'Notes for local business owners';
 const DESCRIPTION =
-  'Plain-English notes on websites, search and getting found, for local business owners. Written by Austin Hodges at Soft Systems Studio.';
+  'Plain-English notes on websites, search and getting found, for local business owners. Notes from Soft Systems Studio.';
 const OG_IMAGE = `/api/og?title=${encodeURIComponent(TITLE)}`;
 
 export const metadata: Metadata = {

@@ -303,8 +303,8 @@ test('every token listed in the writer prompt resolves', () => {
 
 // ---------- createAnthropicCallModel (fake client, no network) ----------
 
-type Msg = Anthropic.Beta.Messages.BetaMessage;
-type Params = Anthropic.Beta.Messages.MessageCreateParamsNonStreaming;
+type Msg = Anthropic.Messages.Message;
+type Params = Anthropic.Messages.MessageCreateParamsNonStreaming;
 
 function fakeMessage(stop: Msg['stop_reason'], texts: string[]): Msg {
   return {
@@ -347,11 +347,21 @@ test('call model enables only web search, and only when asked', async () => {
   assert.equal(out, '{"a":1}');
   assert.equal(sent[0].model, MODELS.researcher);
   assert.equal(sent[0].tools?.length, 1);
-  assert.equal((sent[0].tools?.[0] as { type: string }).type, 'web_search_20260209');
+  const tool = sent[0].tools?.[0] as { type: string; name: string; max_uses?: number };
+  // Basic variant: no server-side code execution behind it.
+  assert.equal(tool.type, 'web_search_20250305');
+  assert.equal(tool.name, 'web_search');
+  assert.ok(tool.max_uses !== undefined && tool.max_uses <= 8);
 
   await call({ role: 'reviewer', system: 's', user: 'u' });
   assert.equal(sent[1].model, MODELS.reviewer);
   assert.equal(sent[1].tools, undefined);
+
+  // No refusal fallback to another model: a refusal must fail hard.
+  for (const body of sent) {
+    assert.equal('fallbacks' in body, false);
+    assert.equal('betas' in body, false);
+  }
 });
 
 test('call model resumes pause_turn and fails on refusal or truncation', async () => {

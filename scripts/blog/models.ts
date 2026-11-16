@@ -14,14 +14,14 @@ export interface ModelRequest {
 /** One model call: returns the reply's text blocks, concatenated. */
 export type CallModel = (req: ModelRequest) => Promise<string>;
 
-type BetaMessage = Anthropic.Beta.Messages.BetaMessage;
+type Message = Anthropic.Messages.Message;
 // The request body without a `stream` flag; `messages.stream()` adds it. Streaming keeps a
 // long researcher turn clear of HTTP timeouts.
-type StreamParams = Anthropic.Beta.Messages.MessageCreateParamsNonStreaming;
+type StreamParams = Anthropic.Messages.MessageCreateParamsNonStreaming;
 
 /** The slice of the SDK this module uses, so tests can pass a fake without the network. */
 export interface MessagesStreamer {
-  stream(body: StreamParams): { finalMessage(): Promise<BetaMessage> };
+  stream(body: StreamParams): { finalMessage(): Promise<Message> };
 }
 
 const MAX_TOKENS = 32_000;
@@ -30,15 +30,19 @@ const REQUEST_TIMEOUT_MS = 10 * 60_000;
 const MAX_RETRIES = 3;
 /** Server-tool turns can pause; resume at most this many times. */
 const MAX_CONTINUATIONS = 5;
-const WEB_SEARCH_MAX_USES = 10;
+/** Small cap so one run cannot spiral into dozens of searches. */
+const WEB_SEARCH_MAX_USES = 8;
 
 /**
  * The only tool any call ever gets, and only when `webSearch` is set. No
  * client-side tools, no bash, no fetch, no code execution: the model can read
- * search results and nothing else.
+ * search results and nothing else. This is the basic variant on purpose: the
+ * newer web_search_20260209 does its dynamic filtering with server-side code
+ * execution, and model calls here get no code execution at all. Re-check this
+ * type string against the claude-api skill when the SDK is upgraded.
  */
-const WEB_SEARCH_TOOL: Anthropic.Beta.Messages.BetaWebSearchTool20260209 = {
-  type: 'web_search_20260209',
+const WEB_SEARCH_TOOL: Anthropic.Messages.WebSearchTool20250305 = {
+  type: 'web_search_20250305',
   name: 'web_search',
   max_uses: WEB_SEARCH_MAX_USES,
   user_location: {
@@ -52,7 +56,7 @@ const WEB_SEARCH_TOOL: Anthropic.Beta.Messages.BetaWebSearchTool20260209 = {
 
 export function createCallModelWithClient(messages: MessagesStreamer): CallModel {
   return async ({ role, system, user, webSearch }) => {
-    const history: Anthropic.Beta.Messages.BetaMessageParam[] = [{ role: 'user', content: user }];
+    const history: Anthropic.Messages.MessageParam[] = [{ role: 'user', content: user }];
     const texts: string[] = [];
     for (let turn = 0; turn <= MAX_CONTINUATIONS; turn++) {
       const params: StreamParams = {
@@ -61,10 +65,6 @@ export function createCallModelWithClient(messages: MessagesStreamer): CallModel
         system,
         messages: history,
         output_config: { effort: 'high' },
-        // On a safety decline the API reruns the request on a fallback model
-        // chosen by refusal category, inside the same call.
-        betas: ['server-side-fallback-2026-07-01'],
-        fallbacks: 'default',
         ...(webSearch ? { tools: [WEB_SEARCH_TOOL] } : {}),
       };
       const msg = await messages.stream(params).finalMessage();
@@ -79,7 +79,8 @@ export function createCallModelWithClient(messages: MessagesStreamer): CallModel
       if (msg.stop_reason === 'end_turn' || msg.stop_reason === 'stop_sequence') {
         return texts.join('');
       }
-      // refusal, max_tokens (truncated), or anything unexpected: fail the stage.
+      // A refusal fails hard (no fallback model), as do max_tokens (truncated) and anything
+      // unexpected: the orchestrator logs the error and opens no PR.
       throw new Error(`${role} model stopped with stop_reason=${msg.stop_reason}`);
     }
     throw new Error(`${role} model still paused after ${MAX_CONTINUATIONS} continuations`);
@@ -89,5 +90,5 @@ export function createCallModelWithClient(messages: MessagesStreamer): CallModel
 /** A CallModel backed by the Anthropic API. Never logs the key or the prompts. */
 export function createAnthropicCallModel(apiKey: string): CallModel {
   const client = new Anthropic({ apiKey, timeout: REQUEST_TIMEOUT_MS, maxRetries: MAX_RETRIES });
-  return createCallModelWithClient(client.beta.messages);
+  return createCallModelWithClient(client.messages);
 }

@@ -48,8 +48,24 @@ export function renderMarkdown(md: string): string {
   });
 }
 
+/**
+ * content/blog under `cwd`, unless BLOG_CONTENT_DIR overrides it. The override is for
+ * tests and CI only, so a Vercel production build ignores it: production always
+ * publishes the real posts.
+ */
+export function resolveContentDir(env: {
+  cwd: string;
+  BLOG_CONTENT_DIR?: string;
+  VERCEL_ENV?: string;
+}): string {
+  const override = env.VERCEL_ENV === 'production' ? undefined : env.BLOG_CONTENT_DIR;
+  return override ?? path.join(env.cwd, 'content', 'blog');
+}
+
 function contentDir(dir?: string): string {
-  return dir ?? getEnv().BLOG_CONTENT_DIR ?? path.join(process.cwd(), 'content', 'blog');
+  if (dir) return dir;
+  const { BLOG_CONTENT_DIR, VERCEL_ENV } = getEnv();
+  return resolveContentDir({ cwd: process.cwd(), BLOG_CONTENT_DIR, VERCEL_ENV });
 }
 
 function countWords(md: string): number {
@@ -60,9 +76,13 @@ export function getAllPosts(dir?: string): Post[] {
   const root = contentDir(dir);
   if (!fs.existsSync(/*turbopackIgnore: true*/ root)) return [];
   const posts: Post[] = [];
+  /** slug -> file, to report duplicates. */
+  const files = new Map<string, string>();
+  const mismatched: string[] = [];
   for (const file of fs
     .readdirSync(/*turbopackIgnore: true*/ root)
-    .filter((f) => f.endsWith('.md'))) {
+    .filter((f) => f.endsWith('.md'))
+    .sort()) {
     const parsed = parseFrontmatter(
       fs.readFileSync(
         /*turbopackIgnore: true*/ path.join(/*turbopackIgnore: true*/ root, file),
@@ -73,6 +93,12 @@ export function getAllPosts(dir?: string): Post[] {
     if (!result.success) {
       throw new Error(`Invalid frontmatter in ${file}: ${result.error.message}`);
     }
+    // blog-published.yml takes slugs from file names; the site uses the frontmatter slug.
+    const slug = result.data.slug;
+    const twin = files.get(slug);
+    if (twin) throw new Error(`Duplicate slug "${slug}" in ${twin} and ${file}`);
+    files.set(slug, file);
+    if (file !== `${slug}.md`) mismatched.push(`${file} (slug "${slug}")`);
     try {
       posts.push({
         ...result.data,
@@ -82,6 +108,11 @@ export function getAllPosts(dir?: string): Post[] {
     } catch (e) {
       throw new Error(`${file}: ${(e as Error).message}`);
     }
+  }
+  if (mismatched.length) {
+    throw new Error(
+      `Frontmatter slug must match the file name (without .md): ${mismatched.join(', ')}`,
+    );
   }
   return posts.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
 }

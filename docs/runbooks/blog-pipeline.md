@@ -35,10 +35,22 @@ GitHub disables scheduled workflows after 60 days of repo inactivity; if the dai
 
 `cli.ts` exits 0 for every normal outcome, including skips (no topic, checks failed, a draft PR already open). It exits 1 when something threw (missing secret, API or GitHub error) or when the run could not be written to the log issue. A red run means look at the Actions log and the log issue.
 
+## Skip reasons
+
+A skipped run logs one of these (`SkipReason` in `scripts/blog/types.ts`):
+
+- `gate-full`: three draft PRs are already open; review or close one.
+- `no-topic`: the researcher found nothing worth writing about today.
+- `reviewer-reject`: the reviewer rejected the draft, or asked for changes twice (one rewrite is allowed). A "pass" with any checklist item false counts as a request for changes.
+- `checks-failed`: the draft failed a code check; the detail lists the codes.
+- `slug-collision`: a post, an open draft PR or today's branch already uses the slug.
+
+Check codes (`scripts/blog/checks.ts`): `frontmatter`, `word-count`, `banned-phrase` (title, description and body), `raw-html`, `off-source-link` (a body link that is not one of the draft's sources or `/pricing`, `/blog`, `/intake`, a `/web-design/<town>` page; mailto links count), `unknown-token`, `studio-literal` (title, description and body), `unsourced-dollar`, `duplicate`, `copied`, `source-url`.
+
 ## Take a post down
 
 Revert the merge commit of the post's PR (PR page, **Revert**, or `git revert -m 1 <merge-sha>` on a `fix/` branch) and merge it. Vercel redeploys without the post. To undo a bad deploy fast, see `docs/runbooks/rollback.md`.
 
 ## Cost
 
-Roughly $0.30 to $1 per attempted run, about $10 to $30 a month. Keep a **monthly spend limit** set on the Anthropic key (console, Limits) as the hard cap, and check it once a month.
+Roughly $0.30 to $1 per attempted run, about $10 to $30 a month. Keep a **monthly spend limit** set on the Anthropic key (console, Limits) as the hard cap, and check it once a month. Each model call prints one `blog model call:` line to the Actions log with the role, model and token counts (and web searches), never prompts or outputs.

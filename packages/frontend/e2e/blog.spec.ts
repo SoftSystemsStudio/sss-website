@@ -33,6 +33,9 @@ test('first post (or the empty state) renders', async ({ page }) => {
   await expect(page.locator('main')).toContainText('Soft Systems Studio');
   await expect(page.locator('main article')).not.toContainText('Austin');
   await expect(page.locator('main a[href="/pricing"]').first()).toBeVisible();
+  // Each post links to the town pages, and the visible breadcrumb matches the footer's "Blog".
+  await expect(page.locator('main a[href="/web-design/columbus-ga"]').first()).toBeVisible();
+  await expect(page.locator('main a[href="/blog"]').first()).toHaveText('Blog');
 });
 
 test('/blog/feed.xml is RSS', async ({ request }) => {

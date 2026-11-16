@@ -6,6 +6,7 @@ import QuoteCta from '@/components/QuoteCta';
 import { ArticleSchema, BreadcrumbSchema } from '@/components/StructuredData';
 import { getAllPosts, getPost } from '@/lib/blog';
 import { formatPostDate } from '@/lib/blog-format';
+import { CITY_PAGES, cityLabel } from '@/lib/cities';
 
 // Only posts in the content dir exist; anything else is a 404.
 export const dynamicParams = false;
@@ -73,7 +74,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         <Section className="pb-10 pt-8 sm:pt-12 lg:pb-14 lg:pt-16">
           <p className="rise text-[15px] text-ink-muted [--rise-delay:0.05s]">
             <Link href="/blog" className="link-underline">
-              Notes
+              Blog
             </Link>
             {' · Soft Systems Studio · '}
             <time dateTime={post.date}>{formatPostDate(post.date)}</time>
@@ -113,6 +114,18 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
               <Link href="/pricing" className="link-underline font-semibold">
                 See every price
               </Link>
+              .
+            </p>
+            <p className="mt-3 text-[17px] text-ink-soft">
+              Meeting in person around:{' '}
+              {CITY_PAGES.map((city, i) => (
+                <span key={city.slug}>
+                  {i > 0 && ', '}
+                  <Link href={`/web-design/${city.slug}`} className="link-underline font-semibold">
+                    {cityLabel(city)}
+                  </Link>
+                </span>
+              ))}
               .
             </p>
           </article>

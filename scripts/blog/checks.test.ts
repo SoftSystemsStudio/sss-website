@@ -5,9 +5,11 @@ import {
   BANNED_PHRASES,
   checkSourceUrls,
   fetchSourceTexts,
+  isSafeSourceUrl,
   runChecks,
   shingleOverlap,
 } from './checks';
+import { briefSchema } from './types';
 
 /** n distinct, non-repeating words so shingles never collide by accident. */
 function words(n: number, start = 0): string {
@@ -184,11 +186,216 @@ test('checkSourceUrls fails 404, 410, 500 and thrown errors with source-url', as
   }
 });
 
+test('checkSourceUrls sends the studio User-Agent and a timeout signal', async () => {
+  let init: RequestInit | undefined;
+  const f = (async (_u: string, i?: RequestInit) => {
+    init = i;
+    return new Response(null, { status: 200 });
+  }) as unknown as typeof fetch;
+  await checkSourceUrls(['https://example.com/a'], f);
+  assert.match(
+    String((init?.headers as Record<string, string>)['User-Agent']),
+    /softsystemsstudiollc\.com/,
+  );
+  assert.ok(init?.signal instanceof AbortSignal);
+  assert.equal(init?.redirect, 'manual');
+});
+
+// ---- fix round 1: bypasses ----
+
+const withPara = (p: string) => doc(`${words(790)}\n\n${p}`);
+const has = (md: string, code: string) =>
+  codes(runChecks({ markdown: md, ...base })).includes(code);
+
+test('---js frontmatter runs no code and reports a frontmatter failure', () => {
+  const g = globalThis as Record<string, unknown>;
+  delete g.PWNED_BY_DRAFT;
+  const md = `---js\n({title:(globalThis.PWNED_BY_DRAFT=1,"x")})\n---\n${words(790)}\n`;
+  const r = runChecks({ markdown: md, ...base });
+  assert.equal(g.PWNED_BY_DRAFT, undefined);
+  assert.deepEqual(codes(r), ['frontmatter']);
+});
+
+test('raw html bypasses: slash separator, unterminated tag, upper case, comment, code span', () => {
+  for (const p of [
+    '<img/onerror=alert(1)>',
+    '<iframe src=//x.com',
+    '<SCRIPT>alert(1)</SCRIPT>',
+    '<!-- hidden -->',
+    '`<div>`',
+    '<?php echo 1 ?>',
+  ]) {
+    assert.ok(has(withPara(p), 'raw-html'), p);
+  }
+});
+
+test('entity-encoded html is plain text and passes', () => {
+  assert.ok(!has(withPara('Write &lt;script&gt; as text.'), 'raw-html'));
+});
+
+test('http(s) autolinks are still allowed', () => {
+  assert.ok(!has(withPara('See <https://example.com/a> now.'), 'raw-html'));
+});
+
+test('unsafe link schemes fail raw-html', () => {
+  for (const p of [
+    '[a](javascript:alert(1))',
+    '[a](  JaVaScRiPt:alert(1))',
+    '[a](data:text/html;base64,AAAA)',
+    '[a]: vbscript:x',
+    '<javascript:alert(1)>',
+  ]) {
+    const r = runChecks({ markdown: withPara(p), ...base });
+    assert.ok(
+      r.some((f) => f.code === 'raw-html' && /scheme/i.test(f.message)),
+      p,
+    );
+  }
+  assert.ok(!has(withPara('[a](https://example.com/a) and [m](mailto:a@example.com)'), 'raw-html'));
+});
+
+test('studio price typed in other forms fails studio-literal', () => {
+  for (const p of [
+    'It costs 997 dollars.',
+    'It costs 997 USD.',
+    'It costs USD 997.',
+    'It costs $ 997 flat.',
+    'It costs $1,997.',
+    'See [x](https://e.com) it is $ 997 here',
+    'See [x](https://e.com) it is 997 dollars here',
+  ]) {
+    assert.ok(has(withPara(p), 'studio-literal'), p);
+  }
+});
+
+test('a link never excuses a studio price but excuses other amounts', () => {
+  const linked = 'See [x](https://e.com) it is $997 here';
+  assert.ok(has(withPara(linked), 'studio-literal'));
+  assert.ok(!has(withPara('See [x](https://e.com) it is $41 here'), 'unsourced-dollar'));
+  assert.ok(!has(withPara('A year of 997 visitors.'), 'studio-literal'));
+});
+
+test('only an http(s) link excuses a dollar amount', () => {
+  assert.ok(has(withPara('Costs $41, per [x](javascript:alert(1))'), 'unsourced-dollar'));
+  assert.ok(has(withPara('Costs 41 dollars.'), 'unsourced-dollar'));
+});
+
+test('isSafeSourceUrl rejects each unsafe class', () => {
+  const bad = [
+    'file:///etc/passwd',
+    'javascript:alert(1)',
+    'ftp://example.com/x',
+    'https://user:pw@example.com/',
+    'http://localhost/x',
+    'http://app.localhost/x',
+    'http://printer.local/x',
+    'http://db.internal/x',
+    'http://intranet/x',
+    'http://127.0.0.1/',
+    'http://0.0.0.0/',
+    'http://10.1.2.3/',
+    'http://172.16.0.1/',
+    'http://192.168.1.1/',
+    'http://169.254.169.254/latest/meta-data',
+    'http://100.64.0.1/',
+    'http://2130706433/',
+    'http://0x7f.1/',
+    'http://[::1]/',
+    'http://[fd00::1]/',
+    'http://[fe80::1]/',
+    'http://[::ffff:127.0.0.1]/',
+    'not a url',
+  ];
+  for (const u of bad) assert.equal(isSafeSourceUrl(u), false, u);
+  for (const u of ['https://example.com/a', 'http://www.example.co.uk/x?y=1', 'https://8.8.8.8/'])
+    assert.equal(isSafeSourceUrl(u), true, u);
+});
+
+test('briefSchema rejects unsafe source urls at parse time', () => {
+  const mk = (url: string) => ({
+    title: 't',
+    targetQuery: 'q',
+    intent: 'i',
+    localAngle: 'l',
+    notDuplicateBecause: 'n',
+    sources: [{ url, title: 's', supports: 'x' }],
+  });
+  assert.ok(briefSchema.safeParse(mk('https://example.com/a')).success);
+  for (const u of ['http://169.254.169.254/x', 'file:///etc/passwd', 'http://localhost:3000'])
+    assert.equal(briefSchema.safeParse(mk(u)).success, false, u);
+});
+
+test('checkSourceUrls does not fetch an unsafe url', async () => {
+  let called = 0;
+  const f = (async () => {
+    called++;
+    return new Response(null, { status: 200 });
+  }) as unknown as typeof fetch;
+  const r = await checkSourceUrls(['http://169.254.169.254/x'], f);
+  assert.deepEqual(codes(r), ['source-url']);
+  assert.equal(called, 0);
+});
+
+test('a redirect to a metadata address fails source-url', async () => {
+  const f = (async (u: string) =>
+    u.startsWith('https://example.com')
+      ? new Response(null, { status: 302, headers: { location: 'http://169.254.169.254/x' } })
+      : new Response('secret', { status: 200 })) as unknown as typeof fetch;
+  assert.deepEqual(codes(await checkSourceUrls(['https://example.com/a'], f)), ['source-url']);
+  assert.deepEqual(await fetchSourceTexts(['https://example.com/a'], f), {});
+});
+
+test('a safe redirect is followed, but more than 3 hops fails', async () => {
+  const ok = (async (u: string) =>
+    u.endsWith('/a')
+      ? new Response(null, { status: 301, headers: { location: '/b' } })
+      : new Response('x', {
+          status: 200,
+          headers: { 'content-type': 'text/html' },
+        })) as unknown as typeof fetch;
+  assert.deepEqual(await checkSourceUrls(['https://example.com/a'], ok), []);
+  const loop = (async () =>
+    new Response(null, {
+      status: 302,
+      headers: { location: '/again' },
+    })) as unknown as typeof fetch;
+  assert.deepEqual(codes(await checkSourceUrls(['https://example.com/a'], loop)), ['source-url']);
+});
+
 test('fetchSourceTexts strips tags and omits failures', async () => {
   const f = (async (url: string) => {
     if (url.endsWith('bad')) throw new Error('x');
-    return { status: 200, ok: true, text: async () => '<p>hi <b>there</b></p>' } as Response;
+    return new Response('<p>hi <b>there</b></p>', {
+      status: 200,
+      headers: { 'content-type': 'text/html; charset=utf-8' },
+    });
   }) as unknown as typeof fetch;
   const r = await fetchSourceTexts(['https://example.com/good', 'https://example.com/bad'], f);
   assert.deepEqual(r, { 'https://example.com/good': 'hi there' });
+});
+
+test('fetchSourceTexts omits binary content types', async () => {
+  const f = (async () =>
+    new Response('%PDF-1.4', {
+      status: 200,
+      headers: { 'content-type': 'application/pdf' },
+    })) as unknown as typeof fetch;
+  assert.deepEqual(await fetchSourceTexts(['https://example.com/a.pdf'], f), {});
+  const none = (async () => new Response('hello', { status: 200 })) as unknown as typeof fetch;
+  // Response with a string body gets text/plain by default: accepted.
+  assert.deepEqual(await fetchSourceTexts(['https://example.com/a'], none), {
+    'https://example.com/a': 'hello',
+  });
+});
+
+test('fetchSourceTexts caps an oversized body', async () => {
+  const big = 'a '.repeat(2_000_000); // 4 MB
+  const f = (async () =>
+    new Response(big, {
+      status: 200,
+      headers: { 'content-type': 'text/plain' },
+    })) as unknown as typeof fetch;
+  const r = await fetchSourceTexts(['https://example.com/a'], f);
+  const len = r['https://example.com/a'].length;
+  assert.ok(len > 0 && len <= 1_500_000, String(len));
 });

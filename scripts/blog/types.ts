@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { isSafeSourceUrl } from './checks';
 
 export const briefSchema = z.object({
   title: z.string().min(1),
@@ -6,7 +7,13 @@ export const briefSchema = z.object({
   intent: z.string().min(1),
   localAngle: z.string().min(1),
   notDuplicateBecause: z.string().min(1),
-  sources: z.array(z.object({ url: z.string().url(), title: z.string(), supports: z.string() })),
+  sources: z.array(
+    z.object({
+      url: z.string().url().refine(isSafeSourceUrl, { message: 'must be a public http(s) URL' }),
+      title: z.string(),
+      supports: z.string(),
+    }),
+  ),
 });
 export type Brief = z.infer<typeof briefSchema>;
 

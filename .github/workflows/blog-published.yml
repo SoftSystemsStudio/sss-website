@@ -1,0 +1,109 @@
+# Tell IndexNow about new blog posts once they are live (added 2026-11-16).
+#
+# Runs when a push to main touches packages/frontend/content/blog/. For every
+# .md file ADDED in that push it waits (up to 10 minutes) for the post's URL to
+# return 200 after the Vercel deploy, then submits /blog and each new post with
+# scripts/indexnow.mjs. Edits and deletions are ignored. No secrets needed: the
+# IndexNow key file is public. If a post never goes live the job fails so it
+# shows up red in the Actions tab. Runbook: docs/runbooks/blog-pipeline.md
+
+name: Blog published
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'packages/frontend/content/blog/**'
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: '24'
+
+jobs:
+  indexnow:
+    name: Ping IndexNow
+    if: github.repository == 'SoftSystemsStudio/sss-website'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Find new posts
+        id: posts
+        env:
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            BEFORE="${AFTER}^"
+          fi
+          slugs=""
+          while IFS= read -r file; do
+            case "$file" in
+              packages/frontend/content/blog/*.md) ;;
+              *) continue ;;
+            esac
+            slug="$(basename "$file" .md)"
+            if printf '%s' "$slug" | grep -Eq '^[a-z0-9]+(-[a-z0-9]+)*$'; then
+              slugs="$slugs $slug"
+            else
+              echo "Skipping file with an unexpected name"
+            fi
+          done < <(git diff --name-only --diff-filter=A "$BEFORE" "$AFTER" -- packages/frontend/content/blog/)
+          slugs="${slugs# }"
+          echo "slugs=$slugs" >> "$GITHUB_OUTPUT"
+          if [ -z "$slugs" ]; then
+            echo "No new posts added; nothing to submit."
+          else
+            echo "New posts: $slugs"
+          fi
+
+      - name: Wait for posts to go live
+        if: steps.posts.outputs.slugs != ''
+        env:
+          SLUGS: ${{ steps.posts.outputs.slugs }}
+        run: |
+          set -euo pipefail
+          failed=0
+          for slug in $SLUGS; do
+            live=0
+            for attempt in $(seq 1 20); do
+              code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "https://softsystemsstudiollc.com/blog/${slug}" || true)"
+              if [ "$code" = "200" ]; then
+                echo "Live: /blog/${slug}"
+                live=1
+                break
+              fi
+              echo "Attempt ${attempt}/20: /blog/${slug} returned ${code:-none}; retrying in 30s"
+              sleep 30
+            done
+            if [ "$live" != "1" ]; then
+              echo "::error::/blog/${slug} was not live after 10 minutes. Check the Vercel deployment."
+              failed=1
+            fi
+          done
+          exit "$failed"
+
+      - name: Submit to IndexNow
+        if: steps.posts.outputs.slugs != ''
+        env:
+          SLUGS: ${{ steps.posts.outputs.slugs }}
+        run: |
+          set -euo pipefail
+          args=(/blog)
+          for slug in $SLUGS; do
+            args+=("/blog/${slug}")
+          done
+          node scripts/indexnow.mjs "${args[@]}"

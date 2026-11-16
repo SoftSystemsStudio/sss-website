@@ -5,6 +5,7 @@ import {
   resolveTokens,
   STUDIO_LITERALS,
 } from '../../packages/frontend/src/lib/blog-tokens';
+import { CITY_PAGES } from '../../packages/frontend/src/lib/cities';
 import { SIMILARITY } from './config';
 
 export interface CheckFailure {
@@ -64,11 +65,20 @@ const ANGLE_LINK_RE = /<([A-Za-z][A-Za-z0-9+.-]*:[^\s<>]*)>/g;
 const TYPED_AMOUNT_RE =
   /(?:(?:\$|\busd\b)\s*(\d[\d,]*)(?!\d|,\d))|(?:(\d[\d,]*)(?!\d|,\d)(?:\.\d+)?\s*(?:dollars?|usd|bucks)\b)/gi;
 
-function unsafeLinkSchemes(body: string): string[] {
+// GFM (marked's default) also turns bare http(s)://, www. and email text into links.
+const BARE_URL_RE = /(?:\bhttps?:\/\/|\bwww\.)[^\s<>()[\]]+|[\w.+-]+@[\w-]+(?:\.[\w-]+)+/gi;
+
+/** Every link destination in the body: inline, reference definitions and <autolinks>. */
+function linkDestinations(body: string): string[] {
   const urls: string[] = [];
   for (const re of [INLINE_LINK_RE, REF_LINK_RE, ANGLE_LINK_RE]) {
     for (const m of body.matchAll(re)) urls.push(m[1]);
   }
+  return urls;
+}
+
+function unsafeLinkSchemes(body: string): string[] {
+  const urls = linkDestinations(body);
   const bad: string[] = [];
   for (const u of urls) {
     // Browsers ignore control characters and spaces inside a scheme.
@@ -78,6 +88,57 @@ function unsafeLinkSchemes(body: string): string[] {
     if (scheme && !['http', 'https', 'mailto'].includes(scheme[1].toLowerCase())) bad.push(u);
   }
   return bad;
+}
+
+const SITE_HOST = 'softsystemsstudiollc.com';
+/** Site pages a body may link to, besides the brief's sources. */
+const ALLOWED_SITE_PATHS = new Set([
+  '/pricing',
+  '/blog',
+  '/intake',
+  ...CITY_PAGES.map((c) => `/web-design/${c.slug}`),
+]);
+
+/** Lower-case scheme and host, no fragment, no trailing slash; null if not an http(s) URL. */
+function normalizeUrl(u: string): string | null {
+  try {
+    const url = new URL(u);
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') return null;
+    url.hash = '';
+    return url.href.replace(/\/$/, '');
+  } catch {
+    return null;
+  }
+}
+
+function isAllowedLink(dest: string, sources: Set<string>): boolean {
+  if (dest.startsWith('/') && !dest.startsWith('//')) {
+    return ALLOWED_SITE_PATHS.has(dest.split('#')[0].replace(/\/$/, ''));
+  }
+  const n = normalizeUrl(dest);
+  if (!n) return false;
+  if (sources.has(n)) return true;
+  const url = new URL(n);
+  return (
+    url.protocol === 'https:' &&
+    url.host === SITE_HOST &&
+    !url.search &&
+    ALLOWED_SITE_PATHS.has(url.pathname.replace(/\/$/, ''))
+  );
+}
+
+/**
+ * Link destinations that are neither one of the draft's frontmatter sources nor an
+ * allowed site page. Anything unparseable fails closed, and mailto links are not allowed.
+ */
+function offSourceLinks(body: string, sourceUrls: string[]): string[] {
+  const sources = new Set(sourceUrls.map(normalizeUrl).filter((u): u is string => u !== null));
+  const dests = linkDestinations(body);
+  for (const m of body.matchAll(BARE_URL_RE)) {
+    const bare = m[0].replace(/[.,;:!?*_~'"]+$/, '');
+    dests.push(/^www\./i.test(bare) ? `http://${bare}` : bare);
+  }
+  return [...new Set(dests.filter((d) => !isAllowedLink(d.trim(), sources)))];
 }
 
 /** Every distinct studio price amount (digits only, no commas), derived from STUDIO_LITERALS. */
@@ -147,8 +208,12 @@ export function runChecks(input: {
     });
   }
 
+  // Title and description are public too: phrase and price checks cover them with the body.
+  const str = (v: unknown) => (typeof v === 'string' ? v : '');
+  const allText = [str(parsed.data.title), str(parsed.data.description), body].join('\n');
+
   for (const re of BANNED_PHRASES) {
-    const m = re.exec(body);
+    const m = re.exec(allText);
     if (m) failures.push({ code: 'banned-phrase', message: `Banned phrase: "${m[0]}".` });
   }
 
@@ -162,11 +227,20 @@ export function runChecks(input: {
     });
   }
 
+  const rawSources: unknown[] = Array.isArray(parsed.data.sources) ? parsed.data.sources : [];
+  const sourceUrls = rawSources.map((s) => str((s as { url?: unknown } | null)?.url));
+  for (const u of offSourceLinks(body, sourceUrls)) {
+    failures.push({
+      code: 'off-source-link',
+      message: `Link is not one of the draft's sources or an allowed site page: "${u.slice(0, 100)}".`,
+    });
+  }
+
   for (const t of unknownTokens(body)) {
     failures.push({ code: 'unknown-token', message: `Unknown token {{${t}}}.` });
   }
 
-  for (const n of typedStudioAmounts(body)) {
+  for (const n of typedStudioAmounts(allText)) {
     failures.push({
       code: 'studio-literal',
       message: `Studio price amount ${n} typed literally; use a {{TOKEN}}.`,

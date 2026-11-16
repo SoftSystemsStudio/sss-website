@@ -12,6 +12,7 @@ import {
 } from '../../packages/frontend/src/lib/blog-schema';
 import type { CallModel, ModelRequest } from './models';
 import {
+  CHECKLIST_KEYS,
   researchResultSchema,
   reviewResultSchema,
   type Brief,
@@ -212,6 +213,9 @@ export function slugify(title: string): string {
   return (lastDash > 0 ? cut.slice(0, lastDash) : base.slice(0, 80)).replace(/-+$/, '');
 }
 
+const MAX_REVISION_NOTES = 12;
+const MAX_REVISION_NOTE_CHARS = 300;
+
 const writerReplySchema = z.object({
   title: z.string(),
   description: z.string(),
@@ -276,10 +280,14 @@ export async function write(
     studioFactsAsTokens(),
   ];
   if (opts.revisionNotes?.length) {
+    // Capped (truncated, never thrown): the notes are model output relayed into a prompt.
+    const notes = opts.revisionNotes
+      .slice(0, MAX_REVISION_NOTES)
+      .map((n) => n.slice(0, MAX_REVISION_NOTE_CHARS));
     parts.push(
       '',
       'This is a rewrite. An editor reviewed your previous draft of this brief. Fix every note below and keep everything else true to the rules:',
-      fence('revision_notes', bulletList(opts.revisionNotes)),
+      fence('revision_notes', bulletList(notes)),
     );
   }
 
@@ -322,10 +330,26 @@ export async function review(
     fence('draft', markdown),
   ].join('\n');
 
-  return callParsed(
+  const result = await callParsed(
     call,
     'review',
     { role: 'reviewer', system: loadPrompt('reviewer'), user },
     (text) => reviewResultSchema.parse(extractJson(text)),
   );
+  return normalizeVerdict(result);
+}
+
+/** "pass" means every checklist item is true; a pass with any false item becomes a revise. */
+function normalizeVerdict(result: ReviewResult): ReviewResult {
+  if (result.verdict !== 'pass') return result;
+  const failed = CHECKLIST_KEYS.filter((k) => !result.checklist[k]);
+  if (!failed.length) return result;
+  return {
+    ...result,
+    verdict: 'revise',
+    notes: [
+      `The review said pass but these checklist items are false: ${failed.join(', ')}. Fix them.`,
+      ...result.notes,
+    ],
+  };
 }

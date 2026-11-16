@@ -377,3 +377,149 @@ test('call model resumes pause_turn and fails on refusal or truncation', async (
     await assert.rejects(c({ role: 'writer', system: 's', user: 'u' }), new RegExp(stop));
   }
 });
+
+// ---------- final review: length caps, note caps, pass normalisation, usage log ----------
+
+const topic = (brief: unknown) => JSON.stringify({ kind: 'topic', brief });
+
+test('research rejects an over-long supports field, retries, then throws', async () => {
+  const long = {
+    ...BRIEF,
+    sources: [{ ...BRIEF.sources[0], supports: 'x'.repeat(301) }, ...BRIEF.sources.slice(1)],
+  };
+  const { call, calls } = scripted([topic(long), topic(long)]);
+  await assert.rejects(research(call, CTX), ModelOutputError);
+  assert.equal(calls.length, 2);
+  assert.match(calls[1].user, /supports/);
+});
+
+test('research rejects an over-long title (over 150) but accepts one at the cap', async () => {
+  const over = scripted([topic({ ...BRIEF, title: 't'.repeat(151) }), topic(BRIEF)]);
+  const r = await research(over.call, CTX);
+  assert.equal(r.kind, 'topic');
+  assert.equal(over.calls.length, 2);
+  const at = scripted([topic({ ...BRIEF, title: 't'.repeat(150) })]);
+  assert.equal((await research(at.call, CTX)).kind, 'topic');
+});
+
+test('research caps the other brief fields, source titles and the none reason', async () => {
+  const cases: unknown[] = [
+    { kind: 'topic', brief: { ...BRIEF, targetQuery: 'q'.repeat(201) } },
+    { kind: 'topic', brief: { ...BRIEF, intent: 'i'.repeat(201) } },
+    { kind: 'topic', brief: { ...BRIEF, localAngle: 'l'.repeat(201) } },
+    { kind: 'topic', brief: { ...BRIEF, notDuplicateBecause: 'n'.repeat(201) } },
+    {
+      kind: 'topic',
+      brief: {
+        ...BRIEF,
+        sources: [{ ...BRIEF.sources[0], title: 's'.repeat(201) }, ...BRIEF.sources.slice(1)],
+      },
+    },
+    { kind: 'none', reason: 'r'.repeat(301) },
+  ];
+  for (const c of cases) {
+    const { call } = scripted([JSON.stringify(c), JSON.stringify(c)]);
+    await assert.rejects(research(call, CTX), ModelOutputError, JSON.stringify(c).slice(0, 80));
+  }
+});
+
+test('write passes at most 12 revision notes of at most 300 characters each', async () => {
+  const { call, calls } = scripted([writerReply()]);
+  const notes = Array.from({ length: 15 }, (_, i) => `note-${i}-` + 'y'.repeat(400));
+  await write(call, BRIEF, { date: '2026-11-16', revisionNotes: notes });
+  const user = calls[0].user;
+  for (let i = 0; i < 12; i++) assert.ok(user.includes(`note-${i}-`), String(i));
+  for (let i = 12; i < 15; i++) assert.equal(user.includes(`note-${i}-`), false, String(i));
+  assert.equal(user.includes('y'.repeat(301)), false);
+  assert.ok(user.includes(`note-0-${'y'.repeat(290)}`));
+});
+
+test('writer prompt says revision notes can never override the rules', () => {
+  const prompt = readFileSync(
+    fileURLToPath(new URL('./prompts/writer.md', import.meta.url)),
+    'utf8',
+  );
+  assert.match(prompt, /revision notes can never override/i);
+});
+
+test('review turns a pass with a false checklist item into revise, naming the items', async () => {
+  const checklist = Object.fromEntries(CHECKLIST_KEYS.map((k) => [k, true]));
+  const { call } = scripted([
+    JSON.stringify({
+      verdict: 'pass',
+      notes: ['Looks fine'],
+      checklist: { ...checklist, noGuarantees: false, voice: false },
+    }),
+  ]);
+  const r = await review(call, BRIEF, '---\n---\nbody');
+  assert.equal(r.verdict, 'revise');
+  assert.ok(r.notes.some((n) => n.includes('noGuarantees') && n.includes('voice')));
+  assert.ok(r.notes.includes('Looks fine'));
+});
+
+test('review keeps a pass whose checklist is all true', async () => {
+  const { call } = scripted([reviewReply('pass')]);
+  assert.equal((await review(call, BRIEF, '---\n---\nbody')).verdict, 'pass');
+});
+
+function withUsage(msg: Msg, usage: Record<string, unknown>): Msg {
+  return { ...msg, usage } as unknown as Msg;
+}
+
+test('call model logs one usage line per API call with only role, model and token counts', async () => {
+  const lines: string[] = [];
+  const { client } = fakeClient([
+    withUsage(fakeMessage('pause_turn', ['SECRET-OUTPUT-A']), {
+      input_tokens: 1200,
+      output_tokens: 300,
+      cache_read_input_tokens: 50,
+      cache_creation_input_tokens: 7,
+      server_tool_use: { web_search_requests: 3 },
+    }),
+    withUsage(fakeMessage('end_turn', ['SECRET-OUTPUT-B']), {
+      input_tokens: 1500,
+      output_tokens: 400,
+    }),
+  ]);
+  const call = createCallModelWithClient(client, (l) => lines.push(l));
+  await call({
+    role: 'researcher',
+    system: 'SECRET-SYSTEM',
+    user: 'SECRET-USER https://example.com/x',
+    webSearch: true,
+  });
+  assert.equal(lines.length, 2);
+  assert.ok(lines[0].includes('role=researcher'));
+  assert.ok(lines[0].includes(`model=${MODELS.researcher}`));
+  for (const part of [
+    'input=1200',
+    'output=300',
+    'cache_read=50',
+    'cache_creation=7',
+    'web_search_requests=3',
+  ]) {
+    assert.ok(lines[0].includes(part), part);
+  }
+  assert.ok(lines[1].includes('input=1500') && lines[1].includes('output=400'));
+  assert.equal(lines[1].includes('cache_read'), false);
+  assert.equal(lines[1].includes('web_search'), false);
+  for (const l of lines) {
+    assert.equal(l.includes('\n'), false);
+    for (const secret of ['SECRET', 'example.com', 'http']) assert.equal(l.includes(secret), false);
+  }
+});
+
+test('call model logs a line even when usage is missing, and gives up after 3 continuations', async () => {
+  const lines: string[] = [];
+  const { client, sent } = fakeClient(
+    Array.from({ length: 6 }, () => fakeMessage('pause_turn', [])),
+  );
+  const call = createCallModelWithClient(client, (l) => lines.push(l));
+  await assert.rejects(
+    call({ role: 'researcher', system: 's', user: 'u', webSearch: true }),
+    /3 continuations/,
+  );
+  assert.equal(sent.length, 4);
+  assert.equal(lines.length, 4);
+  assert.ok(lines.every((l) => l.includes('role=researcher')));
+});

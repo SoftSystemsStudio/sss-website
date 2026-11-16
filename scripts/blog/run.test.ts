@@ -542,7 +542,8 @@ test('dry run never calls appendLog, even when it would fail (PR and skip paths)
 });
 
 test('every logged entry has a short single-line detail', async () => {
-  const longReason = 'x'.repeat(5000) + '\nsecond line';
+  // The none reason is capped at 300 characters by the schema; the log still drops newlines.
+  const longReason = 'x'.repeat(280) + '\nsecond line';
   const { call } = scripted([JSON.stringify({ kind: 'none', reason: longReason })]);
   const { gh, logged } = fakeGh();
   await runPipeline(deps(call, gh));
@@ -840,4 +841,48 @@ test('formatLogLines caps long fields from an edited comment and drops oversized
   assert.equal(lines.length, 1);
   assert.ok(lines[0].length <= 600);
   assert.equal(lines[0].includes('\n'), false);
+});
+
+// ---------- final review: a pass with a false checklist item is a revise ----------
+
+function passWithFalseItem(): string {
+  const checklist = Object.fromEntries(CHECKLIST_KEYS.map((k) => [k, true]));
+  return JSON.stringify({
+    verdict: 'pass',
+    notes: ['Looks fine'],
+    checklist: { ...checklist, noGuarantees: false },
+  });
+}
+
+test('a pass with a false checklist item triggers the one rewrite round', async () => {
+  const { call, calls } = scripted([
+    TOPIC,
+    writerReply(),
+    passWithFalseItem(),
+    writerReply(),
+    reviewReply('pass'),
+  ]);
+  const { gh, calls: ghCalls } = fakeGh();
+  const outcome = await runPipeline(deps(call, gh));
+  assert.equal(outcome.kind, 'pr');
+  const writes = calls.filter((c) => c.role === 'writer');
+  assert.equal(writes.length, 2);
+  assert.ok(writes[1].user.includes('noGuarantees'));
+  assert.equal(ghCalls.filter((c) => c.method === 'createDraftPr').length, 1);
+});
+
+test('two passes with a false checklist item end in reviewer-reject, no PR', async () => {
+  const { call, calls } = scripted([
+    TOPIC,
+    writerReply(),
+    passWithFalseItem(),
+    writerReply(),
+    passWithFalseItem(),
+  ]);
+  const { gh, calls: ghCalls, logged } = fakeGh();
+  const outcome = await runPipeline(deps(call, gh));
+  assert.equal(outcome.kind === 'skipped' && outcome.reason, 'reviewer-reject');
+  assert.equal(calls.filter((c) => c.role === 'writer').length, 2);
+  assert.equal(methods(ghCalls).includes('createDraftPr'), false);
+  assert.equal(logged[0].outcome, 'reviewer-reject');
 });

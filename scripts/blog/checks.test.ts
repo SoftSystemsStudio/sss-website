@@ -399,3 +399,97 @@ test('fetchSourceTexts caps an oversized body', async () => {
   const len = r['https://example.com/a'].length;
   assert.ok(len > 0 && len <= 1_500_000, String(len));
 });
+
+// ---- final review: body links point only at the brief's sources ----
+
+const offSource = (p: string) => has(withPara(p), 'off-source-link');
+
+test('an off-source inline link fails off-source-link', () => {
+  assert.ok(offSource('Buy at [this shop](https://spam.example.net/deal).'));
+});
+
+test('an off-source reference-style link fails off-source-link', () => {
+  assert.ok(offSource('See [the deal][d].\n\n[d]: https://spam.example.net/deal "Deal"'));
+});
+
+test('an off-source autolink fails off-source-link', () => {
+  assert.ok(offSource('See <https://spam.example.net/deal> now.'));
+});
+
+test('a bare URL (GFM turns it into a link) off the sources fails off-source-link', () => {
+  assert.ok(offSource('See https://spam.example.net/deal for more.'));
+  assert.ok(offSource('See www.spam.example.net for more.'));
+});
+
+test('a source link with different host casing, trailing slash or fragment passes', () => {
+  for (const p of [
+    'See [A](HTTPS://Example.COM/a/).',
+    'See [A](https://example.com/a#part).',
+    'See <https://EXAMPLE.com/b/>.',
+    'See https://example.com/c.',
+    '[ref]: https://example.com/a/',
+  ]) {
+    assert.ok(!offSource(p), p);
+  }
+});
+
+test('relative and absolute links to allowed site paths pass', () => {
+  for (const p of [
+    'See [prices](/pricing).',
+    'See [prices](/pricing/).',
+    'See [notes](/blog).',
+    'See [Columbus](/web-design/columbus-ga).',
+    'See [a quote](/intake).',
+    'See [prices](https://softsystemsstudiollc.com/pricing).',
+    'See [Opelika](https://SoftSystemsStudioLLC.com/web-design/opelika-al/).',
+  ]) {
+    assert.ok(!offSource(p), p);
+  }
+});
+
+test('other site paths, unknown towns, mailto and other hosts fail off-source-link', () => {
+  for (const p of [
+    'See [x](/random).',
+    'See [x](/web-design/atlanta-ga).',
+    'See [x](https://softsystemsstudiollc.com/random).',
+    'See [x](//spam.example.net/a).',
+    'Email [me](mailto:a@example.com).',
+    'See [x](https://example.com/a?ref=spam).',
+    'See [x](https://example.com.spam.net/a).',
+  ]) {
+    assert.ok(offSource(p), p);
+  }
+});
+
+test('the off-source failure names the URL', () => {
+  const r = runChecks({ markdown: withPara('[x](https://spam.example.net/deal)'), ...base });
+  const f = r.find((x) => x.code === 'off-source-link');
+  assert.ok(f && f.message.includes('https://spam.example.net/deal'));
+});
+
+// ---- final review: title and description get the same phrase and price checks ----
+
+const withFront = (from: string, to: string) => doc(GOOD_BODY, FRONT.replace(from, to));
+
+test('a banned phrase in the title only fails banned-phrase', () => {
+  const md = withFront(
+    'title: How local businesses can plan a simple website',
+    'title: Guaranteed ways to plan a simple website',
+  );
+  assert.ok(codes(runChecks({ markdown: md, ...base })).includes('banned-phrase'));
+});
+
+test('a banned phrase in the description only fails banned-phrase', () => {
+  const md = withFront('A plain-English look', 'Top spot hunting aside, a plain-English look');
+  assert.ok(codes(runChecks({ markdown: md, ...base })).includes('banned-phrase'));
+});
+
+test('a studio price literal in the description only fails studio-literal', () => {
+  const md = withFront('A plain-English look', `From ${BUILD_FROM}, a plain-English look`);
+  assert.ok(codes(runChecks({ markdown: md, ...base })).includes('studio-literal'));
+});
+
+test('a token in a tag fails unknown-token', () => {
+  const md = withFront('  - websites', '  - "{{BUILD_FROM}}"');
+  assert.ok(codes(runChecks({ markdown: md, ...base })).includes('unknown-token'));
+});

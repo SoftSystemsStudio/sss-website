@@ -1,17 +1,24 @@
 import { z } from 'zod';
 import { isSafeSourceUrl } from './checks';
 
+/**
+ * Length caps keep the researcher from relaying page text (a prompt-injected page)
+ * through the brief into the writer's and reviewer's prompts. An over-long field fails
+ * the parse, which the research stage retries once, then gives up.
+ */
+export const BRIEF_CAPS = { title: 150, field: 200, sourceTitle: 200, supports: 300, reason: 300 };
+
 export const briefSchema = z.object({
-  title: z.string().min(1),
-  targetQuery: z.string().min(1),
-  intent: z.string().min(1),
-  localAngle: z.string().min(1),
-  notDuplicateBecause: z.string().min(1),
+  title: z.string().min(1).max(BRIEF_CAPS.title),
+  targetQuery: z.string().min(1).max(BRIEF_CAPS.field),
+  intent: z.string().min(1).max(BRIEF_CAPS.field),
+  localAngle: z.string().min(1).max(BRIEF_CAPS.field),
+  notDuplicateBecause: z.string().min(1).max(BRIEF_CAPS.field),
   sources: z.array(
     z.object({
       url: z.string().url().refine(isSafeSourceUrl, { message: 'must be a public http(s) URL' }),
-      title: z.string(),
-      supports: z.string(),
+      title: z.string().max(BRIEF_CAPS.sourceTitle),
+      supports: z.string().max(BRIEF_CAPS.supports),
     }),
   ),
 });
@@ -19,7 +26,7 @@ export type Brief = z.infer<typeof briefSchema>;
 
 export const researchResultSchema = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('topic'), brief: briefSchema }),
-  z.object({ kind: z.literal('none'), reason: z.string() }),
+  z.object({ kind: z.literal('none'), reason: z.string().max(BRIEF_CAPS.reason) }),
 ]);
 export type ResearchResult = z.infer<typeof researchResultSchema>;
 

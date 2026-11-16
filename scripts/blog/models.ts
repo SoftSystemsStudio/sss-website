@@ -29,7 +29,7 @@ const MAX_TOKENS = 32_000;
 const REQUEST_TIMEOUT_MS = 10 * 60_000;
 const MAX_RETRIES = 3;
 /** Server-tool turns can pause; resume at most this many times. */
-const MAX_CONTINUATIONS = 5;
+const MAX_CONTINUATIONS = 3;
 /** Small cap so one run cannot spiral into dozens of searches. */
 const WEB_SEARCH_MAX_USES = 8;
 
@@ -54,7 +54,34 @@ const WEB_SEARCH_TOOL: Anthropic.Messages.WebSearchTool20250305 = {
   },
 };
 
-export function createCallModelWithClient(messages: MessagesStreamer): CallModel {
+/** Where usage lines go. Stderr by default, so stdout keeps only the outcome line. */
+export type UsageLogger = (line: string) => void;
+const stderrLogger: UsageLogger = (line) =>
+  process.stderr.write(`${line}
+`);
+
+/**
+ * One line per API call for cost visibility: role, model id and the token counts from
+ * `usage`. Never prompts, outputs, URLs or keys.
+ */
+function usageLine(role: ModelRole, model: string, usage: Message['usage'] | undefined): string {
+  const parts = [`blog model call: role=${role}`, `model=${model}`];
+  const num = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : undefined);
+  const fields: [string, number | undefined][] = [
+    ['input', num(usage?.input_tokens)],
+    ['output', num(usage?.output_tokens)],
+    ['cache_read', num(usage?.cache_read_input_tokens)],
+    ['cache_creation', num(usage?.cache_creation_input_tokens)],
+    ['web_search_requests', num(usage?.server_tool_use?.web_search_requests)],
+  ];
+  for (const [k, v] of fields) if (v !== undefined) parts.push(`${k}=${v}`);
+  return parts.join(' ');
+}
+
+export function createCallModelWithClient(
+  messages: MessagesStreamer,
+  logUsage: UsageLogger = stderrLogger,
+): CallModel {
   return async ({ role, system, user, webSearch }) => {
     const history: Anthropic.Messages.MessageParam[] = [{ role: 'user', content: user }];
     const texts: string[] = [];
@@ -68,6 +95,7 @@ export function createCallModelWithClient(messages: MessagesStreamer): CallModel
         ...(webSearch ? { tools: [WEB_SEARCH_TOOL] } : {}),
       };
       const msg = await messages.stream(params).finalMessage();
+      logUsage(usageLine(role, params.model, msg.usage));
       for (const block of msg.content) if (block.type === 'text') texts.push(block.text);
 
       if (msg.stop_reason === 'pause_turn') {

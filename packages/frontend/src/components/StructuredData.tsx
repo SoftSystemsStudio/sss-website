@@ -71,8 +71,8 @@ export function OrganizationSchema() {
     sameAs: [
       FACEBOOK_URL,
       'https://nextdoor.com/page/soft-systems-studio-llc/',
+      'https://www.linkedin.com/company/soft-systems-studio-llc/',
       // 'https://twitter.com/softsystems',
-      // 'https://linkedin.com/company/soft-systems-studio',
     ],
     contactPoint: {
       '@type': 'ContactPoint',

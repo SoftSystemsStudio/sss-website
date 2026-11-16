@@ -170,16 +170,62 @@ function failureDetail(failures: CheckFailure[]): string {
 }
 
 /**
+ * Thrown by runPipeline AFTER the outcome is final (a PR already opened stays open)
+ * when the run-log write failed. Carries the outcome so the CLI can still report it,
+ * then exit 1: a silently empty log would hide a missing token permission.
+ */
+export class LogWriteError extends Error {
+  constructor(
+    readonly outcome: RunOutcome,
+    reason: string,
+  ) {
+    super(`run log write failed: ${clip(reason, 300)}; check that BLOG_PR_TOKEN has Issues write`);
+    this.name = 'LogWriteError';
+  }
+}
+
+/**
  * One daily run. Returns a RunOutcome for every normal ending (PR or skip). Errors
  * (unusable model output, model refusals, API failures) are logged when possible and
- * rethrown, so the CLI exits 1 and no PR exists.
+ * rethrown, so the CLI exits 1 and no PR exists. If the outcome is final but its
+ * run-log entry could not be written, throws LogWriteError carrying the outcome.
  */
 export async function runPipeline(deps: RunDeps): Promise<RunOutcome> {
+  const state: { logFailure?: string } = {};
+  const outcome = await runStages(deps, state);
+  if (state.logFailure !== undefined) throw new LogWriteError(outcome, state.logFailure);
+  return outcome;
+}
+
+/**
+ * Runs `run`, prints the outcome as one JSON line, and returns the process exit code:
+ * 0 for any outcome, 1 for a thrown error. A LogWriteError still prints its (final)
+ * outcome first, then the log failure, and exits 1. Messages carry no secrets.
+ */
+export async function reportRun(
+  run: () => Promise<RunOutcome>,
+  out: { log: (s: string) => void; error: (s: string) => void } = console,
+): Promise<number> {
+  try {
+    out.log(JSON.stringify(await run()));
+    return 0;
+  } catch (err) {
+    if (err instanceof LogWriteError) {
+      out.log(JSON.stringify(err.outcome));
+      out.error(`blog pipeline: ${err.message}`);
+      return 1;
+    }
+    out.error(`blog pipeline failed: ${clip(errorDetail(err), 1000)}`);
+    return 1;
+  }
+}
+
+async function runStages(deps: RunDeps, state: { logFailure?: string }): Promise<RunOutcome> {
   const { call, gh, dryRun } = deps;
   const now = deps.now();
   const date = now.toISOString().slice(0, 10);
 
-  /** Appends to the run log (never on a dry run). A failed append never changes the outcome. */
+  /** Appends to the run log (never on a dry run). A failure is recorded, never thrown here. */
   async function log(outcome: LogEntry['outcome'], detail: string, topic?: string) {
     if (dryRun) return;
     try {
@@ -190,7 +236,7 @@ export async function runPipeline(deps: RunDeps): Promise<RunOutcome> {
         ...(topic ? { topic: clip(topic, LOG_TOPIC_MAX) } : {}),
       });
     } catch (err) {
-      console.warn(`blog: could not append to the run log: ${clip(errorDetail(err), 300)}`);
+      state.logFailure ??= errorDetail(err);
     }
   }
 

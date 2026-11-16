@@ -9,9 +9,10 @@
  * Exit 0 on any outcome, including skips; exit 1 when the run throws.
  */
 import { fileURLToPath } from 'node:url';
-import { clip, createGitHubClient, type GitHubClient } from './github';
+import { createGitHubClient, type GitHubClient } from './github';
 import { createAnthropicCallModel } from './models';
-import { loadExistingPosts, runPipeline } from './run';
+import { loadExistingPosts, reportRun, runPipeline } from './run';
+import type { RunOutcome } from './types';
 
 const CONTENT_DIR = fileURLToPath(new URL('../../packages/frontend/content/blog', import.meta.url));
 
@@ -37,7 +38,7 @@ function required(name: string): string {
   return v;
 }
 
-async function main(): Promise<void> {
+async function main(): Promise<RunOutcome> {
   const args = process.argv.slice(2);
   const unknown = args.filter((a) => a !== '--dry-run');
   if (unknown.length) throw new Error(`unknown argument(s): ${unknown.join(' ')}`);
@@ -50,7 +51,7 @@ async function main(): Promise<void> {
   else if (dryRun) gh = offlineGitHub;
   else throw new Error('BLOG_PR_TOKEN is not set');
 
-  const outcome = await runPipeline({
+  return runPipeline({
     call,
     gh,
     fetchFn: fetch,
@@ -58,16 +59,9 @@ async function main(): Promise<void> {
     existingPosts: loadExistingPosts(CONTENT_DIR),
     dryRun,
   });
-  console.log(JSON.stringify(outcome));
 }
 
-main().then(
-  () => {
-    process.exitCode = 0;
-  },
-  (err: unknown) => {
-    const msg = err instanceof Error ? `${err.name}: ${err.message}` : String(err);
-    console.error(`blog pipeline failed: ${clip(msg, 1000)}`);
-    process.exitCode = 1;
-  },
-);
+// Exit 0 on any outcome; 1 on a thrown error or a failed run-log write (outcome printed first).
+void reportRun(main).then((code) => {
+  process.exitCode = code;
+});

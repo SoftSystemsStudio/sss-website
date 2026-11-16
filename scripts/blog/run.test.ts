@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { CallModel, ModelRequest } from './models';
 import type { DraftPr, GitHubClient, LogEntry } from './github';
-import { formatLogLines, loadExistingPosts, runPipeline } from './run';
+import { formatLogLines, loadExistingPosts, LogWriteError, reportRun, runPipeline } from './run';
 import { ModelOutputError, slugify } from './stages';
 import { CHECKLIST_KEYS, type Brief } from './types';
 
@@ -448,11 +448,96 @@ test('a failing model call (refusal/API error) propagates; dry run does not log 
   assert.equal(methods(ghCalls).includes('appendLog'), false);
 });
 
-test('a log failure on a skip does not change the outcome', async () => {
+// ---------- run-log write failures are loud (controller ruling) ----------
+
+function capture() {
+  const out: string[] = [];
+  const err: string[] = [];
+  return { out, err, sink: { log: (s: string) => out.push(s), error: (s: string) => err.push(s) } };
+}
+
+test('PR + failing appendLog: PR opened once, outcome reported, exit 1 with a clear message', async () => {
+  const { call } = scripted([TOPIC, writerReply(), reviewReply('pass')]);
+  const { gh, calls: ghCalls } = fakeGh({ appendFails: true });
+  const rejected = await runPipeline(deps(call, gh)).then(
+    () => null,
+    (e: unknown) => e,
+  );
+  assert.ok(rejected instanceof LogWriteError);
+  assert.deepEqual(rejected.outcome, { kind: 'pr', url: 'https://github.com/acme/site/pull/1' });
+
+  const { call: call2 } = scripted([TOPIC, writerReply(), reviewReply('pass')]);
+  const { gh: gh2, calls: ghCalls2 } = fakeGh({ appendFails: true });
+  const c = capture();
+  const code = await reportRun(() => runPipeline(deps(call2, gh2)), c.sink);
+  assert.equal(code, 1);
+  assert.deepEqual(JSON.parse(c.out[0]), {
+    kind: 'pr',
+    url: 'https://github.com/acme/site/pull/1',
+  });
+  assert.match(c.err[0], /run log write failed: .*issues API down/);
+  assert.match(c.err[0], /BLOG_PR_TOKEN has Issues write/);
+  for (const calls of [ghCalls, ghCalls2]) {
+    assert.equal(calls.filter((x) => x.method === 'createDraftPr').length, 1);
+  }
+});
+
+test('skip + failing appendLog: outcome reported, exit 1', async () => {
   const { call } = scripted([JSON.stringify({ kind: 'none', reason: 'nothing' })]);
-  const { gh } = fakeGh({ appendFails: true });
-  const outcome = await runPipeline(deps(call, gh));
-  assert.equal(outcome.kind === 'skipped' && outcome.reason, 'no-topic');
+  const { gh, calls: ghCalls } = fakeGh({ appendFails: true });
+  const c = capture();
+  const code = await reportRun(() => runPipeline(deps(call, gh)), c.sink);
+  assert.equal(code, 1);
+  assert.deepEqual(JSON.parse(c.out[0]), {
+    kind: 'skipped',
+    reason: 'no-topic',
+    detail: 'nothing',
+  });
+  assert.match(c.err[0], /run log write failed/);
+  assert.equal(methods(ghCalls).includes('createDraftPr'), false);
+});
+
+test('reportRun: any outcome exits 0, a thrown error exits 1 without an outcome line', async () => {
+  const ok = capture();
+  assert.equal(
+    await reportRun(
+      async () => ({ kind: 'skipped', reason: 'gate-full', detail: '3 open' }),
+      ok.sink,
+    ),
+    0,
+  );
+  assert.equal(ok.err.length, 0);
+  const bad = capture();
+  assert.equal(
+    await reportRun(async () => {
+      throw new ModelOutputError('write', 'bad json');
+    }, bad.sink),
+    1,
+  );
+  assert.equal(bad.out.length, 0);
+  assert.match(bad.err[0], /blog pipeline failed: ModelOutputError/);
+});
+
+test('dry run never calls appendLog, even when it would fail (PR and skip paths)', async () => {
+  const outDir = mkdtempSync(join(tmpdir(), 'blog-dry-'));
+  try {
+    for (const replies of [
+      [TOPIC, writerReply(), reviewReply('pass')],
+      [JSON.stringify({ kind: 'none', reason: 'nothing' })],
+    ]) {
+      const { call } = scripted(replies);
+      const { gh, calls: ghCalls } = fakeGh({ appendFails: true });
+      const c = capture();
+      const code = await reportRun(
+        () => runPipeline(deps(call, gh, { dryRun: true, outDir })),
+        c.sink,
+      );
+      assert.equal(code, 0);
+      assert.equal(methods(ghCalls).includes('appendLog'), false);
+    }
+  } finally {
+    rmSync(outDir, { recursive: true, force: true });
+  }
 });
 
 test('every logged entry has a short single-line detail', async () => {

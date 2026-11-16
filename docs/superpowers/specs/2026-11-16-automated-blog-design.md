@@ -182,7 +182,7 @@ skip days. Austin sets a monthly spend limit on the Anthropic key as a hard cap.
    write; issues for the run log and PR labels) for opening PRs that trigger CI,
    and add both as repo secrets.
 4. (Done: author is Soft Systems Studio, one post a day.)
-(Search Console and Bing already hold the sitemap, per CLAUDE.md, so no submission step.)
+   (Search Console and Bing already hold the sitemap, per CLAUDE.md, so no submission step.)
 
 ## Calls I made (check these)
 

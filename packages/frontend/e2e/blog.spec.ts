@@ -1,3 +1,5 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import { test, expect } from './fixtures';
 
 test('/blog renders its heading', async ({ page }) => {
@@ -38,4 +40,19 @@ test('/blog/feed.xml is RSS', async ({ request }) => {
   expect(res.status()).toBe(200);
   expect(res.headers()['content-type']).toContain('xml');
   expect(await res.text()).toContain('<rss');
+});
+
+// Production functions don't carry content/blog (the reads are turbopackIgnore'd, so the
+// file trace skips them), so a feed built at request time would always be empty there.
+// It must be prerendered at build time, like the pages and the sitemap.
+test('/blog/feed.xml is prerendered at build time with the posts', async ({ request }) => {
+  const body = path.join(process.cwd(), '.next/server/app/blog/feed.xml.body');
+  expect(fs.existsSync(body), 'prerendered feed').toBe(true);
+  const built = fs.readFileSync(body, 'utf8');
+  const served = await (await request.get('/blog/feed.xml')).text();
+  expect(served).toBe(built);
+  const links = await request.get('/blog').then((r) => r.text());
+  if (links.includes('href="/blog/fixture-post"')) {
+    expect(built).toContain('/blog/fixture-post</link>');
+  }
 });

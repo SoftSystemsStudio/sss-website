@@ -7,7 +7,9 @@
         "http://127.0.0.1:3100/",
         "http://127.0.0.1:3100/pricing",
         "http://127.0.0.1:3100/about",
-        "http://127.0.0.1:3100/hi"
+        "http://127.0.0.1:3100/hi",
+        "http://127.0.0.1:3100/blog",
+        "http://127.0.0.1:3100/blog/fixture-post"
       ],
       "numberOfRuns": 1,
       "settings": { "chromeFlags": "--no-sandbox --headless=new" }

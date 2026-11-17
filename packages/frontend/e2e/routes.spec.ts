@@ -87,3 +87,10 @@ test('home page has no horizontal overflow at 375px', async ({ page }) => {
   }));
   expect(scrollWidth, 'document wider than the viewport').toBeLessThanOrEqual(innerWidth);
 });
+
+test('home page links to the free checklist and says what Gumroad asks for', async ({ page }) => {
+  await page.goto('/');
+  const link = page.getByRole('link', { name: /Get the free checklist/ });
+  await expect(link).toHaveAttribute('href', 'https://softsystemsstudioco.gumroad.com/l/mxftos');
+  await expect(page.locator('#checklist')).toContainText('asks for your email address');
+});

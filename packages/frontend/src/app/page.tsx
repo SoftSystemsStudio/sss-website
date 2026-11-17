@@ -20,6 +20,7 @@ import {
   BUILD_REVISION_ROUNDS,
   CARE_PLANS,
   CONTACT_EMAIL,
+  FREE_CHECKLIST_URL,
   HOME_BASE,
   HOME_BASE_SHORT,
   RETAINER_RANGE,
@@ -415,6 +416,42 @@ export default function Home() {
               </li>
             ))}
           </ol>
+        </Section>
+
+        {/* Free checklist */}
+        <Section
+          id="checklist"
+          className="scroll-mt-16 bg-limestone py-20 lg:scroll-mt-[96px] lg:py-[120px]"
+          innerClassName="grid gap-8 lg:grid-cols-[7fr_5fr] lg:items-end lg:gap-[72px]"
+        >
+          <div className="reveal">
+            <p className={EYEBROW}>Free checklist</p>
+            <h2 className={`mt-4 text-balance ${SECTION_TITLE}`}>
+              Not ready for a quote? Start here.
+            </h2>
+            <p className="mt-6 max-w-[640px] text-[17px] leading-relaxed text-ink-soft sm:text-lg">
+              I wrote a short checklist for local business owners. It covers your Google listing,
+              your reviews, what a visitor should see on your website, keeping your details the same
+              everywhere, and what to have ready before you hire anyone, me included. You can do
+              most of it yourself.
+            </p>
+          </div>
+          <div className="reveal">
+            <a
+              href={FREE_CHECKLIST_URL}
+              rel="noopener"
+              className="link-underline text-lg font-semibold"
+            >
+              Get the free checklist{' '}
+              <span className="nudge" aria-hidden="true">
+                →
+              </span>
+            </a>
+            <p className="mt-4 text-[15px] leading-relaxed text-ink-muted">
+              It’s free, a 15-page PDF. It’s hosted on Gumroad, which asks for your email address to
+              send the file.
+            </p>
+          </div>
         </Section>
 
         {/* Who */}

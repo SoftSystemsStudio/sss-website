@@ -15,6 +15,7 @@ import {
   type LogEntry,
 } from './github';
 import type { CallModel } from './models';
+import { NotifyError, type Notify, type NotifyEvent } from './notify';
 import { seoReport, type SeoItem } from './seo';
 import { research, review, write } from './stages';
 import type { Brief, ReviewResult, RunOutcome, SkipReason } from './types';
@@ -34,6 +35,16 @@ export interface RunDeps {
   existingPosts: { slug: string; title: string; body: string }[];
   dryRun: boolean;
   outDir?: string;
+  /**
+   * Called once per real run (never a dry run) after the outcome is final and its log
+   * write was attempted: a PR, or a skip other than gate-full and already-ran-today.
+   */
+  notify?: Notify;
+  /**
+   * Scheduled runs only (`--daily-gate`): skip as already-ran-today when the run log has
+   * a non-error entry dated today (UTC) or a draft PR was opened today. Ignored on a dry run.
+   */
+  dailyGate?: boolean;
 }
 
 /** Posts in `dir` (the content dir on main), bodies without frontmatter. */
@@ -68,13 +79,14 @@ const logEntrySchema = z.object({
   detail: z.string(),
 });
 
+type ParsedLogEntry = z.infer<typeof logEntrySchema>;
+
 /**
- * Turns raw log comment bodies into short lines for the researcher. Anything that is
- * not one well-formed entry (free text, edited JSON, wrong fields) is dropped, never
- * passed through; long fields are capped. Keeps the last RECENT_LOG_LIMIT entries.
+ * The well-formed entries among raw log comment bodies, oldest first. Anything that is
+ * not one well-formed entry (free text, edited JSON, wrong fields) is dropped.
  */
-export function formatLogLines(raw: string[]): string[] {
-  const lines: string[] = [];
+function parseLogEntries(raw: string[]): ParsedLogEntry[] {
+  const entries: ParsedLogEntry[] = [];
   for (const body of raw) {
     const m = /^\s*(?:```(?:json)?\s*\n)?([\s\S]*?)(?:\n```)?\s*$/.exec(body.slice(0, 4000));
     let parsed: unknown;
@@ -84,12 +96,42 @@ export function formatLogLines(raw: string[]): string[] {
       continue;
     }
     const r = logEntrySchema.safeParse(parsed);
-    if (!r.success) continue;
-    const e = r.data;
-    const topic = e.topic ? ` [${clip(e.topic, LOG_TOPIC_MAX)}]` : '';
-    lines.push(`${e.date} ${e.outcome}${topic}: ${clip(e.detail, LOG_DETAIL_MAX)}`);
+    if (r.success) entries.push(r.data);
   }
-  return lines.slice(-RECENT_LOG_LIMIT);
+  return entries;
+}
+
+/**
+ * Turns raw log comment bodies into short lines for the researcher. Anything that is
+ * not one well-formed entry (free text, edited JSON, wrong fields) is dropped, never
+ * passed through; long fields are capped. Keeps the last RECENT_LOG_LIMIT entries.
+ */
+export function formatLogLines(raw: string[]): string[] {
+  return parseLogEntries(raw)
+    .map((e) => {
+      const topic = e.topic ? ` [${clip(e.topic, LOG_TOPIC_MAX)}]` : '';
+      return `${e.date} ${e.outcome}${topic}: ${clip(e.detail, LOG_DETAIL_MAX)}`;
+    })
+    .slice(-RECENT_LOG_LIMIT);
+}
+
+/**
+ * Why a scheduled run should stop because today's run already happened, or null.
+ * Counts a well-formed log entry dated `date` with any outcome but `error` (so a failed
+ * run is retried by the next slot), and a draft PR opened today: an open one on a
+ * `blog/<date>-` branch, or a merged one created on `date` (closed PRs carry no branch).
+ */
+export function ranToday(date: string, rawLog: string[], prs: DraftPr[]): string | null {
+  const logged = parseLogEntries(rawLog).find((e) => e.date === date && e.outcome !== 'error');
+  if (logged) return `the run log already has a ${logged.outcome} entry for ${date}`;
+  const prefix = `blog/${date}-`;
+  const draft = prs.find(
+    (p) =>
+      p.branch.startsWith(prefix) ||
+      ((p.state === 'open' || p.merged) && p.createdAt.slice(0, 10) === date),
+  );
+  if (draft) return `draft PR #${draft.number} was already opened for ${date}`;
+  return null;
 }
 
 // ---------- PR body ----------
@@ -333,16 +375,45 @@ export class LogWriteError extends Error {
  * run-log entry could not be written, throws LogWriteError carrying the outcome.
  */
 export async function runPipeline(deps: RunDeps): Promise<RunOutcome> {
-  const state: { logFailure?: string } = {};
+  const state: RunState = {};
   const outcome = await runStages(deps, state);
-  if (state.logFailure !== undefined) throw new LogWriteError(outcome, state.logFailure);
+  const logError =
+    state.logFailure !== undefined ? new LogWriteError(outcome, state.logFailure) : undefined;
+  // Last, after the log write was attempted: a notification problem can never stop the
+  // log entry or undo a PR. Its error carries only a status, never the webhook URL.
+  const event = deps.notify && !deps.dryRun ? notifyEventFor(outcome, state.pr) : null;
+  if (deps.notify && event) {
+    try {
+      await deps.notify(event);
+    } catch (err) {
+      throw new NotifyError(err instanceof NotifyError ? err.status : 'error', outcome, logError);
+    }
+  }
+  if (logError) throw logError;
   return outcome;
+}
+
+/** What runStages records beyond the outcome itself. */
+interface RunState {
+  logFailure?: string;
+  /** Set when a real PR was opened: the details its notification carries. */
+  pr?: Omit<Extract<NotifyEvent, { kind: 'pr' }>, 'kind' | 'url'>;
+}
+
+/** Skips that are not worth a message: drafts are already waiting, or today already ran. */
+const QUIET_SKIPS = new Set<SkipReason>(['gate-full', 'already-ran-today']);
+
+function notifyEventFor(outcome: RunOutcome, pr: RunState['pr']): NotifyEvent | null {
+  if (outcome.kind === 'pr') return { kind: 'pr', url: outcome.url, title: '', ...pr };
+  if (QUIET_SKIPS.has(outcome.reason)) return null;
+  return { kind: 'skipped', reason: outcome.reason, detail: outcome.detail };
 }
 
 /**
  * Runs `run`, prints the outcome as one JSON line, and returns the process exit code:
- * 0 for any outcome, 1 for a thrown error. A LogWriteError still prints its (final)
- * outcome first, then the log failure, and exits 1. Messages carry no secrets.
+ * 0 for any outcome, 1 for a thrown error. A LogWriteError or a NotifyError still prints
+ * its (final) outcome first, then the log failure and/or the notification failure, and
+ * exits 1. Messages carry no secrets.
  */
 export async function reportRun(
   run: () => Promise<RunOutcome>,
@@ -352,6 +423,12 @@ export async function reportRun(
     out.log(JSON.stringify(await run()));
     return 0;
   } catch (err) {
+    if (err instanceof NotifyError && err.outcome) {
+      out.log(JSON.stringify(err.outcome));
+      if (err.logFailure) out.error(`blog pipeline: ${err.logFailure.message}`);
+      out.error(`blog pipeline: ${err.message}`);
+      return 1;
+    }
     if (err instanceof LogWriteError) {
       out.log(JSON.stringify(err.outcome));
       out.error(`blog pipeline: ${err.message}`);
@@ -362,7 +439,7 @@ export async function reportRun(
   }
 }
 
-async function runStages(deps: RunDeps, state: { logFailure?: string }): Promise<RunOutcome> {
+async function runStages(deps: RunDeps, state: RunState): Promise<RunOutcome> {
   const { call, gh, dryRun } = deps;
   const now = deps.now();
   const date = now.toISOString().slice(0, 10);
@@ -429,8 +506,16 @@ async function runStages(deps: RunDeps, state: { logFailure?: string }): Promise
 
   let topic: string | undefined;
   try {
-    // 0. Stale drafts, then the open-drafts gate.
+    // 0. Once-a-day gate (scheduled real runs), stale drafts, then the open-drafts gate.
     const prs = await gh.listDraftPrs();
+    // The gate needs the log, so a gated run reads it here once; the researcher reuses it.
+    const gate = Boolean(deps.dailyGate) && !dryRun;
+    let rawLog = gate ? await gh.readLog(RECENT_LOG_LIMIT) : undefined;
+    if (rawLog) {
+      const why = ranToday(date, rawLog, prs);
+      // Returned directly, not via skip(): nothing is logged, closed or notified.
+      if (why) return { kind: 'skipped', reason: 'already-ran-today', detail: why };
+    }
     const staleBefore = now.getTime() - STALE_DAYS * DAY_MS;
     const isStale = (p: DraftPr) => p.state === 'open' && Date.parse(p.createdAt) < staleBefore;
     for (const p of prs.filter(isStale)) {
@@ -447,7 +532,8 @@ async function runStages(deps: RunDeps, state: { logFailure?: string }): Promise
     }
 
     // 1. Research.
-    const recentLog = formatLogLines(await gh.readLog(RECENT_LOG_LIMIT));
+    rawLog ??= await gh.readLog(RECENT_LOG_LIMIT);
+    const recentLog = formatLogLines(rawLog);
     const found = await research(call, {
       existingTitles: [
         ...deps.existingPosts.map((p) => p.title),
@@ -597,6 +683,13 @@ async function runStages(deps: RunDeps, state: { logFailure?: string }): Promise
       title: `Blog: ${title}`,
       body,
     });
+    state.pr = {
+      title,
+      competition: brief.competition,
+      pillar: brief.pillar,
+      seoOk: seo.filter((i) => i.ok).length,
+      seoTotal: seo.length,
+    };
     await log('pr', url, topic);
     return { kind: 'pr', url };
   } catch (err) {

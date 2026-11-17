@@ -3,7 +3,7 @@
  * today. The webhook URL is a secret (anyone holding it can post to the channel), so
  * nothing here ever logs it or puts it, or any part of it, in an error.
  */
-import type { SkipReason } from './types';
+import type { RunOutcome, SkipReason } from './types';
 
 export type NotifyEvent =
   | {
@@ -38,14 +38,21 @@ const WEBHOOK_PATH_RE = /^\/api\/webhooks\/\d{1,25}\/[A-Za-z0-9_-]{1,200}$/;
 /**
  * Thrown when a notification could not be delivered. Carries only the HTTP status (or
  * `network error` / `timeout`) and a fixed message: never the URL, the response body or
- * the underlying error. When runPipeline throws it, the run's outcome is already final.
+ * the underlying error. When runPipeline throws it, `outcome` is set and already final
+ * (a PR it opened stays open), and `logFailure` is set when the run-log write failed too.
  */
 export class NotifyError extends Error {
-  constructor(readonly status: number | 'network error' | 'timeout' | 'invalid event' | 'error') {
+  constructor(
+    readonly status: NotifyStatus,
+    readonly outcome?: RunOutcome,
+    readonly logFailure?: Error,
+  ) {
     super(`Discord notification failed: ${status}`);
     this.name = 'NotifyError';
   }
 }
+
+export type NotifyStatus = number | 'network error' | 'timeout' | 'invalid event' | 'error';
 
 /**
  * One line of plain text that cannot ping, link or format: whitespace collapsed,

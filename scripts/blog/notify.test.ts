@@ -134,8 +134,8 @@ test('odd SEO counts are left out rather than printed', () => {
     [12, 11],
     [1.5, 11],
   ]) {
-    const c = formatNotification({ ...PR_EVENT, seoOk, seoTotal }).content;
-    assert.equal(c.includes('SEO'), false, `${seoOk}/${seoTotal}`);
+    const content: string = formatNotification({ ...PR_EVENT, seoOk, seoTotal }).content;
+    assert.equal(content.includes('SEO'), false, `${seoOk}/${seoTotal}`);
   }
 });
 

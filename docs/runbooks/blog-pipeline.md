@@ -30,7 +30,7 @@ Actions tab, **Blog draft**, **...** menu, **Disable workflow**. Enable it again
 
 ## Run it manually
 
-Actions tab, **Blog draft**, **Run workflow**. The **Dry run** box is ticked by default: it writes the draft to the `blog-dry-run` artifact (kept 14 days) and changes nothing on GitHub. Check the artifact, then run again with the box unticked for a real run that opens a PR.
+Actions tab, **Blog draft**, **Run workflow**. The **Dry run** box is ticked by default: it writes the draft to the `blog-dry-run` artifact (kept 14 days) and changes nothing on GitHub. A draft that fails the code checks or is rejected by the reviewer is kept there too, as `<slug>.rejected.md`: a comment at the top lists the skip reason, the failing check codes and messages, and the reviewer's verdict and notes (the run is still a `skipped` outcome; real runs never write these files). Check the artifact, then run again with the box unticked for a real run that opens a PR.
 
 ## Secrets
 
@@ -59,7 +59,9 @@ A skipped run logs one of these (`SkipReason` in `scripts/blog/types.ts`):
 - `checks-failed`: the draft failed a code check; the detail lists the codes.
 - `slug-collision`: a post, an open draft PR or today's branch already uses the slug.
 
-Check codes (`scripts/blog/checks.ts`): `frontmatter`, `word-count`, `banned-phrase` (title, description and body), `raw-html`, `off-source-link` (a body link that is not one of the draft's sources or `/pricing`, `/blog`, `/intake`, a `/web-design/<town>` page, or `/blog/<slug>` for a post already on main; mailto links count), `unknown-token`, `studio-literal` (title, description and body), `unsourced-dollar`, `duplicate`, `copied`, `source-url`.
+Check codes (`scripts/blog/checks.ts`): `frontmatter`, `word-count`, `banned-phrase` (title, description and body), `raw-html`, `off-source-link` (a body link that is not one of the draft's sources or `/pricing`, `/blog`, `/intake`, a `/web-design/<town>` page, or `/blog/<slug>` for a post already on main; mailto links count), `unknown-token`, `studio-literal` (title, description and body), `unsourced-dollar` (title, description and body), `duplicate`, `copied`, `source-url`.
+
+`studio-literal` keeps the studio's own prices on `{{TOKENS}}` so a post can never contradict `/pricing`. It sorts the studio amounts from `lib/business.ts` into two classes (`STUDIO_DISTINCT_LITERALS` and `STUDIO_LITERALS` in `lib/blog-tokens.ts`). The headline package prices (Starter, Business, Growth) never look like market prices, so typing one fails anywhere, in any form (`$ 997`, `997 dollars`, `US$997`, a range), and a source link never excuses it. Every other studio amount (add-ons, Care Plans, the Custom starting point) is common in market figures, so it fails only when the same paragraph (or the title, or the description) talks about the studio: `studio`, `Soft Systems`, `we`, `our`, `us`, `I`, `my`, a package name followed by "package" or "plan", `Care Plan`, `add-on`, `retainer` or `hosting plan`. Otherwise it is an ordinary number: `unsourced-dollar` lets it through only with an http(s) source link in the same paragraph, so "Many agencies quote $500 to $2,000, according to [a source](...)" passes and "We charge $500" fails. The title and description have no links, so any dollar amount there fails `unsourced-dollar`.
 
 ## Take a post down
 

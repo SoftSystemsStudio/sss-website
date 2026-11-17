@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { resolveTokens, listTokens, UnknownTokenError, STUDIO_LITERALS } from './blog-tokens';
-import { BUILD_FROM, BUILD_PACKAGES, getPackage } from './business';
+import { BUILD_FROM, BUILD_PACKAGES, CARE_PLANS, getPackage } from './business';
 
 test('resolves named tokens', () => {
   assert.equal(resolveTokens('From {{BUILD_FROM}}'), `From ${BUILD_FROM}`);
@@ -30,4 +30,5 @@ test('listTokens', () => {
 test('STUDIO_LITERALS covers prices', () => {
   assert.ok(STUDIO_LITERALS.includes(BUILD_FROM));
   for (const p of BUILD_PACKAGES) assert.ok(STUDIO_LITERALS.includes(p.price));
+  for (const p of CARE_PLANS) assert.ok(STUDIO_LITERALS.includes(p.price), p.name);
 });

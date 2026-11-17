@@ -1,16 +1,23 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { CallModel, ModelRequest } from './models';
 import { LOG_ISSUE_TITLE } from './config';
 import { createGitHubClient, type DraftPr, type GitHubClient, type LogEntry } from './github';
-import { formatLogLines, loadExistingPosts, LogWriteError, reportRun, runPipeline } from './run';
+import {
+  formatLogLines,
+  loadExistingPosts,
+  LogWriteError,
+  rejectedDraft,
+  reportRun,
+  runPipeline,
+} from './run';
 import { ModelOutputError, slugify } from './stages';
 import { pillarOf } from './pillars';
-import { CHECKLIST_KEYS, type Brief } from './types';
+import { CHECKLIST_KEYS, type Brief, type ReviewResult } from './types';
 
 const NOW = new Date('2026-11-16T09:00:00Z');
 const DAY = 86_400_000;
@@ -508,6 +515,140 @@ test('dry run skip outcomes write nothing and touch no log', async () => {
     assert.equal(outcome.kind === 'skipped' && outcome.reason, 'no-topic');
     assert.equal(methods(ghCalls).includes('appendLog'), false);
     assert.equal(existsSync(join(outDir, `${SLUG}.md`)), false);
+  } finally {
+    rmSync(outDir, { recursive: true, force: true });
+  }
+});
+
+test('dry run checks-failed: the draft is kept as <slug>.rejected.md with the failing checks', async () => {
+  const outDir = mkdtempSync(join(tmpdir(), 'blog-dry-'));
+  try {
+    const bad = writerReply(validBody('Our Starter package is $997.'));
+    const { call } = scripted([TOPIC, bad, reviewReply('pass', ['reads well'])]);
+    const { gh, calls: ghCalls } = fakeGh();
+    const outcome = await runPipeline(deps(call, gh, { dryRun: true, outDir }));
+
+    // Same outcome as a real run would report.
+    const real = await runPipeline(
+      deps(scripted([TOPIC, bad, reviewReply('pass', ['reads well'])]).call, fakeGh().gh),
+    );
+    assert.deepEqual(outcome, real);
+    assert.equal(outcome.kind === 'skipped' && outcome.reason, 'checks-failed');
+
+    assert.equal(existsSync(join(outDir, `${SLUG}.md`)), false);
+    const kept = readFileSync(join(outDir, `${SLUG}.rejected.md`), 'utf8');
+    assert.ok(kept.startsWith('<!--'), 'header is an HTML comment before the post');
+    assert.match(kept, /checks-failed/);
+    assert.match(
+      kept,
+      /studio-literal: Studio price amount 997 typed literally; use a \{\{TOKEN\}\}\./,
+    );
+    assert.match(kept, /Reviewer verdict: pass/);
+    assert.match(kept, /reads well/);
+    // The post itself follows the header unchanged.
+    assert.ok(kept.includes(`slug: "${SLUG}"`));
+    assert.ok(kept.includes('Our Starter package is $997.'));
+    for (const m of methods(ghCalls)) {
+      assert.ok(['listDraftPrs', 'readLog'].includes(m), `unexpected ${m}`);
+    }
+  } finally {
+    rmSync(outDir, { recursive: true, force: true });
+  }
+});
+
+test('dry run reviewer-reject: the draft is kept with the verdict and notes', async () => {
+  const outDir = mkdtempSync(join(tmpdir(), 'blog-dry-'));
+  try {
+    const { call } = scripted([
+      TOPIC,
+      writerReply(),
+      reviewReply('reject', ['claim not in sources', 'closes with -->']),
+    ]);
+    const { gh, calls: ghCalls } = fakeGh();
+    const outcome = await runPipeline(deps(call, gh, { dryRun: true, outDir }));
+    assert.equal(outcome.kind === 'skipped' && outcome.reason, 'reviewer-reject');
+    const kept = readFileSync(join(outDir, `${SLUG}.rejected.md`), 'utf8');
+    assert.match(kept, /reviewer-reject/);
+    assert.match(kept, /Reviewer verdict: reject/);
+    assert.match(kept, /claim not in sources/);
+    // A note cannot close the header comment early.
+    assert.equal(kept.indexOf('-->'), kept.lastIndexOf('-->'));
+    assert.ok(kept.includes(`slug: "${SLUG}"`));
+    assert.equal(methods(ghCalls).includes('appendLog'), false);
+  } finally {
+    rmSync(outDir, { recursive: true, force: true });
+  }
+});
+
+test('rejectedDraft caps each note and message at 500 characters and the header at about 4,000', () => {
+  const long = 'x'.repeat(2000);
+  const one = rejectedDraft({
+    markdown: 'POST',
+    reason: 'checks-failed',
+    detail: long,
+    failures: [{ code: 'studio-literal', message: long }],
+    review: { verdict: 'pass', notes: [long], checklist: {} } as unknown as ReviewResult,
+  });
+  for (const line of one.split('\n')) assert.ok(line.length <= 520, `line of ${line.length}`);
+  const many = rejectedDraft({
+    markdown: 'POST',
+    reason: 'reviewer-reject',
+    detail: 'reject',
+    failures: Array.from({ length: 40 }, () => ({ code: 'copied', message: long })),
+    review: {
+      verdict: 'reject',
+      notes: Array.from({ length: 40 }, () => long),
+      checklist: {},
+    } as unknown as ReviewResult,
+  });
+  const header = many.slice(0, many.indexOf('-->') + 3);
+  assert.ok(header.length <= 4100, `header of ${header.length}`);
+  assert.ok(many.endsWith('-->\nPOST'), 'the post follows the closed header unchanged');
+});
+
+test('a dry run that cannot write the rejected draft still skips with the same outcome and exit 0', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'blog-dry-'));
+  const notADir = join(dir, 'a-file');
+  writeFileSync(notADir, 'x');
+  const errors: string[] = [];
+  const original = console.error;
+  console.error = (...a: unknown[]) => errors.push(a.join(' '));
+  try {
+    const bad = writerReply(validBody('Our Starter package is $997.'));
+    const { call } = scripted([TOPIC, bad, reviewReply('pass')]);
+    const { out, err, sink } = capture();
+    const code = await reportRun(
+      () => runPipeline(deps(call, fakeGh().gh, { dryRun: true, outDir: notADir })),
+      sink,
+    );
+    assert.equal(code, 0);
+    assert.deepEqual(err, []);
+    const outcome = JSON.parse(out[0]);
+    const real = await runPipeline(
+      deps(scripted([TOPIC, bad, reviewReply('pass')]).call, fakeGh().gh),
+    );
+    assert.deepEqual(outcome, real);
+    assert.equal(errors.length, 1);
+    assert.match(errors[0], /rejected draft/);
+    assert.ok(!errors[0].includes(dir), 'the stderr line names no path');
+  } finally {
+    console.error = original;
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('a real run that fails checks or is rejected writes no files', async () => {
+  const outDir = mkdtempSync(join(tmpdir(), 'blog-real-'));
+  try {
+    for (const replies of [
+      [TOPIC, writerReply(validBody('Our Starter package is $997.')), reviewReply('pass')],
+      [TOPIC, writerReply(), reviewReply('reject')],
+    ]) {
+      const { call } = scripted(replies);
+      const outcome = await runPipeline(deps(call, fakeGh().gh, { outDir }));
+      assert.equal(outcome.kind, 'skipped');
+    }
+    assert.deepEqual(readdirSync(outDir), []);
   } finally {
     rmSync(outDir, { recursive: true, force: true });
   }

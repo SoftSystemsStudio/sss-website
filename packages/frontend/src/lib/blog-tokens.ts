@@ -3,6 +3,7 @@ import {
   BUILD_ADD_ONS,
   BUILD_FROM,
   BUILD_PACKAGES,
+  CARE_PLANS,
   HOME_BASE,
   RETAINER_MAX,
   RETAINER_MIN,
@@ -62,5 +63,16 @@ export const STUDIO_LITERALS: string[] = Array.from(
     RETAINER_MAX,
     RETAINER_RANGE,
     SECURE_CARE_PLAN_RANGE,
+    ...CARE_PLANS.map((p) => p.price),
   ]),
+);
+
+/**
+ * The headline package prices (Starter, Business, Growth). They essentially never
+ * coincide with market prices, so a post must never type them, whatever the context.
+ * Every other STUDIO_LITERALS amount is ambiguous: a typed one only counts as a studio
+ * price when its paragraph talks about the studio (see scripts/blog/checks.ts).
+ */
+export const STUDIO_DISTINCT_LITERALS: string[] = (['starter', 'business', 'growth'] as const).map(
+  (id) => getPackage(id).price,
 );

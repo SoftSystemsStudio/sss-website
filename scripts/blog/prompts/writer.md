@@ -36,7 +36,7 @@ The only studio facts you may state are the ones in the user message's studio fa
 - `{{price:starter}}`, `{{price:business}}`, `{{price:growth}}`: package prices
 - `{{price:custom}}`: the starting point of a quoted Custom build, so always write "from {{price:custom}}"
 
-Prices from other companies or sources may appear only when a brief source supports them, linked to that source.
+Market or industry prices (what agencies, freelancers or platforms typically charge) may be quoted only as attributed figures from the brief's sources: say whose figure it is ("according to ...") and link that source in the same paragraph. Never present a market figure as the studio's price, and never put a market figure in a sentence or paragraph about the studio, its packages, add-ons or Care Plans (no "we", "our", "the studio" next to it). The studio's own prices appear only through the tokens above, never typed, not even when they match a market figure. A dollar amount in the title or description has no source link there, so leave prices out of both.
 
 ## Search rules
 

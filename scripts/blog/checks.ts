@@ -3,6 +3,7 @@ import { postFrontmatterSchema, WORD_RANGE } from '../../packages/frontend/src/l
 import {
   listTokens,
   resolveTokens,
+  STUDIO_DISTINCT_LITERALS,
   STUDIO_LITERALS,
 } from '../../packages/frontend/src/lib/blog-tokens';
 import { CITY_PAGES } from '../../packages/frontend/src/lib/cities';
@@ -149,22 +150,53 @@ function offSourceLinks(body: string, sourceUrls: string[], postSlugs: Set<strin
   return [...new Set(dests.filter((d) => !isAllowedLink(d.trim(), sources, postSlugs)))];
 }
 
-/** Every distinct studio price amount (digits only, no commas), derived from STUDIO_LITERALS. */
-function studioAmounts(): Set<string> {
+/** Amounts (digits only, no commas) in the given price strings: "$1,500" -> "1500". */
+function amountsIn(literals: string[]): Set<string> {
   const out = new Set<string>();
-  for (const lit of STUDIO_LITERALS) {
+  for (const lit of literals) {
     for (const m of lit.matchAll(/\d[\d,]*/g)) out.add(m[0].replace(/,/g, ''));
   }
   return out;
 }
 
-/** Studio amounts typed as "$997", "$ 997", "997 dollars", "USD 997". A link never excuses these. */
-function typedStudioAmounts(body: string): string[] {
-  const amounts = studioAmounts();
+/** Headline package prices: typing one is always a studio-literal failure. */
+const DISTINCT_AMOUNTS = amountsIn(STUDIO_DISTINCT_LITERALS);
+/** Every other studio amount: a failure only next to studio-context wording. */
+const AMBIGUOUS_AMOUNTS = new Set(
+  [...amountsIn(STUDIO_LITERALS)].filter((n) => !DISTINCT_AMOUNTS.has(n)),
+);
+
+/**
+ * Signals that make an amount in the same paragraph a claim about the studio's own
+ * price. The writer must name the studio's packages and prices through tokens, so a
+ * token is the strong signal; typed product words are kept narrow (branded, capitalised
+ * forms only) so ordinary market wording ("care plans", "hosting plan", "we", "I paid")
+ * never counts.
+ */
+const STUDIO_CONTEXT_RES: RegExp[] = [
+  /\{\{\s*[A-Za-z_]+(?::[A-Za-z0-9_-]+)?\s*\}\}/, // any studio token
+  /\bsoft systems\b/i,
+  /\bthe studio\b/i,
+  /\b(?:Starter|Business|Growth|Custom) (?:package|plan)\b/,
+  /\bCare Plans?\b/,
+];
+
+function hasStudioContext(text: string): boolean {
+  return STUDIO_CONTEXT_RES.some((re) => re.test(text));
+}
+
+/**
+ * Studio amounts typed as "$997", "$ 997", "997 dollars", "USD 997" in one paragraph
+ * (or the title, or the description). A distinct package price always counts and a
+ * link never excuses it; an ambiguous amount counts only when the same paragraph has
+ * studio-context wording, otherwise it is a generic number for the unsourced-dollar rule.
+ */
+function typedStudioAmounts(para: string): string[] {
+  const context = hasStudioContext(para);
   const found = new Set<string>();
-  for (const m of body.matchAll(TYPED_AMOUNT_RE)) {
+  for (const m of para.matchAll(TYPED_AMOUNT_RE)) {
     const n = (m[1] ?? m[2]).replace(/,/g, '');
-    if (amounts.has(n)) found.add(n);
+    if (DISTINCT_AMOUNTS.has(n) || (context && AMBIGUOUS_AMOUNTS.has(n))) found.add(n);
   }
   return [...found];
 }
@@ -249,14 +281,20 @@ export function runChecks(input: {
     failures.push({ code: 'unknown-token', message: `Unknown token {{${t}}}.` });
   }
 
-  for (const n of typedStudioAmounts(allText)) {
+  // The title and the description are each their own paragraph (with no links).
+  const paragraphs = [
+    str(parsed.data.title),
+    str(parsed.data.description),
+    ...body.split(/\n\s*\n/),
+  ];
+  for (const n of new Set(paragraphs.flatMap(typedStudioAmounts))) {
     failures.push({
       code: 'studio-literal',
       message: `Studio price amount ${n} typed literally; use a {{TOKEN}}.`,
     });
   }
 
-  for (const para of body.split(/\n\s*\n/)) {
+  for (const para of paragraphs) {
     // A link only excuses non-studio amounts, and only an http(s) link counts as a source.
     if (DOLLAR_RE.test(para) && !HTTP_LINK_RE.test(para)) {
       failures.push({

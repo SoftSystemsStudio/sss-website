@@ -220,7 +220,7 @@ skip days. Austin sets a monthly spend limit on the Anthropic key as a hard cap.
   GitHub App) if Austin prefers one; test strategy for the pipeline (unit tests
   with recorded model output are enough; no live-API tests in CI).
 
-## SEO upgrade 2026-11-17
+## SEO upgrade 2026-11-16
 
 The first live draft picked a national query ("should I hide my home address on
 google business profile") whose page one belongs to Google's help pages and
@@ -229,12 +229,15 @@ Domain Rating around 7 that post could not rank. What changed, where it now diff
 from the design above:
 
 - **Researcher.** Besides the fields in step 1, the brief carries `pillar` (one of
-  `TOPIC_PILLARS` in `scripts/blog/config.ts`, the pillar existing posts cover least),
+  `TOPIC_PILLARS` in `scripts/blog/config.ts`; code orders them least covered first from
+  the draft PRs' `**Pillar:**` lines, ties rotating by date, and the researcher takes the
+  first with a winnable topic),
   `competition` (`low`, `medium` or `high`, from judging page one for the exact target
   query), `serpNotes` (who ranks and why the studio can or cannot compete) and optional
   `relatedQuestions`. It prefers narrow, local, question-form queries with a town or
-  trade modifier, and national platform-policy topics are out. A `high` brief is
-  skipped in code as `no-topic`, whatever the model says.
+  trade modifier, and national platform-policy topics are out. When the model rates its own brief
+  `high`, code skips it as `no-topic`; the rating is still the model's judgement, so Austin
+  should read `serpNotes` in the PR.
 - **Writer.** On-page search rules (60-character title, 120-155 character
   description, a direct 40-60 word answer first, question-style H2s, a practical next
   step) and 2-3 internal links to `/pricing`, a `/web-design/<town>` page or an earlier

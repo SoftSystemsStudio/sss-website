@@ -16,6 +16,10 @@ sources:
     title: "Manage your service areas for service-area & hybrid businesses - Google Business Profile Help"
   - url: "https://support.google.com/business/answer/7107242?hl=en"
     title: "Verify your business on Google - Google Business Profile Help"
+  - url: "https://whitespark.ca/blog/should-service-area-businesses-show-or-hide-their-address-for-local-seo/"
+    title: "Should Service Area Businesses Show or Hide Their Address for Local SEO"
+  - url: "https://www.sterlingsky.ca/hiding-address-google-business-ranking/"
+    title: "Does Hiding Your Address Impact your Google Business Profile Ranking?"
 ---
 
 If you run a business from your house, the address on your Google Business Profile can feel like an invitation for strangers to knock on your door. The short answer: if customers never come to your home, hide it and list the towns you serve instead. If they do come to you, the answer is a little different. This post explains how to tell which situation you are in.
@@ -44,6 +48,14 @@ This only makes sense if you have a place customers can actually visit. A home w
 
 Then you are a regular storefront-style business, and your address should be visible so people can find you. Hiding it would work against you.
 
+## Does hiding your address cost you visibility?
+
+Possibly, and specialists disagree. Whitespark's Darren Shaw [argues](https://whitespark.ca/blog/should-service-area-businesses-show-or-hide-their-address-for-local-seo/) that showing or hiding the address has no direct effect on rankings. His caution is that Google seems to use your verification address as the center of your area, so a business that moved and then hid its address may lose ground near the new spot.
+
+Joy Hawkins of Sterling Sky [describes the opposite](https://www.sterlingsky.ca/hiding-address-google-business-ranking/) in a few home-service listings: rankings and calls appeared to fall after the address was removed and recover when it came back. She calls the sample small and the cause unproven, and notes that hiding also removes the map pin and directions button.
+
+Treat this as a tradeoff, not a rule. Privacy usually wins for a home-based business, so keep your verification address current, list your towns accurately, and compare how you appear in those towns before and after the change.
+
 ## How to list your service area
 
 If you are in the first or second group, you will need to tell Google where you work. A few things to know:
@@ -67,7 +79,7 @@ Before that, you will likely need to confirm your business with Google. The [ver
 3. If yes, enter both your address and your service area.
 4. List towns by name or postal code, and keep the list to places you really serve.
 5. Complete verification using whichever option Google offers you.
-6. Check your profile afterward the way a customer would, to confirm your home address is not showing and your towns are.
+6. Check your profile afterward the way a customer would, to confirm your home address is not showing and your towns are, and note how you appear in each town.
 
 ## Keep the rest of your information consistent
 
@@ -75,4 +87,4 @@ Hiding your address on Google does not do anything to the rest of the internet. 
 
 ## The bottom line
 
-If you work from home and go to your customers, hiding your address and listing your service area is what Google expects, and it keeps your front door out of public view. If customers visit you at a real location, show the address, and add the service area if you also travel. Either way, take a few minutes to choose your towns carefully, since that list is what tells nearby customers you cover their part of the map.
+If you work from home and go to your customers, hiding your address and listing your service area is what Google's guidelines call for, and it keeps your front door out of public view, though some specialists report a visibility cost. If customers visit you at a real location, show the address, and add the service area if you also travel. Either way, take a few minutes to choose your towns carefully, since that list is what tells nearby customers you cover their part of the map.

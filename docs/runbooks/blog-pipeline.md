@@ -15,10 +15,12 @@ Every outcome (opened, skipped, failed) is logged on the issue titled **Blog pip
 
 GitHub does not guarantee scheduled runs: it can delay one or skip it entirely. So the workflow has three schedules, all UTC: **11:17** (the main run) and two backups, **14:41** and **19:23**. Scheduled runs (and only they) pass `--daily-gate`. Right after listing the draft PRs, a gated run reads the run log and stops as `already-ran-today`, before any model call and without writing a log entry or sending a notification, when either:
 
-- the log has an entry dated today (UTC, from the run's clock) whose outcome is anything but `error`: a PR or any skip counts, so a no-topic day is not retried three times, but a run that failed is retried by the next slot; or
+- the log has an entry dated today (UTC, from the run's clock) whose outcome is anything but `error`: a PR or any skip counts, including `gate-full`, so a no-topic or full day is not retried three times, but a run that failed is retried by the next slot; or
 - a draft PR was already opened today: an open one on a `blog/<today>-...` branch, or a merged one created today.
 
-Manual runs (**Run workflow**, dry or real) are never gated, and a dry run is never gated even with the flag. All three slots share the workflow's concurrency group, so a slot that starts while another is still running waits instead of racing it; it then hits the gate and exits cheaply, costing about a minute of runner time.
+**Closing today's draft does not bring a replacement.** The morning run's `pr` log entry already counts as today's run, so the backup slots stop at the gate whether you merge, close or leave the draft (one draft a day, and no reject-then-redraft loop burning model calls). To get another draft the same day, start a manual run: Actions, **Blog draft**, **Run workflow**, untick **Dry run**. Manual runs (dry or real) are never gated, and a dry run is never gated even with the flag.
+
+All three slots share the workflow's concurrency group, so a slot that starts while another is still running waits instead of racing it; it then hits the gate and exits cheaply, costing about a minute of runner time. The group keeps at most one waiting run, and a newer one cancels the older waiting one, so a manual run started while a scheduled slot is waiting can cancel that slot (and the reverse); the later slots cover it.
 
 ## Discord notification
 
@@ -27,7 +29,7 @@ When the `DISCORD_WEBHOOK_URL` secret is set, every real run posts one message t
 - a new draft: `New blog draft ready to review: <title> - <PR link> (competition: ..., pillar: ..., SEO checks passed: x/y). Read it in the Vercel preview on the PR, then merge to publish or close to reject.`
 - a skipped day: `No blog draft today (<reason>): <detail>`, for every skip reason except `gate-full` (three drafts are already waiting for you) and `already-ran-today`.
 
-Messages are one line of plain text (at most 1,800 characters, title capped at 150 and detail at 200, with mentions, links and markup neutralised) and are sent with mentions switched off, so they can never ping anyone. Any red run (exit 1, including a failed notification) also posts `Blog draft workflow failed: <run link>` from a final workflow step, for scheduled and manual runs, dry or real.
+Messages are one line of plain text (at most 1,800 characters, title capped at 150 and detail at 200, cut by whole characters). Model-written text cannot ping, link or format: mentions, markdown links, backticks and angle brackets are neutralised, and any `scheme://` or `www.` in it gets an invisible break so Discord does not turn it into a link; only the PR link itself is clickable. Messages are sent with mentions switched off and link previews suppressed. Any red run (exit 1, including a failed notification) or a cancelled one (for example the 20-minute timeout) also posts `Blog draft workflow failed or was cancelled: <run link>` from a final workflow step, for scheduled and manual runs, dry or real.
 
 Why Discord: the bot opens PRs with Austin's own token, so GitHub does not notify him about them.
 
@@ -37,7 +39,7 @@ Why Discord: the bot opens PRs with Austin's own token, so GitHub does not notif
 gh secret set DISCORD_WEBHOOK_URL --repo SoftSystemsStudio/sss-website
 ```
 
-The URL must be `https://discord.com/api/webhooks/<id>/<token>` (or `discordapp.com`, optionally with `?wait=true`); anything else fails the run at startup. Treat it like a password: anyone holding it can post to the channel. The pipeline never prints it.
+Use the plain `https://discord.com/api/webhooks/<id>/<token>` form exactly as Copy Webhook URL gives it (`discordapp.com` and a trailing `?wait=true` are also accepted). The pipeline refuses anything else (a `canary.` or `ptb.` host, `/api/v10/`, `?thread_id=...`) and exits 1 at start, with an error saying what is wrong but never the URL; the failed-run alert step skips such a URL silently. Treat it like a password: anyone holding it can post to the channel. The pipeline never prints it.
 
 **Turn it off:** delete the secret (`gh secret delete DISCORD_WEBHOOK_URL --repo SoftSystemsStudio/sss-website`). The run then prints `Discord notifications are off (DISCORD_WEBHOOK_URL not set)` and carries on.
 
@@ -93,7 +95,7 @@ A skipped run logs one of these (`SkipReason` in `scripts/blog/types.ts`):
 - `reviewer-reject`: the reviewer rejected the draft, or asked for changes after the run's one rewrite was already used (by its own earlier request or by failed checks). A "pass" with any checklist item false counts as a request for changes.
 - `checks-failed`: the draft failed a code check after the run's one rewrite was used, or a source URL is dead (found before writing, so no draft exists and a dry run keeps no `.rejected.md`); the detail lists the codes.
 - `slug-collision`: a post, an open draft PR or today's branch already uses the slug.
-- `already-ran-today`: a scheduled backup slot found that today already ran (see **Schedule and the once-a-day gate**). Never logged and never notified; only scheduled runs can return it.
+- `already-ran-today`: a scheduled backup slot found that today already ran (see **Schedule and the once-a-day gate**). Never logged and never notified; only scheduled runs can return it. Today's run counts whatever its outcome (a PR, even one you then closed, or any skip including `gate-full`), except `error`; closing today's draft does not trigger a replacement, so start a manual run (Actions, **Blog draft**, **Run workflow**, **Dry run** unticked) for another draft the same day.
 
 Check codes (`scripts/blog/checks.ts`): `frontmatter`, `word-count`, `banned-phrase` (title, description and body), `raw-html`, `off-source-link` (a body link that is not one of the draft's sources or `/pricing`, `/blog`, `/intake`, a `/web-design/<town>` page, or `/blog/<slug>` for a post already on main; mailto links count), `unknown-token`, `studio-literal` (title, description and body), `unsourced-dollar` (title, description and body), `duplicate`, `copied`, `source-url`.
 

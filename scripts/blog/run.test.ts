@@ -1826,6 +1826,25 @@ test('gate: a draft PR merged today (closed PRs carry no branch) counts by its c
   assert.equal(rejected.modelCalls, 1);
 });
 
+test("gate: closing today's draft does not bring a replacement (its pr log entry still counts)", async () => {
+  const closedToday = pr(9, {
+    state: 'closed',
+    merged: false,
+    branch: '',
+    createdAt: '2026-11-16T08:01:00Z',
+  });
+  const r = await gated({ log: [entry('2026-11-16', 'pr')], prs: [closedToday] });
+  assert.ok(isRanToday(r.outcome));
+  assert.equal(r.modelCalls, 0);
+  // A manual run (no gate) still drafts a replacement the same day.
+  const manual = await gated({
+    log: [entry('2026-11-16', 'pr')],
+    prs: [closedToday],
+    dailyGate: false,
+  });
+  assert.equal(manual.modelCalls, 1);
+});
+
 test('gate off (manual run) proceeds even when it already ran today', async () => {
   const off = await gated({ log: [entry('2026-11-16', 'pr')], dailyGate: false });
   assert.equal(off.modelCalls, 1);

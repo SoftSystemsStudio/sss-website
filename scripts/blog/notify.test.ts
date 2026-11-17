@@ -116,6 +116,53 @@ test('mentions, markup, backticks and newlines are neutralised', () => {
   }
 });
 
+test('URLs in model text cannot auto-link; only the validated PR URL stays a link', () => {
+  const evil = [
+    'https://evil.example/login',
+    'HTTP://EVIL.EXAMPLE',
+    'www.evil.example',
+    'WWW.Evil.Example/x',
+    'ftp://files.example',
+  ];
+  const linkish = /[a-z][a-z0-9+.-]*:\/\/|\bwww\./gi;
+  for (const bad of evil) {
+    const pr: string = formatNotification({
+      ...PR_EVENT,
+      title: `See ${bad} now`,
+      pillar: bad,
+    }).content;
+    // The PR URL is intact and is the only link-shaped text left.
+    assert.ok(pr.includes(` - ${PR_URL} (`), pr);
+    assert.deepEqual(pr.match(linkish), ['https://'], pr);
+    const skip: string = formatNotification({
+      kind: 'skipped',
+      reason: 'reviewer-reject',
+      detail: `notes: visit ${bad} | then ${bad}`,
+    }).content;
+    assert.equal(skip.match(linkish), null, skip);
+    // Still readable: only invisible characters were added.
+    assert.ok(skip.replace(/​/g, '').includes(bad), skip);
+  }
+});
+
+test('the caps cut by code points, never through an emoji', () => {
+  const title = `${'x'.repeat(148)}😀😀😀`;
+  const content = formatNotification({ ...PR_EVENT, title }).content;
+  const shown = content.slice('New blog draft ready to review: '.length).split(' - ')[0];
+  assert.equal(shown, `${'x'.repeat(148)}😀…`);
+  assert.equal(/[\uD800-\uDBFF](?![\uDC00-\uDFFF])/.test(content), false);
+  assert.equal(/(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/.test(content), false);
+  const detail = `${'y'.repeat(199)}😀😀`;
+  const skip = formatNotification({ kind: 'skipped', reason: 'no-topic', detail }).content;
+  assert.ok(skip.endsWith(`${'y'.repeat(199)}…`), skip);
+  const fits = formatNotification({
+    kind: 'skipped',
+    reason: 'no-topic',
+    detail: `${'y'.repeat(199)}😀`,
+  }).content;
+  assert.ok(fits.endsWith('😀'), fits);
+});
+
 test('long fields are capped: title 150, detail 200, the whole message at most 1,800', () => {
   const big = 'x'.repeat(5000);
   const pr = formatNotification({ ...PR_EVENT, title: big, competition: big, pillar: big });
@@ -184,12 +231,40 @@ test('anything else is refused with an error that never contains the URL or toke
       caught = err;
     }
     assert.ok(caught instanceof Error, `accepted: ${url.replace(TOKEN, '<token>')}`);
-    assert.match(caught.message, /DISCORD_WEBHOOK_URL is not a valid Discord webhook URL/);
+    assert.match(caught.message, /^DISCORD_WEBHOOK_URL is not a plain discord\.com webhook URL \(/);
     assert.equal(caught.message.includes(TOKEN), false);
     assert.equal(caught.message.includes('123456789012345678'), false);
     assert.equal(String(caught.stack).includes(TOKEN), false);
     assert.equal(caught.cause, undefined);
   }
+});
+
+test('the startup error names what is wrong, without quoting the URL', () => {
+  const reasonOf = (url: string): string => {
+    try {
+      createDiscordNotifier(url, fakeFetch([]).fetchFn);
+    } catch (err) {
+      return (err as Error).message;
+    }
+    return 'accepted';
+  };
+  assert.match(reasonOf('not a url'), /\(not a URL\)/);
+  assert.match(reasonOf(HOOK.replace('https:', 'http:')), /\(must use https\)/);
+  assert.match(
+    reasonOf(HOOK.replace('discord.com', 'canary.discord.com')),
+    /\(host must be discord\.com or discordapp\.com\)/,
+  );
+  assert.match(
+    reasonOf(HOOK.replace('discord.com', 'discord.com:8443')),
+    /\(no user name, password or port allowed\)/,
+  );
+  assert.match(
+    reasonOf(HOOK.replace('/api/', '/api/v10/')),
+    /\(path must be \/api\/webhooks\/<id>\/<token>\)/,
+  );
+  assert.match(reasonOf(`${HOOK}?thread_id=1`), /\(no query other than \?wait=true, no fragment\)/);
+  assert.match(reasonOf(`${HOOK}#x`), /\(no query other than \?wait=true, no fragment\)/);
+  assert.match(reasonOf('not a url'), /Copy Webhook URL/);
 });
 
 // ---------- sending ----------
@@ -206,6 +281,7 @@ test('posts JSON with a fixed username and no mentions allowed, to the webhook U
     username: 'Blog pipeline',
     content: formatNotification(PR_EVENT).content,
     allowed_mentions: { parse: [] },
+    flags: 4,
   });
 });
 

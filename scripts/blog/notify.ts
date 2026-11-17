@@ -30,6 +30,8 @@ const MAX_RETRY_AFTER_MS = 5_000;
 /** Wait before the one retry after a network error or a 5xx. */
 const BACKOFF_MS = 1_000;
 const USERNAME = 'Blog pipeline';
+/** Discord message flag 1 << 2. */
+const SUPPRESS_EMBEDS = 4;
 
 const PR_URL_RE = /^https:\/\/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+\/pull\/\d+$/;
 const WEBHOOK_HOSTS = new Set(['discord.com', 'discordapp.com']);
@@ -54,10 +56,20 @@ export class NotifyError extends Error {
 
 export type NotifyStatus = number | 'network error' | 'timeout' | 'invalid event' | 'error';
 
+const ZWSP = '​';
+
+/** Cuts to `max` code points (never through a surrogate pair), ending in … when cut. */
+function capCodePoints(s: string, max: number): string {
+  const cps = Array.from(s);
+  return cps.length <= max ? s : `${cps.slice(0, max - 1).join('')}…`;
+}
+
 /**
  * One line of plain text that cannot ping, link or format: whitespace collapsed,
  * backticks, angle brackets (`<@id>`, `<#id>`, `<url>`) and square brackets (masked
- * links) swapped for look-alikes, and `@` followed by a zero-width space.
+ * links) swapped for look-alikes, and a zero-width space after every `@`, inside every
+ * `://` and after every `www`, so no mention or URL in model-written text (which web
+ * pages can shape) is auto-linked. Only the formatter's own, validated PR URL is a link.
  */
 function neutral(s: string, max: number): string {
   const one = String(s)
@@ -68,8 +80,10 @@ function neutral(s: string, max: number): string {
     .replace(/>/g, '›')
     .replace(/\[/g, '(')
     .replace(/\]/g, ')')
-    .replace(/@/g, '@​');
-  return one.length <= max ? one : `${one.slice(0, max - 1)}…`;
+    .replace(/@/g, `@${ZWSP}`)
+    .replace(/:\/\//g, `:/${ZWSP}/`)
+    .replace(/\b(www)\./gi, `$1${ZWSP}.`);
+  return capCodePoints(one, max);
 }
 
 function count(n: unknown): n is number {
@@ -97,30 +111,35 @@ export function formatNotification(event: NotifyEvent): { content: string } {
   } else {
     content = `No blog draft today (${neutral(event.reason, SHORT_MAX)}): ${neutral(event.detail, DETAIL_MAX)}`;
   }
-  return { content: content.slice(0, MAX_CONTENT) };
+  return { content: capCodePoints(content, MAX_CONTENT) };
 }
 
-const INVALID_URL =
-  'DISCORD_WEBHOOK_URL is not a valid Discord webhook URL (expected https://discord.com/api/webhooks/<id>/<token>)';
-
-/** True for https://discord(app).com/api/webhooks/<digits>/<token>[?wait=true], nothing else. */
-function isWebhookUrl(raw: string): boolean {
+/**
+ * Why `raw` is not https://discord(app).com/api/webhooks/<digits>/<token>[?wait=true],
+ * or null when it is. Reasons are fixed text: never any part of the URL.
+ */
+function webhookUrlProblem(raw: string): string | null {
   let u: URL;
   try {
     u = new URL(raw);
   } catch {
-    return false; // the URL constructor's message quotes the input: never rethrow it
+    return 'not a URL'; // the URL constructor's message quotes the input: never rethrow it
   }
-  return (
-    u.protocol === 'https:' &&
-    WEBHOOK_HOSTS.has(u.hostname) &&
-    u.port === '' &&
-    u.username === '' &&
-    u.password === '' &&
-    WEBHOOK_PATH_RE.test(u.pathname) &&
-    (u.search === '' || u.search === '?wait=true') &&
-    u.hash === '' &&
-    !raw.includes('#')
+  if (u.protocol !== 'https:') return 'must use https';
+  if (!WEBHOOK_HOSTS.has(u.hostname)) return 'host must be discord.com or discordapp.com';
+  if (u.port !== '' || u.username !== '' || u.password !== '') {
+    return 'no user name, password or port allowed';
+  }
+  if (!WEBHOOK_PATH_RE.test(u.pathname)) return 'path must be /api/webhooks/<id>/<token>';
+  if (!(u.search === '' || u.search === '?wait=true') || u.hash !== '' || raw.includes('#')) {
+    return 'no query other than ?wait=true, no fragment';
+  }
+  return null;
+}
+
+function invalidUrl(reason: string): Error {
+  return new Error(
+    `DISCORD_WEBHOOK_URL is not a plain discord.com webhook URL (${reason}); use the https://discord.com/api/webhooks/<id>/<token> form from Copy Webhook URL`,
   );
 }
 
@@ -161,7 +180,8 @@ export function createDiscordNotifier(
   fetchFn: typeof fetch = fetch,
   opts: NotifierOptions = {},
 ): Notify {
-  if (typeof webhookUrl !== 'string' || !isWebhookUrl(webhookUrl)) throw new Error(INVALID_URL);
+  const problem = typeof webhookUrl === 'string' ? webhookUrlProblem(webhookUrl) : 'not a URL';
+  if (problem !== null) throw invalidUrl(problem);
   const url = webhookUrl;
   const timeoutMs = opts.timeoutMs ?? TIMEOUT_MS;
   const sleep = opts.sleep ?? realSleep;
@@ -177,6 +197,8 @@ export function createDiscordNotifier(
       username: USERNAME,
       content,
       allowed_mentions: { parse: [] },
+      // SUPPRESS_EMBEDS: no link preview is ever rendered, not even for the PR URL.
+      flags: SUPPRESS_EMBEDS,
     });
 
     for (let attempt = 1; ; attempt++) {

@@ -4,11 +4,25 @@
 
 1. `.github/workflows/blog-draft.yml` runs daily at 11:17 UTC and runs `scripts/blog/cli.ts`.
 2. An agent researches and picks a topic, a second writes the post, a third reviews it.
-3. If the draft passes the checks, the run opens a pull request with the post and a short brief. Core CI runs on it.
+3. If the draft passes the checks, the run opens a pull request with the post, a short brief and an SEO scorecard. Core CI runs on it.
 4. Austin reads the PR and merges it (or closes it). Merging is the only way a post goes live.
 5. `.github/workflows/blog-published.yml` waits for the new page to return 200, then pings IndexNow for `/blog` and the post.
 
 Every outcome (opened, skipped, failed) is logged on the issue titled **Blog pipeline log**.
+
+## How topics are picked (SEO)
+
+The site's Domain Rating is about 7, so the researcher only goes after questions it can win: narrow, local, question-form queries a local owner would type, with a town or trade modifier where natural, and tied to what the studio offers. National platform-policy topics (Google Business Profile rules, algorithm updates, "what is SEO") are out.
+
+- **Pillars.** `TOPIC_PILLARS` in `scripts/blog/config.ts` lists 8 content pillars (cost, do-I-need-a-website, local search basics, websites by trade, mobile and speed, choosing a designer, what a build includes, after-launch care). The researcher picks the pillar the existing posts cover least, so the blog builds clusters. Add or rename a pillar there; the town and trade modifiers are `TOPIC_TOWNS` and `TOPIC_TRADES`.
+- **Competition.** For each candidate the researcher searches the exact query and rates page one `low` (forums, thin or local pages), `medium` (a mix) or `high` (Google's own docs, national publishers, big agencies, directories, established specialists). The brief carries `competition` and `serpNotes` (who ranks and why). A `high` brief is never written: the run skips it as `no-topic` with a "high competition" detail, logged with the topic so it is not proposed again.
+- **Related questions.** The brief may carry up to 5 People-Also-Ask-style `relatedQuestions`; the writer uses them as H2s or a short FAQ.
+
+The PR's **Research brief** section shows the pillar, competition, SERP notes and related questions. Close the PR if the competition call looks wrong.
+
+## SEO scorecard
+
+Every draft PR has an **SEO scorecard** section (`scripts/blog/seo.ts`): title at most 60 characters; description 120 to 155; every significant query word in the title or the first 100 words; the query (or all its words) in the first 100 words; at least 3 H2s; at least 2 internal links; at least 2 external source links; a list or table; a first paragraph of 30 to 70 words; average sentence at most 22 words; no repeated heading. It is advisory: a cross never blocks the draft; tighten that item in the PR (or ignore it) before merging.
 
 ## Pause and resume
 
@@ -40,12 +54,12 @@ GitHub disables scheduled workflows after 60 days of repo inactivity; if the dai
 A skipped run logs one of these (`SkipReason` in `scripts/blog/types.ts`):
 
 - `gate-full`: three draft PRs are already open; review or close one.
-- `no-topic`: the researcher found nothing worth writing about today.
+- `no-topic`: the researcher found nothing worth writing about today, or proposed a topic rated `high` competition (the detail starts "high competition for ...").
 - `reviewer-reject`: the reviewer rejected the draft, or asked for changes twice (one rewrite is allowed). A "pass" with any checklist item false counts as a request for changes.
 - `checks-failed`: the draft failed a code check; the detail lists the codes.
 - `slug-collision`: a post, an open draft PR or today's branch already uses the slug.
 
-Check codes (`scripts/blog/checks.ts`): `frontmatter`, `word-count`, `banned-phrase` (title, description and body), `raw-html`, `off-source-link` (a body link that is not one of the draft's sources or `/pricing`, `/blog`, `/intake`, a `/web-design/<town>` page; mailto links count), `unknown-token`, `studio-literal` (title, description and body), `unsourced-dollar`, `duplicate`, `copied`, `source-url`.
+Check codes (`scripts/blog/checks.ts`): `frontmatter`, `word-count`, `banned-phrase` (title, description and body), `raw-html`, `off-source-link` (a body link that is not one of the draft's sources or `/pricing`, `/blog`, `/intake`, a `/web-design/<town>` page, or `/blog/<slug>` for a post already on main; mailto links count), `unknown-token`, `studio-literal` (title, description and body), `unsourced-dollar`, `duplicate`, `copied`, `source-url`.
 
 ## Take a post down
 

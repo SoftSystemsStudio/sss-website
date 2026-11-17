@@ -11,7 +11,7 @@ import {
   type PostFrontmatter,
 } from '../../packages/frontend/src/lib/blog-schema';
 import { CITY_PAGES, cityLabel } from '../../packages/frontend/src/lib/cities';
-import { TOPIC_PILLARS, TOPIC_TOWNS, TOPIC_TRADES } from './config';
+import { TOPIC_PILLARS, TOPIC_TOWNS, TOPIC_TRADES, type TopicPillarId } from './config';
 import type { CallModel, ModelRequest } from './models';
 import {
   CHECKLIST_KEYS,
@@ -53,6 +53,15 @@ function fence(tag: string, text: string): string {
   return `<${tag}>\n${neutral}\n</${tag}>`;
 }
 
+function numberedList(items: string[]): string {
+  return items.map((s, i) => `${i + 1}. ${s}`).join('\n');
+}
+
+function pillarText(id: TopicPillarId): string {
+  const p = TOPIC_PILLARS.find((x) => x.id === id);
+  return p ? `${p.id}: ${p.label} (${p.examples})` : id;
+}
+
 function bulletList(items: string[]): string {
   return items.length
     ? items.map((s) => `- ${s.replace(/\s+/g, ' ').trim()}`).join('\n')
@@ -89,30 +98,48 @@ function closingBrace(text: string, start: number): number {
 /** At most this many `{` positions are tried, so a pathological reply stays cheap. */
 const MAX_JSON_STARTS = 500;
 
+function hasKind(v: unknown): boolean {
+  return typeof v === 'object' && v !== null && !Array.isArray(v) && 'kind' in v;
+}
+
 /**
  * Pulls the JSON object out of a reply that may carry prose before or after it (web
  * search turns often do), a code fence, or braces inside the prose. Tries each balanced
- * `{...}` from the left, keeps the outermost ones that parse, and returns the LAST one:
- * the final answer comes at the end. Failures throw StageParseError with a fixed kind.
+ * `{...}` from the left and keeps the outermost ones that parse. The answer is the LAST
+ * of them that has a `kind` key (the researcher's shape), else simply the last one, so
+ * a trailing `{}` or a stray source object after the answer is ignored. If an object
+ * that starts like JSON (`{"`) after the last parsed one never closes, the final answer
+ * was cut off: that fails rather than falling back to an earlier draft. Failures throw
+ * StageParseError with a fixed kind.
  */
 export function extractJson(text: string): unknown {
-  let found: { value: unknown } | undefined;
+  const found: unknown[] = [];
+  let lastEnd = 0;
   let parseError: unknown;
+  let truncated = false;
   let tries = 0;
   for (let i = text.indexOf('{'); i !== -1 && tries < MAX_JSON_STARTS; tries++) {
     const end = closingBrace(text, i);
     if (end !== -1) {
       try {
-        found = { value: JSON.parse(text.slice(i, end)) };
+        found.push(JSON.parse(text.slice(i, end)));
+        lastEnd = end;
+        truncated = false;
         i = text.indexOf('{', end);
         continue;
       } catch (err) {
         parseError = err;
       }
+    } else if (i >= lastEnd && /^\{\s*"/.test(text.slice(i, i + 40))) {
+      truncated = true;
     }
     i = text.indexOf('{', i + 1);
   }
-  if (found) return found.value;
+  if (truncated) throw new StageParseError('invalid json: unexpected end');
+  if (found.length) {
+    const withKind = found.filter(hasKind);
+    return withKind.length ? withKind[withKind.length - 1] : found[found.length - 1];
+  }
   if (parseError !== undefined) throw new StageParseError(jsonErrorKind(parseError));
   throw new StageParseError('no json object found');
 }
@@ -248,7 +275,6 @@ function briefForPrompt(brief: Brief, includeDuplicateReason: boolean): string {
     `Intent: ${brief.intent}`,
     `Local angle: ${brief.localAngle}`,
     ...(includeDuplicateReason ? [`Not a duplicate because: ${brief.notDuplicateBecause}`] : []),
-    `Competition on page one: ${brief.competition} (${brief.serpNotes})`,
     'Related questions people also ask (use as H2s or a short FAQ where they fit):',
     bulletList(brief.relatedQuestions ?? []),
     'Sources:',
@@ -293,15 +319,37 @@ function reformatPrompt(previous: string, reason: string): string {
   ].join('\n');
 }
 
-/** Every source URL of a repaired brief must already be in the reply it repairs. */
+/** A URL compared without its fragment or trailing slash; null if it does not parse. */
+function comparableUrl(u: string): string | null {
+  try {
+    const url = new URL(u);
+    url.hash = '';
+    return url.href.replace(/\/+$/, '');
+  } catch {
+    return null;
+  }
+}
+
+/** Every http(s) URL token in `text` (JSON `\/` unescaped, trailing punctuation dropped). */
+function urlTokens(text: string): Set<string> {
+  const out = new Set<string>();
+  for (const m of text.replace(/\\\//g, '/').matchAll(/https?:\/\/[^\s"'<>\\]+/g)) {
+    const u = comparableUrl(m[0].replace(/[.,;:!?)\]}]+$/, ''));
+    if (u) out.add(u);
+  }
+  return out;
+}
+
+/**
+ * Every source URL of a repaired brief must be EXACTLY one of the URLs in the reply it
+ * repairs (ignoring only a fragment or trailing slash): a prefix or a longer URL fails.
+ */
 function assertSourcesFrom(result: ResearchResult, previous: string): ResearchResult {
   if (result.kind !== 'topic') return result;
-  const tail = previous.slice(-REFORMAT_REPLY_MAX);
+  const known = urlTokens(previous.slice(-REFORMAT_REPLY_MAX));
   for (const s of result.brief.sources) {
-    // JSON may escape "/" as "\/".
-    if (!tail.includes(s.url) && !tail.includes(s.url.replace(/\//g, '\\/'))) {
-      throw new StageParseError('source url not in the previous reply');
-    }
+    const u = comparableUrl(s.url);
+    if (!u || !known.has(u)) throw new StageParseError('source url not in the previous reply');
   }
   return result;
 }
@@ -321,6 +369,8 @@ export async function research(
     existingTitles: string[];
     pastQueries: string[];
     recentLog: string[];
+    /** Every pillar, least covered first, as decided by pillarOrder() in code. */
+    pillarOrder: TopicPillarId[];
     log?: StageLogger;
   },
 ): Promise<ResearchResult> {
@@ -337,8 +387,9 @@ export async function research(
     'Recent pipeline log:',
     fence('recent_log', bulletList(ctx.recentLog)),
     '',
-    'Content pillars (id: label, example subjects). Pick the pillar the existing titles above cover LEAST, and put its id in `pillar`:',
-    bulletList(TOPIC_PILLARS.map((p) => `${p.id}: ${p.label} (${p.examples})`)),
+    'Pillar order for today (decided by code: least covered by existing and open drafts first; id: label, example subjects):',
+    numberedList(ctx.pillarOrder.map((id) => pillarText(id))),
+    'Work through this order: use the first pillar for which you find a low or medium competition topic, and put that pillar id in `pillar`. Never skip to a later pillar just because it feels easier.',
     '',
     `Town modifiers: ${TOPIC_TOWNS.join(', ')}.`,
     `Trade modifiers: ${TOPIC_TRADES.join(', ')}.`,

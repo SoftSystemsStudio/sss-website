@@ -6,7 +6,7 @@ import type Anthropic from '@anthropic-ai/sdk';
 import { parseFrontmatter } from '../../packages/frontend/src/lib/blog-frontmatter';
 import { postFrontmatterSchema } from '../../packages/frontend/src/lib/blog-schema';
 import { listTokens, resolveTokens } from '../../packages/frontend/src/lib/blog-tokens';
-import { MODELS, TOPIC_PILLARS, TOPIC_TOWNS, TOPIC_TRADES } from './config';
+import { MODELS, TOPIC_PILLAR_IDS, TOPIC_PILLARS, TOPIC_TOWNS, TOPIC_TRADES } from './config';
 import { createCallModelWithClient, type CallModel, type ModelRequest } from './models';
 import {
   extractJson,
@@ -96,6 +96,7 @@ const CTX = {
   ],
   pastQueries: ['website cost phenix city', 'rejected: best web designer auburn'],
   recentLog: ['2026-11-15 no-topic: nothing new'],
+  pillarOrder: [...TOPIC_PILLAR_IDS].reverse(),
 };
 
 // ---------- research ----------
@@ -224,6 +225,28 @@ test('research rejects briefs with missing or bad competition, pillar, serpNotes
   };
   const { call } = scripted([JSON.stringify({ kind: 'topic', brief: atCap })]);
   assert.equal((await research(call, CTX)).kind, 'topic');
+});
+
+test('research lists the pillars in the order code gave, with the first-usable-pillar rule', async () => {
+  const { call, calls } = scripted([JSON.stringify({ kind: 'none', reason: 'x' })]);
+  const order = [
+    'hiring',
+    'after-launch',
+    'cost',
+    'need',
+    'trades',
+    'mobile-speed',
+    'nearby-customers',
+    'whats-included',
+  ] as const;
+  await research(call, { ...CTX, pillarOrder: [...order] });
+  const user = calls[0].user;
+  assert.match(user, /Pillar order for today/);
+  const at = order.map((id) => user.indexOf(`${id}:`));
+  for (let i = 1; i < at.length; i++)
+    assert.ok(at[i - 1] < at[i], `${order[i - 1]} before ${order[i]}`);
+  assert.match(user, /first pillar/i);
+  assert.match(user, /never skip to a later pillar/i);
 });
 
 // ---------- write ----------
@@ -657,13 +680,13 @@ test('extractJson finds the final object behind prose, braces in prose and fence
 });
 
 test('extractJson failures carry only a fixed kind, never reply text', () => {
-  for (const text of [
-    'I could not find anything SECRET-PROSE',
-    '{"kind": "topic", "brief": {"title": "SECRET-UNTERMINATED',
-  ]) {
+  for (const [text, kind] of [
+    ['I could not find anything SECRET-PROSE', 'no json object found'],
+    ['{"kind": "topic", "brief": {"title": "SECRET-UNTERMINATED', 'invalid json: unexpected end'],
+  ] as const) {
     assert.throws(
       () => extractJson(text),
-      (e: Error) => e.message === 'no json object found',
+      (e: Error) => e.message === kind,
     );
   }
 });
@@ -863,4 +886,106 @@ test('usage lines name the stop reason, so a pause is told apart from a retry', 
   await call({ role: 'researcher', system: 's', user: 'u', webSearch: true });
   assert.match(lines[0], /stop=pause_turn/);
   assert.match(lines[1], /stop=end_turn/);
+});
+
+test('the prompt example cannot be reused as is: town in the query, non-default pillar and trade', () => {
+  const text = prompt('researcher');
+  const m = /<example_topic>\s*([\s\S]*?)\s*<\/example_topic>/.exec(text);
+  assert.ok(m);
+  const ex = JSON.parse(m[1]) as {
+    brief: { targetQuery: string; pillar: string; competition: string; localAngle: string };
+  };
+  const q = ex.brief.targetQuery.toLowerCase();
+  assert.ok(
+    TOPIC_TOWNS.some((t) => q.includes(t.toLowerCase().replace(/ ga$/, ''))),
+    `targetQuery has no town: ${q}`,
+  );
+  assert.notEqual(ex.brief.pillar, TOPIC_PILLARS[0].id);
+  const exampleText = m[1].toLowerCase();
+  assert.equal(exampleText.includes(TOPIC_TRADES[0]), false, 'uses the first trade');
+  assert.ok(
+    TOPIC_TRADES.slice(1).some((t) => exampleText.includes(t.replace(/s$/, ''))),
+    'uses some other trade',
+  );
+  assert.match(text, /shape only/i);
+  assert.match(text, /never propose its topic, pillar, trade or town/i);
+});
+
+test('the researcher prompt says to return none for a high candidate, not that high is pointless', () => {
+  const text = prompt('researcher');
+  assert.equal(/discarded unread/i.test(text), false);
+  assert.match(text, /if the best candidate is `high`, return `none`/i);
+});
+
+test('writer and reviewer never see serpNotes or the competition rating', async () => {
+  const w = scripted([writerReply()]);
+  await write(w.call, BRIEF, { date: '2026-11-16' });
+  const r = scripted([reviewReply('pass')]);
+  await review(r.call, BRIEF, 'draft');
+  for (const req of [w.calls[0], r.calls[0]]) {
+    assert.equal(req.user.includes(BRIEF.serpNotes), false);
+    assert.equal(/competition/i.test(req.user), false);
+  }
+  // The related questions still reach the writer.
+  assert.ok(w.calls[0].user.includes(BRIEF.relatedQuestions![0]));
+});
+
+// ---------- review fixes: exact source URLs on repair, extractJson preference ----------
+
+/** A first reply whose JSON fails (bad pillar) but whose text carries `urls`. */
+function firstReplyWith(prose: string, sources = BRIEF.sources): string {
+  return `${prose}\n${JSON.stringify({ kind: 'topic', brief: { ...BRIEF, pillar: 'x', sources } })}`;
+}
+
+async function repairWith(first: string, repaired: Brief) {
+  const { call, calls } = scripted([first, JSON.stringify({ kind: 'topic', brief: repaired })]);
+  const result = research(call, CTX);
+  return { result, calls };
+}
+
+test('a repaired source URL that is only a prefix of a URL in the old reply is rejected', async () => {
+  const longer = BRIEF.sources.map((s, i) => (i === 2 ? { ...s, url: `${s.url}/more/detail` } : s));
+  const { result } = await repairWith(firstReplyWith('', longer), BRIEF);
+  await assert.rejects(result, /source url not in the previous reply/);
+});
+
+test('a repaired source URL must match a URL token exactly; trailing slash and fragment are ignored', async () => {
+  const withSlash = BRIEF.sources.map((s) => ({ ...s, url: `${s.url}/#top` }));
+  const ok = await repairWith(firstReplyWith('', withSlash), BRIEF);
+  assert.equal((await ok.result).kind, 'topic');
+});
+
+test('a URL only mentioned in the old reply prose is allowed when it matches exactly', async () => {
+  const prose = `I read ${BRIEF.sources[2].url}, which was useful.`;
+  const { result } = await repairWith(firstReplyWith(prose, BRIEF.sources.slice(0, 2)), BRIEF);
+  assert.equal((await result).kind, 'topic');
+  const prefixOnly = `I read ${BRIEF.sources[2].url}extra.`;
+  const bad = await repairWith(firstReplyWith(prefixOnly, BRIEF.sources.slice(0, 2)), BRIEF);
+  await assert.rejects(bad.result, /source url not in the previous reply/);
+});
+
+test('JSON-escaped slashes in the old reply still count as the same URL', async () => {
+  const escaped = firstReplyWith('').replace(/\//g, '\\/');
+  const { result } = await repairWith(escaped, BRIEF);
+  assert.equal((await result).kind, 'topic');
+});
+
+test('extractJson prefers the last object with a kind key over a trailing {} or a later inner object', () => {
+  const answer = { kind: 'none', reason: 'r' };
+  assert.deepEqual(extractJson(`${JSON.stringify(answer)}\n\nThat is all. {}`), answer);
+  assert.deepEqual(
+    extractJson(`${JSON.stringify(answer)}\nOne source was {"url": "https://x.example"}`),
+    answer,
+  );
+  // Without any kind key (writer and reviewer replies) the last object still wins.
+  assert.deepEqual(extractJson('{"a": 1} then {"b": 2}'), { b: 2 });
+});
+
+test('a truncated final answer fails instead of falling back to an earlier draft object', () => {
+  const draft = JSON.stringify({ kind: 'none', reason: 'early draft' });
+  const truncated = `${draft}\n\nFinal answer:\n{"kind": "topic", "brief": {"title": "cut off`;
+  assert.throws(
+    () => extractJson(truncated),
+    (e: Error) => /^invalid json/.test(e.message) && !e.message.includes('cut off'),
+  );
 });

@@ -13,9 +13,11 @@ export const LOG_ISSUE_TITLE = 'Blog pipeline log';
 export const SIMILARITY = { existingPosts: 0.35, sources: 0.2, shingleWords: 5 } as const;
 
 /**
- * Content pillars the blog builds topical clusters around. The researcher gets this
- * list with the existing post titles and picks the pillar the posts cover least, so
- * the blog rotates through them instead of drifting. `id` goes in the brief.
+ * Content pillars the blog builds topical clusters around. Code orders them each run,
+ * least covered first (scripts/blog/pillars.ts), and the researcher uses the first one
+ * where it finds a winnable topic. `id` goes in the brief and the PR body. Keep the
+ * wording on narrow, local questions a one-person web studio can answer and rank for;
+ * not Google Business Profile, reviews or other local-SEO-specialist ground.
  */
 export const TOPIC_PILLARS = [
   {
@@ -26,12 +28,13 @@ export const TOPIC_PILLARS = [
   {
     id: 'need',
     label: 'Do I need a website',
-    examples: 'website vs Facebook page or Google listing only, when a one-page site is enough',
+    examples: 'a website vs only a Facebook page, when a one-page site is enough for a small shop',
   },
   {
-    id: 'local-search',
-    label: 'Local search basics for small businesses',
-    examples: 'showing up when people nearby search, consistent name, address and phone, reviews',
+    id: 'nearby-customers',
+    label: 'A website that brings in nearby customers',
+    examples:
+      'should my website show my address and hours, one page or a page per town, what to put on the site so nearby customers call',
   },
   {
     id: 'trades',
@@ -41,7 +44,8 @@ export const TOPIC_PILLARS = [
   {
     id: 'mobile-speed',
     label: 'Mobile and speed',
-    examples: 'why the site has to work on a phone, what makes a small site slow',
+    examples:
+      'checking your own site on your phone, tap-to-call buttons, what makes a small site slow to load',
   },
   {
     id: 'hiring',

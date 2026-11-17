@@ -265,6 +265,37 @@ test('listDraftPrs maps merged_at, target query and state, and reads the branch 
   assert.equal(prs[0].createdAt, '2026-11-01T06:00:00Z');
 });
 
+test('listDraftPrs reads the pillar from a strict Pillar line, else empty', async () => {
+  const items = [
+    issueItem(1, { body: 'Target query: q\n\n- **Pillar:** After-launch care (`after-launch`)\n' }),
+    issueItem(2, { body: 'Target query: q\n\n- **Pillar:** Evil (`drop-tables`)' }),
+    issueItem(3, { body: 'Target query: q\n\n- **Pillar:** After-launch care' }),
+  ];
+  const { fetchFn } = fakeFetch((method, path) => {
+    if (path.startsWith(`/repos/${REPO}/issues?`)) return { status: 200, json: items };
+    if (path.startsWith(`/repos/${REPO}/pulls?`))
+      return {
+        status: 200,
+        json: [
+          openPull(9, 'blog/2026-11-15-x', {
+            body: 'Target query: q\n- **Pillar:** Mobile and speed (`mobile-speed`)',
+          }),
+        ],
+      };
+    return undefined;
+  });
+  const prs = await createGitHubClient(TOKEN, REPO, fetchFn).listDraftPrs();
+  assert.deepEqual(
+    prs.map((p) => [p.number, p.pillar]),
+    [
+      [1, 'after-launch'],
+      [2, ''],
+      [3, ''],
+      [9, 'mobile-speed'],
+    ],
+  );
+});
+
 test('listDraftPrs paginates and stops at a hard cap', async () => {
   const full = (page: number) =>
     Array.from({ length: 100 }, (_, i) => issueItem(page * 1000 + i, { state: 'closed' }));
@@ -432,6 +463,7 @@ test('closeStale comments, closes the PR and deletes its blog branch', async () 
       number: 9,
       title: 'Blog: Old',
       targetQuery: 'old',
+      pillar: '',
       state: 'open',
       merged: false,
       createdAt: '2026-10-01T00:00:00Z',

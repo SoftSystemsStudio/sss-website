@@ -4,7 +4,8 @@ import { pathToFileURL } from 'node:url';
 import { z } from 'zod';
 import { parseFrontmatter } from '../../packages/frontend/src/lib/blog-frontmatter';
 import { checkSourceUrls, fetchSourceTexts, runChecks, type CheckFailure } from './checks';
-import { MAX_OPEN_DRAFTS, MAX_REVISIONS, STALE_DAYS, TOPIC_PILLARS } from './config';
+import { MAX_OPEN_DRAFTS, MAX_REVISIONS, STALE_DAYS } from './config';
+import { pillarCounts, pillarLine, pillarOrder } from './pillars';
 import {
   clip,
   LOG_DETAIL_MAX,
@@ -126,10 +127,6 @@ function seoLines(items: SeoItem[]): string[] {
   );
 }
 
-function pillarLabel(id: string): string {
-  return TOPIC_PILLARS.find((p) => p.id === id)?.label ?? id;
-}
-
 export function buildPrBody(input: {
   brief: Brief;
   date: string;
@@ -150,7 +147,7 @@ export function buildPrBody(input: {
     `- **Intent:** ${inline(brief.intent)}`,
     `- **Local angle:** ${inline(brief.localAngle)}`,
     `- **Not a duplicate because:** ${inline(brief.notDuplicateBecause)}`,
-    `- **Pillar:** ${inline(pillarLabel(brief.pillar))}`,
+    pillarLine(brief.pillar),
     `- **Competition:** ${brief.competition}`,
     `- **SERP notes:** ${inline(brief.serpNotes)}`,
     `- **Related questions:** ${questions.length ? '' : '(none)'}`,
@@ -312,6 +309,8 @@ async function runStages(deps: RunDeps, state: { logFailure?: string }): Promise
       ],
       pastQueries: pastQueries(prs),
       recentLog,
+      // Code decides the rotation; the researcher works through it in this order.
+      pillarOrder: pillarOrder(pillarCounts(prs), now),
     });
     if (found.kind === 'none') return await skip('no-topic', found.reason);
     const brief = found.brief;

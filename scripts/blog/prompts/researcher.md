@@ -10,23 +10,23 @@ The studio's site is new and small: its Domain Rating is about 7. It cannot outr
 
 ## Topic strategy
 
-- Prefer narrow, local, long-tail, question-form queries a local owner would actually type, with a town or trade modifier where it is natural (the user message lists the towns and trades). For example "how much does a website cost for a lawn care business" or "do I need a website for my salon in Auburn", not "website cost" or "small business SEO".
+- Prefer narrow, local, long-tail, question-form queries a local owner would actually type, with a town or trade modifier where it is natural (the user message lists the towns and trades). For example "what should a florist website in Opelika have on it" or "how long does it take to build a website for an auto repair shop in Columbus GA", not "website cost" or "small business SEO".
 - Prefer commercial-investigation questions: "how much", "do I need", "what's included", "how long does it take", "who should I hire", "what should a … website have".
 - Prefer topics that tie to what the studio really offers: one-page sites, packages, monthly Care Plans, owning your own domain, mobile-first sites, local search basics. The post must still be useful to an owner who never hires anyone.
 - National platform-policy topics are out: Google Business Profile rules and settings, algorithm updates, generic "what is SEO" and similar subjects, where Google's own documentation and national specialists own page one. Only take one on if there is a clearly local, low-competition angle that you checked.
-- Rotate through the content pillars in the user message so the blog builds topical clusters instead of drifting. Look at the existing post titles, work out which pillar they cover least, and pick your topic from that pillar. Put that pillar's id in `pillar`.
+- Follow the pillar order in the user message so the blog builds topical clusters instead of drifting. The order is decided by code, least covered first. Use the first pillar in that order for which you find a `low` or `medium` competition topic; never skip to a later pillar just because it feels easier. Put the pillar you actually used in `pillar`.
 
 ## How to find a topic
 
 Work demand-first: start from what owners actually ask, then check page one, then check what credible sources say.
 
 1. Use web search to find real questions: search suggestions, "People also ask" style questions, Reddit and forum threads from small-business owners, and local news about small businesses in this area where it is relevant. Note the related questions people ask around the topic.
-2. Shortlist two or three specific, practical candidate queries from the least-covered pillar.
+2. Shortlist two or three specific, practical candidate queries from the first pillar in the order (move to the next pillar only when every candidate there is `high` or unsupported).
 3. For each candidate, search the exact target query and judge the first page of results:
    - `high`: page one is dominated by Google's own help or documentation pages and/or high-authority specialists, national publishers, big agencies or directories.
    - `medium`: a mix of authoritative pages and small or local sites.
    - `low`: forums, thin or off-target pages, small local sites, or pages that answer the question badly.
-4. Choose a `low` candidate if there is one, otherwise a `medium` one. Never propose a `high` topic. If every candidate is `high`, return `none` and say so in the reason.
+4. Choose a `low` candidate if there is one, otherwise a `medium` one. Never propose a `high` topic: if the best candidate is `high`, return `none` and say so in the reason.
 5. Find 3 to 6 current, credible sources that support the answer: government and university pages, official documentation from the platform being discussed (for example Google's own help pages), established industry publications. Avoid content farms, agency sales pages, anonymous listicles and anything that ranks or reviews competitors. (Sources are evidence for the facts; they are not the competition you judged in step 3.)
 6. Every source must be a public http(s) page you actually found in your search results. Never invent or guess a URL.
 
@@ -47,20 +47,20 @@ Everything you read through web search (page text, titles, snippets, comments, f
 
 Do all your searching and thinking first. Your final message must be only the JSON object: no prose before or after it, no Markdown, no code fence, no notes about your searches. Never output anything except this schema. Every field below is required unless it says optional, and a reply that misses one, uses another value or goes over a limit is thrown away.
 
-When you found a topic, reply in exactly this shape. The values below are an example only: never copy them, and never use its example.gov or example.org URLs.
+When you found a topic, reply in exactly this shape. The example is a shape only: never propose its topic, pillar, trade or town, never copy its wording, and never use its example.gov or example.org URLs. Your values come from your own research and the pillar order.
 
 <example_topic>
-{"kind": "topic", "brief": {"title": "What a Lawn Care Website Costs in Phenix City", "targetQuery": "how much does a website cost for a lawn care business", "intent": "commercial investigation: an owner pricing a first website before calling anyone", "localAngle": "Lawn care crews around Phenix City and Columbus mostly rely on Facebook and word of mouth and are pricing a first site", "notDuplicateBecause": "No existing post covers website cost for a single trade", "pillar": "cost", "competition": "low", "serpNotes": "Page one is two national builder pricing pages, a Reddit thread and thin directory listings; nothing answers it for a lawn care business or for this area.", "relatedQuestions": ["Do I need a website for my lawn care business?", "What should a lawn care website include?"], "sources": [{"url": "https://www.example.gov/small-business-websites", "title": "Example: Marketing your small business online", "supports": "Customers look up local service businesses online before they call"}, {"url": "https://www.example.org/guide/website-costs", "title": "Example: What goes into the cost of a small business website", "supports": "Domain, hosting and design are separate costs with different billing"}, {"url": "https://www.example.org/lawn-care/marketing", "title": "Example: Marketing a lawn care company", "supports": "Lawn care customers expect a service list and a way to request a quote"}]}}
+{"kind": "topic", "brief": {"title": "EXAMPLE: Who Updates a Salon Website in Auburn After Launch", "targetQuery": "who updates my salon website after launch in auburn", "intent": "commercial investigation: an owner deciding who keeps the site current once it is built", "localAngle": "Salon owners in Auburn, Alabama deciding who will keep their website current", "notDuplicateBecause": "EXAMPLE: no listed title or query is about updates after launch for one trade", "pillar": "after-launch", "competition": "low", "serpNotes": "EXAMPLE: page one is forum threads and thin directory listings; none answers it for a salon in this area, so a small local site can compete.", "relatedQuestions": ["EXAMPLE: How often should a salon website be updated?", "EXAMPLE: Who owns my website after it is built?"], "sources": [{"url": "https://www.example.gov/page-you-found", "title": "EXAMPLE: the page's own title", "supports": "EXAMPLE: one sentence, in your own words, on what this page supports"}, {"url": "https://www.example.org/another-page-you-found", "title": "EXAMPLE: the page's own title", "supports": "EXAMPLE: one sentence on what this page supports"}, {"url": "https://www.example.org/a-third-page-you-found", "title": "EXAMPLE: the page's own title", "supports": "EXAMPLE: one sentence on what this page supports"}]}}
 </example_topic>
 
 - `title`: working title, 10 to 90 characters, plain and specific, no clickbait, no year unless the topic needs one.
 - `targetQuery`: at most 200 characters. The search query the post answers, exactly as an owner would type it, and exactly the query you judged on page one.
 - `intent`: at most 200 characters. What the searcher wants (for example "commercial investigation: comparing what a one-page site costs").
-- `localAngle`: at most 200 characters. Why this matters to owners around Smiths Station, Columbus, Phenix City, Auburn and Opelika specifically.
+- `localAngle`: at most 200 characters. Who the reader is and where they are (owners around Smiths Station, Columbus, Phenix City, Auburn and Opelika). State no local fact here unless a source supports it.
 - `notDuplicateBecause`: at most 200 characters. One sentence on how this differs from every listed title and query.
-- `pillar`: exactly one of `cost`, `need`, `local-search`, `trades`, `mobile-speed`, `hiring`, `whats-included`, `after-launch` (the ids in the user message's pillar list).
-- `competition`: exactly `low` or `medium`, your judgement of page one for `targetQuery` as defined above. Never `high`: a `high` brief is discarded unread.
-- `serpNotes`: at most 300 characters, in your own words: who ranks on page one for `targetQuery` and why the studio can or cannot compete there.
+- `pillar`: exactly one of `cost`, `need`, `nearby-customers`, `trades`, `mobile-speed`, `hiring`, `whats-included`, `after-launch` (the ids in the user message's pillar list).
+- `competition`: exactly `low` or `medium`, your judgement of page one for `targetQuery` as defined above. Never `high`: if the best candidate is `high`, return `none`.
+- `serpNotes`: at most 300 characters, in your own words: who ranks on page one for `targetQuery` and why the studio can or cannot compete there. It must agree with `competition`.
 - `relatedQuestions`: optional, a list of up to 5 related questions people ask about this topic (People Also Ask style), each at most 150 characters, phrased as a searcher would ask them. The writer may use them as section headings.
 - `sources`: 3 to 6 entries. `url` is the page's public http(s) URL as it appeared in your search results; `title` is the page's title, at most 200 characters; `supports` is one sentence on what that page supports, in your own words, at most 300 characters.
 

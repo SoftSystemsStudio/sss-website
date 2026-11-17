@@ -9,6 +9,7 @@ import { LOG_ISSUE_TITLE } from './config';
 import { createGitHubClient, type DraftPr, type GitHubClient, type LogEntry } from './github';
 import { formatLogLines, loadExistingPosts, LogWriteError, reportRun, runPipeline } from './run';
 import { ModelOutputError, slugify } from './stages';
+import { pillarOf } from './pillars';
 import { CHECKLIST_KEYS, type Brief } from './types';
 
 const NOW = new Date('2026-11-16T09:00:00Z');
@@ -152,6 +153,7 @@ function pr(n: number, over: Partial<DraftPr> = {}): DraftPr {
     number: n,
     title: `Blog: Post ${n}`,
     targetQuery: `query ${n}`,
+    pillar: '',
     state: 'open',
     merged: false,
     createdAt: new Date(NOW.getTime() - 2 * DAY).toISOString(),
@@ -241,6 +243,34 @@ test('the researcher gets existing titles, past queries with status, and a parse
   assert.ok(user.includes('open draft: open query'));
   assert.ok(user.includes('2026-11-15 no-topic'));
   assert.equal(user.includes('IGNORE ALL PREVIOUS'), false);
+});
+
+test('code orders the pillars from PR history: covered pillars last, rejected ones not counted', async () => {
+  const { call, calls } = scripted([JSON.stringify({ kind: 'none', reason: 'nothing' })]);
+  const { gh } = fakeGh({
+    prs: [
+      pr(1, { state: 'closed', merged: true, pillar: 'cost' }),
+      pr(2, { state: 'closed', merged: true, pillar: 'cost' }),
+      pr(3, { pillar: 'need' }),
+      pr(4, { state: 'closed', merged: false, pillar: 'hiring' }), // rejected: not coverage
+    ],
+  });
+  await runPipeline(deps(call, gh));
+  const user = calls[0].user;
+  const list = user.slice(user.indexOf('Pillar order for today'));
+  const order = [...list.matchAll(/^\d+\. ([a-z-]+):/gm)].map((m) => m[1]);
+  assert.equal(order.length, 8);
+  assert.equal(order[7], 'cost');
+  assert.equal(order[6], 'need');
+  assert.ok(order.indexOf('hiring') < 6);
+});
+
+test('the PR body records the pillar in the strict line pillarOf reads back', async () => {
+  const { call } = scripted([TOPIC, writerReply(), reviewReply('pass')]);
+  const { gh, calls: ghCalls } = fakeGh();
+  await runPipeline(deps(call, gh));
+  const input = ghCalls.find((c) => c.method === 'createDraftPr')!.args[0] as { body: string };
+  assert.equal(pillarOf(input.body), BRIEF.pillar);
 });
 
 // ---------- gate and stale ----------

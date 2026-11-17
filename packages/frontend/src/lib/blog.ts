@@ -13,38 +13,110 @@ export interface Post extends PostFrontmatter {
   wordCount: number;
 }
 
+const ALLOWED_TAGS = [
+  'p',
+  'h2',
+  'h3',
+  'h4',
+  'ul',
+  'ol',
+  'li',
+  'blockquote',
+  'strong',
+  'em',
+  'code',
+  'pre',
+  'br',
+  'hr',
+  'a',
+];
+
+const linkOptions: sanitizeHtml.IOptions = {
+  allowedTags: ALLOWED_TAGS,
+  allowedAttributes: { a: ['href', 'rel'] },
+  allowedSchemes: ['http', 'https', 'mailto'],
+  allowedSchemesAppliedToAttributes: ['href'],
+  allowProtocolRelative: false,
+  transformTags: {
+    a: (tagName, attribs) => ({
+      tagName,
+      attribs: /^https?:\/\//i.test(attribs.href ?? '') ? { ...attribs, rel: 'noopener' } : attribs,
+    }),
+  },
+};
+
+/** The only shape a heading id can take: ASCII kebab-case. */
+// eslint-disable-next-line security/detect-unsafe-regex -- kebab-case groups are '-'-delimited, no ambiguous backtracking
+const SAFE_ID_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const MAX_ID_LENGTH = 60;
+
+/** Ids the post page's own markup uses, so a heading id never duplicates one. */
+const RESERVED_IDS = [
+  'main-content',
+  'mobile-menu',
+  'modal-title',
+  'more-notes',
+  'article-schema',
+  'breadcrumb-schema',
+  'organization-schema',
+  'local-business-schema',
+  'website-schema',
+  'faq-schema',
+  'city-service-schema',
+];
+
+/** Kebab-case id for a heading's (already sanitized) inner HTML; "section" if nothing is left. */
+export function headingId(innerHtml: string): string {
+  const base = innerHtml
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/&amp;/gi, ' and ')
+    .replace(/&[#a-z0-9]+;/gi, ' ')
+    .normalize('NFKD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/&/g, ' and ')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  if (!base) return 'section';
+  if (base.length <= MAX_ID_LENGTH) return base;
+  const cut = base.slice(0, MAX_ID_LENGTH + 1);
+  const lastDash = cut.lastIndexOf('-');
+  return (lastDash > 0 ? cut.slice(0, lastDash) : base.slice(0, MAX_ID_LENGTH)).replace(/-+$/, '');
+}
+
+/**
+ * Adds ids to the h2/h3 of HTML that sanitize-html has already stripped of every
+ * heading attribute, so `<h2>` and `<h3>` appear bare. Ids are generated here only
+ * (kebab-case, de-duplicated, never a reserved page id); post text cannot choose one.
+ */
+function addHeadingIds(html: string): string {
+  const used = new Set(RESERVED_IDS);
+  return html.replace(/<h([23])>([\s\S]*?)<\/h\1>/g, (_m, level: string, inner: string) => {
+    const base = headingId(inner);
+    let id = base;
+    for (let n = 2; used.has(id); n++) id = `${base}-${n}`;
+    used.add(id);
+    return `<h${level} id="${id}">${inner}</h${level}>`;
+  });
+}
+
+/**
+ * Markdown to safe HTML. Pass one sanitizes with no heading attributes at all, so
+ * raw HTML in a post can never set an id; code then adds generated heading ids; pass
+ * two re-sanitizes with `id` allowed on h2/h3 only, and only in the generated shape.
+ */
 export function renderMarkdown(md: string): string {
   const raw = marked.parse(resolveTokens(md), { async: false });
-  return sanitizeHtml(raw, {
-    allowedTags: [
-      'p',
-      'h2',
-      'h3',
-      'h4',
-      'ul',
-      'ol',
-      'li',
-      'blockquote',
-      'strong',
-      'em',
-      'code',
-      'pre',
-      'br',
-      'hr',
-      'a',
-    ],
-    allowedAttributes: { a: ['href', 'rel'] },
-    allowedSchemes: ['http', 'https', 'mailto'],
-    allowedSchemesAppliedToAttributes: ['href'],
-    allowProtocolRelative: false,
-    transformTags: {
-      a: (tagName, attribs) => ({
-        tagName,
-        attribs: /^https?:\/\//i.test(attribs.href ?? '')
-          ? { ...attribs, rel: 'noopener' }
-          : attribs,
-      }),
-    },
+  const clean = sanitizeHtml(raw, linkOptions);
+  const keepSafeId = (tagName: string, attribs: sanitizeHtml.Attributes) => {
+    const kept: sanitizeHtml.Attributes = {};
+    if (attribs.id && SAFE_ID_RE.test(attribs.id)) kept.id = attribs.id;
+    return { tagName, attribs: kept };
+  };
+  return sanitizeHtml(addHeadingIds(clean), {
+    ...linkOptions,
+    allowedAttributes: { a: ['href', 'rel'], h2: ['id'], h3: ['id'] },
+    transformTags: { ...linkOptions.transformTags, h2: keepSafeId, h3: keepSafeId },
   });
 }
 

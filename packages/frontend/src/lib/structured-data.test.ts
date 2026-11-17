@@ -28,12 +28,45 @@ test('a hostile title cannot close the Article JSON-LD block early', () => {
       description: HOSTILE,
       path: '/blog/x',
       datePublished: '2026-11-16',
+      wordCount: 800,
     }),
   );
   assert.equal(closings(html), 1);
   assert.ok(html.endsWith('</script>'));
   const json = html.replace(/^<script[^>]*>/, '').replace(/<\/script>$/, '');
   assert.equal((JSON.parse(json) as { headline: string }).headline, HOSTILE);
+});
+
+test('Article JSON-LD carries image, mainEntityOfPage, wordCount, language and the studio', () => {
+  const html = renderToStaticMarkup(
+    createElement(ArticleSchema, {
+      title: 'Lawn Care Website Cost',
+      description: 'd',
+      path: '/blog/lawn-care-website-cost',
+      datePublished: '2026-11-16',
+      wordCount: 912,
+    }),
+  );
+  const ld = JSON.parse(html.replace(/^<script[^>]*>/, '').replace(/<\/script>$/, '')) as Record<
+    string,
+    unknown
+  >;
+  const url = 'https://softsystemsstudiollc.com/blog/lawn-care-website-cost';
+  assert.equal(ld['@type'], 'Article');
+  assert.equal(ld.url, url);
+  assert.deepEqual(ld.mainEntityOfPage, { '@type': 'WebPage', '@id': url });
+  assert.equal(
+    ld.image,
+    'https://softsystemsstudiollc.com/api/og?title=Lawn%20Care%20Website%20Cost',
+  );
+  assert.equal(ld.wordCount, 912);
+  assert.equal(ld.inLanguage, 'en-US');
+  assert.equal(ld.datePublished, '2026-11-16');
+  assert.equal(ld.dateModified, '2026-11-16');
+  for (const org of [ld.author, ld.publisher] as Record<string, string>[]) {
+    assert.equal(org['@type'], 'Organization');
+    assert.equal(org.name, 'Soft Systems Studio');
+  }
 });
 
 test('a hostile title cannot close the Breadcrumb JSON-LD block early', () => {

@@ -57,6 +57,56 @@ test('external links get rel noopener', () => {
   assert.match(html, /<a href="\/pricing">/);
 });
 
+test('h2 and h3 get stable slug ids; h4 and other tags do not', () => {
+  const html = renderMarkdown(
+    '## How Much Does a Site Cost?\n\ntext\n\n### Café & Hosting\n\ntext\n\n#### Small print',
+  );
+  assert.match(html, /<h2 id="how-much-does-a-site-cost">How Much Does a Site Cost\?<\/h2>/);
+  assert.match(html, /<h3 id="cafe-and-hosting">Café &amp; Hosting<\/h3>/);
+  assert.match(html, /<h4>Small print<\/h4>/);
+  assert.equal(renderMarkdown('## A\n\n## A').includes('id="a-2"'), true);
+});
+
+test('heading ids are de-duplicated, never empty and never clash with page ids', () => {
+  const html = renderMarkdown('## Costs\n\n## Costs\n\n### costs\n\n## !!!\n\n## Main content');
+  const ids = [...html.matchAll(/ id="([^"]*)"/g)].map((m) => m[1]);
+  assert.deepEqual(ids, ['costs', 'costs-2', 'costs-3', 'section', 'main-content-2']);
+});
+
+test('heading ids resolve tokens and stay ASCII kebab-case under 60 characters', () => {
+  const html = renderMarkdown(`## Builds start at {{BUILD_FROM}}\n\n## ${'word '.repeat(30)}`);
+  const ids = [...html.matchAll(/ id="([^"]*)"/g)].map((m) => m[1]);
+  assert.equal(ids.length, 2);
+  for (const id of ids) {
+    // eslint-disable-next-line security/detect-unsafe-regex -- test-only, short fixed input
+    assert.match(id, /^[a-z0-9]+(-[a-z0-9]+)*$/);
+    assert.ok(id.length <= 60, id);
+  }
+  assert.ok(!ids[0].includes('{'));
+});
+
+test('post text cannot set or inject heading attributes', () => {
+  const hostile = [
+    '<h2 id="main-content" onclick="alert(1)" class="x">Raw heading</h2>',
+    '## Title <span id="evil" onmouseover="alert(1)">here</span>',
+    '## "><img src=x onerror=alert(1)> quote " attack',
+    '<h3 style="color:red" id="javascript:alert(1)">Styled</h3>',
+    '## Spoof {#custom-id}',
+  ].join('\n\n');
+  const html = renderMarkdown(hostile);
+  assert.ok(!/onclick|onmouseover|onerror|style=|class=|<img|<span/i.test(html), html);
+  assert.ok(!html.includes('id="main-content"'));
+  assert.ok(!html.includes('id="evil"'));
+  assert.ok(!html.includes('javascript'));
+  // Every heading attribute is a code-generated id and nothing else.
+  for (const m of html.matchAll(/<h[1-6]([^>]*)>/g)) {
+    // eslint-disable-next-line security/detect-unsafe-regex -- test-only, short fixed input
+    assert.match(m[1], /^( id="[a-z0-9]+(-[a-z0-9]+)*")?$/, m[0]);
+  }
+  // No other element carries an id.
+  assert.equal((html.match(/ id="/g) ?? []).length, (html.match(/<h[23] /g) ?? []).length);
+});
+
 test('invalid frontmatter throws naming the file', async () => {
   const dir = await tmp({ 'broken.md': '---\ntitle: x\n---\nbody' });
   assert.throws(() => getAllPosts(dir), /broken\.md/);

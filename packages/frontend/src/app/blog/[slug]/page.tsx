@@ -5,7 +5,8 @@ import { Navbar, Footer, Section } from '@/components/ui';
 import QuoteCta from '@/components/QuoteCta';
 import { ArticleSchema, BreadcrumbSchema } from '@/components/StructuredData';
 import { getAllPosts, getPost } from '@/lib/blog';
-import { formatPostDate } from '@/lib/blog-format';
+import { formatPostDate, postOgImage, postTitle } from '@/lib/blog-format';
+import { relatedPosts } from '@/lib/blog-related';
 import { CITY_PAGES, cityLabel } from '@/lib/cities';
 
 // Only posts in the content dir exist; anything else is a 404.
@@ -22,13 +23,19 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const post = getPost((await params).slug);
   if (!post) return {};
-  const ogImage = `/api/og?title=${encodeURIComponent(post.title)}`;
+  const ogImage = postOgImage(post.title);
+  const path = `/blog/${post.slug}`;
   return {
-    title: post.title,
+    // The post title alone when the site suffix would push it past what search shows.
+    title: postTitle(post.title),
     description: post.description,
-    alternates: { canonical: `/blog/${post.slug}` },
+    alternates: { canonical: path },
+    // A page's openGraph replaces the layout's, so url, siteName and locale are repeated here.
     openGraph: {
       type: 'article',
+      url: path,
+      siteName: 'Soft Systems Studio',
+      locale: 'en_US',
       title: post.title,
       description: post.description,
       publishedTime: post.date,
@@ -44,9 +51,12 @@ export async function generateMetadata({
 }
 
 export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
-  const post = getPost((await params).slug);
+  const { slug } = await params;
+  const all = getAllPosts();
+  const post = all.find((p) => p.slug === slug);
   if (!post) notFound();
   const path = `/blog/${post.slug}`;
+  const related = relatedPosts(all, post, 3);
 
   return (
     <>
@@ -55,6 +65,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         description={post.description}
         path={path}
         datePublished={post.date}
+        wordCount={post.wordCount}
       />
       <BreadcrumbSchema
         items={[
@@ -129,6 +140,26 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
               .
             </p>
           </article>
+
+          {related.length > 0 && (
+            <nav
+              aria-labelledby="more-notes"
+              className="mt-14 max-w-[720px] border-t border-line pt-6"
+            >
+              <h2 id="more-notes" className="font-serif text-[28px] leading-tight">
+                More notes
+              </h2>
+              <ul className="mt-3 space-y-2 text-[16px] text-ink-soft">
+                {related.map((r) => (
+                  <li key={r.slug}>
+                    <Link href={`/blog/${r.slug}`} className="link-underline font-semibold">
+                      {r.title}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          )}
         </Section>
 
         <QuoteCta />

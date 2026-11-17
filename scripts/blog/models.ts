@@ -30,8 +30,8 @@ const REQUEST_TIMEOUT_MS = 10 * 60_000;
 const MAX_RETRIES = 3;
 /** Server-tool turns can pause; resume at most this many times. */
 const MAX_CONTINUATIONS = 3;
-/** Small cap so one run cannot spiral into dozens of searches. */
-const WEB_SEARCH_MAX_USES = 8;
+/** Small cap so one run cannot spiral into dozens of searches: 6 candidates x at most 2 searches. */
+export const WEB_SEARCH_MAX_USES = 12;
 
 /**
  * The only tool any call ever gets, and only when `webSearch` is set. No

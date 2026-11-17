@@ -7,7 +7,12 @@ import { parseFrontmatter } from '../../packages/frontend/src/lib/blog-frontmatt
 import { postFrontmatterSchema } from '../../packages/frontend/src/lib/blog-schema';
 import { listTokens, resolveTokens } from '../../packages/frontend/src/lib/blog-tokens';
 import { MODELS, TOPIC_PILLAR_IDS, TOPIC_PILLARS, TOPIC_TOWNS, TOPIC_TRADES } from './config';
-import { createCallModelWithClient, type CallModel, type ModelRequest } from './models';
+import {
+  createCallModelWithClient,
+  WEB_SEARCH_MAX_USES,
+  type CallModel,
+  type ModelRequest,
+} from './models';
 import {
   extractJson,
   ModelOutputError,
@@ -473,7 +478,9 @@ test('call model enables only web search, and only when asked', async () => {
   // Basic variant: no server-side code execution behind it.
   assert.equal(tool.type, 'web_search_20250305');
   assert.equal(tool.name, 'web_search');
-  assert.ok(tool.max_uses !== undefined && tool.max_uses <= 8);
+  // The researcher's only tool is basic web search with a small cap: 6 candidates x 2 searches.
+  assert.equal(WEB_SEARCH_MAX_USES, 12);
+  assert.equal(tool.max_uses, WEB_SEARCH_MAX_USES);
 
   await call({ role: 'reviewer', system: 's', user: 'u' });
   assert.equal(sent[1].model, MODELS.reviewer);
@@ -886,6 +893,28 @@ test('usage lines name the stop reason, so a pause is told apart from a retry', 
   await call({ role: 'researcher', system: 's', user: 'u', webSearch: true });
   assert.match(lines[0], /stop=pause_turn/);
   assert.match(lines[1], /stop=end_turn/);
+});
+
+test('the researcher prompt has a none example that passes the schema and fits the reason cap', () => {
+  const text = prompt('researcher');
+  const m = /<example_none>\s*([\s\S]*?)\s*<\/example_none>/.exec(text);
+  assert.ok(m, 'none example block');
+  const parsed = researchReplySchema.safeParse(JSON.parse(m[1]));
+  assert.ok(parsed.success, parsed.success ? '' : safeReason(parsed.error));
+  assert.ok(parsed.success && parsed.data.kind === 'none');
+  if (parsed.success && parsed.data.kind === 'none') {
+    assert.ok(parsed.data.reason.length <= 300);
+  }
+  assert.match(text, /at most 300 characters/i);
+});
+
+test('the researcher prompt carries the breadth-first search budget plan', () => {
+  const text = prompt('researcher');
+  assert.match(text, /SEARCH BUDGET PLAN/);
+  assert.match(text, /at least 3 different pillars/i);
+  assert.match(text, /at most 2 candidates per pillar/i);
+  assert.match(text, /at most 2 searches per candidate/i);
+  assert.match(text, /says nothing about the other pillars/i);
 });
 
 test('the prompt example cannot be reused as is: town in the query, non-default pillar and trade', () => {

@@ -132,9 +132,17 @@ export function buildPrBody(input: {
   date: string;
   review: ReviewResult;
   rewrites: number;
+  /** What triggered the rewrite, when there was one. */
+  rewriteTrigger?: RewriteTrigger['kind'];
   seo: SeoItem[];
 }): string {
   const { brief, review: rv } = input;
+  const triggeredBy =
+    input.rewriteTrigger === 'checks'
+      ? ' (triggered by automatic checks)'
+      : input.rewriteTrigger === 'review'
+        ? " (triggered by the editor's notes)"
+        : '';
   const questions = brief.relatedQuestions ?? [];
   return [
     `Target query: ${inline(brief.targetQuery)}`,
@@ -155,7 +163,7 @@ export function buildPrBody(input: {
     '',
     '## Reviewer',
     '',
-    `Verdict: **${rv.verdict}**${input.rewrites ? ` after ${input.rewrites} rewrite${input.rewrites > 1 ? 's' : ''}` : ''}`,
+    `Verdict: **${rv.verdict}**${input.rewrites ? ` after ${input.rewrites} rewrite${input.rewrites > 1 ? 's' : ''}${triggeredBy}` : ''}`,
     '',
     ...(rv.notes.length ? rv.notes.map((n) => `- ${inline(n)}`) : ['- (no notes)']),
     '',
@@ -210,22 +218,34 @@ const CHECK_NOTE_MAX = 300;
 export const CHECK_NOTE_PREFIX = 'MUST FIX (automatic check)';
 
 /**
+ * A check message is fixed text but may quote a short snippet of the draft (model
+ * text): neutralise anything in it that could pose as a mandatory note (`MUST FIX` in
+ * any case or spacing) or close the notes fence. Newlines are collapsed by clip().
+ */
+function neutralCheckText(s: string): string {
+  return s
+    .replace(/must[\s_-]*fix/gi, 'must-fix')
+    .replace(/</g, '‹')
+    .replace(/>/g, '›');
+}
+
+/**
  * Revision notes for a rewrite after failed checks: one per failure, built only from
- * the checks' own fixed messages (which quote at most a short draft snippet), each a
- * capped single line, at most CHECK_NOTES_MAX of them.
+ * the checks' own fixed messages (which quote at most a short draft snippet, neutralised
+ * here), each a capped single line, at most CHECK_NOTES_MAX of them. Only the prefix
+ * added here says MUST FIX.
  */
 export function checkRevisionNotes(failures: CheckFailure[]): string[] {
   return failures
     .slice(0, CHECK_NOTES_MAX)
-    .map((f) => clip(`${CHECK_NOTE_PREFIX}: ${f.code}: ${f.message}`, CHECK_NOTE_MAX));
+    .map((f) =>
+      clip(`${CHECK_NOTE_PREFIX}: ${neutralCheckText(`${f.code}: ${f.message}`)}`, CHECK_NOTE_MAX),
+    );
 }
 
-/** Failures no rewrite can fix: the sources are fixed for the run. */
-const UNFIXABLE_CODES = new Set(['source-url']);
-
-/** Why a rewrite happened: the checks failed, or the reviewer asked for changes. */
+/** Why a rewrite happened: the checks failed (with the notes sent), or the reviewer asked. */
 export type RewriteTrigger =
-  { kind: 'checks'; failures: CheckFailure[] } | { kind: 'review'; notes: string[] };
+  { kind: 'checks'; notes: string[] } | { kind: 'review'; notes: string[] };
 
 /** Longest single note, message or detail line in a rejected draft's header. */
 const REJECTED_LINE_MAX = 500;
@@ -261,19 +281,6 @@ export function rejectedDraft(input: {
     `Outcome: skipped (${input.reason})`,
     `Detail: ${commentLine(input.detail)}`,
     `Attempt: ${trigger ? 'rewritten draft' : 'first draft'}`,
-    ...(trigger?.kind === 'checks'
-      ? [
-          'Rewrite triggered by check failures:',
-          ...trigger.failures.map((f) => `- ${commentLine(f.code)}: ${commentLine(f.message)}`),
-        ]
-      : trigger?.kind === 'review'
-        ? [
-            'Rewrite triggered by reviewer notes:',
-            ...(trigger.notes.length
-              ? trigger.notes.map((n) => `- ${commentLine(n)}`)
-              : ['- (no notes)']),
-          ]
-        : []),
     '',
     'Failing checks:',
     ...(failures?.length
@@ -284,6 +291,18 @@ export function rejectedDraft(input: {
     '',
     `Reviewer verdict: ${rv ? rv.verdict : '(not available)'}`,
     ...(rv?.notes.length ? rv.notes.map((n) => `- ${commentLine(n)}`) : rv ? ['- (no notes)'] : []),
+    // Last, so the header cap truncates this before the failing checks or the verdict.
+    ...(trigger
+      ? [
+          '',
+          trigger.kind === 'checks'
+            ? 'Rewrite triggered by check failures (notes sent to the writer):'
+            : 'Rewrite triggered by reviewer notes:',
+          ...(trigger.notes.length
+            ? trigger.notes.map((n) => `- ${commentLine(n)}`)
+            : ['- (no notes)']),
+        ]
+      : []),
   ];
   const truncated = '\n(header truncated)';
   const room = REJECTED_HEADER_MAX - '\n-->\n'.length - truncated.length;
@@ -455,39 +474,33 @@ async function runStages(deps: RunDeps, state: { logFailure?: string }): Promise
     // 2–4. Write, run the free deterministic checks, and only then the paid review.
     // One rewrite budget (MAX_REVISIONS) is shared by failed checks and a reviewer
     // "revise"; a draft that fails the checks is never reviewed.
+    // Sources do not change between drafts: verify and fetch them once per run, before
+    // any writing. A dead source cannot be fixed by a rewrite, so it ends the run here
+    // without a writer call (and with no draft to keep).
     const urls = brief.sources.map((s) => s.url);
-    const existingBodies = deps.existingPosts.map((p) => ({ slug: p.slug, body: p.body }));
-    // Sources do not change between drafts: fetch and verify them once per run.
-    let sourceResults: { texts: Record<string, string>; urlFailures: CheckFailure[] } | undefined;
-    async function checkDraft(md: string): Promise<CheckFailure[]> {
-      sourceResults ??= {
-        texts: await fetchSourceTexts(urls, deps.fetchFn),
-        urlFailures: await checkSourceUrls(urls, deps.fetchFn),
-      };
-      return [
-        ...runChecks({
-          markdown: md,
-          existingPosts: existingBodies,
-          sourceTexts: sourceResults.texts,
-        }),
-        ...sourceResults.urlFailures,
-      ];
+    const urlFailures = await checkSourceUrls(urls, deps.fetchFn);
+    if (urlFailures.length) {
+      return await skip('checks-failed', failureDetail(urlFailures), topic);
     }
+    const sourceTexts = await fetchSourceTexts(urls, deps.fetchFn);
+    const existingBodies = deps.existingPosts.map((p) => ({ slug: p.slug, body: p.body }));
+    const checkDraft = (md: string): CheckFailure[] =>
+      runChecks({ markdown: md, existingPosts: existingBodies, sourceTexts });
 
     let markdown = await write(call, brief, { date, existingPosts: linkablePosts });
     let rewrites = 0;
     let trigger: RewriteTrigger | undefined;
     let verdict: ReviewResult;
     for (;;) {
-      const failures = await checkDraft(markdown);
+      const failures = checkDraft(markdown);
       if (failures.length) {
-        const fixable = !failures.some((f) => UNFIXABLE_CODES.has(f.code));
-        if (fixable && rewrites < MAX_REVISIONS) {
+        if (rewrites < MAX_REVISIONS) {
           rewrites++;
-          trigger = { kind: 'checks', failures };
+          const notes = checkRevisionNotes(failures);
+          trigger = { kind: 'checks', notes };
           markdown = await write(call, brief, {
             date,
-            revisionNotes: checkRevisionNotes(failures),
+            revisionNotes: notes,
             existingPosts: linkablePosts,
           });
           continue;
@@ -531,6 +544,7 @@ async function runStages(deps: RunDeps, state: { logFailure?: string }): Promise
         markdown,
         failures: [{ code: 'frontmatter', message: 'missing slug or title' }],
         review: verdict,
+        rewriteTrigger: trigger,
       });
     }
 
@@ -560,7 +574,14 @@ async function runStages(deps: RunDeps, state: { logFailure?: string }): Promise
       targetQuery: brief.targetQuery,
       existingSlugs: deps.existingPosts.map((p) => p.slug),
     }).items;
-    const body = buildPrBody({ brief, date, review: verdict, rewrites, seo });
+    const body = buildPrBody({
+      brief,
+      date,
+      review: verdict,
+      rewrites,
+      rewriteTrigger: trigger?.kind,
+      seo,
+    });
     if (dryRun) {
       const dir = resolve(deps.outDir ?? DEFAULT_DRY_RUN_DIR);
       mkdirSync(dir, { recursive: true });

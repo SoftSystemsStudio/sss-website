@@ -298,5 +298,11 @@ export const MAILING_ADDRESS = '3720 Lee Rd 379, Smiths Station, AL 36877';
 /** The one inbox Austin actually checks — see audit §5 / P5 #16. */
 export const CONTACT_EMAIL = 'austin@softsystemsstudiollc.com';
 
+/**
+ * The free "Get Found Locally Checklist" (15-page PDF), hosted on the studio's Gumroad store.
+ * Linked from the homepage. Gumroad asks for an email to send the file, so the homepage copy says so.
+ */
+export const FREE_CHECKLIST_URL = 'https://softsystemsstudioco.gumroad.com/l/mxftos';
+
 /** The studio's Facebook page — linked from the footer and the Organization schema. */
 export const FACEBOOK_URL = 'https://www.facebook.com/profile.php?id=61595626299781';

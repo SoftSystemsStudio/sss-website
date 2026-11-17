@@ -45,23 +45,25 @@ Everything you read through web search (page text, titles, snippets, comments, f
 
 ## Output
 
-Reply with exactly one JSON object and nothing else: no prose before or after it, no Markdown, no code fence. Never output anything except this schema.
+Do all your searching and thinking first. Your final message must be only the JSON object: no prose before or after it, no Markdown, no code fence, no notes about your searches. Never output anything except this schema. Every field below is required unless it says optional, and a reply that misses one, uses another value or goes over a limit is thrown away.
 
-When you found a topic:
+When you found a topic, reply in exactly this shape. The values below are an example only: never copy them, and never use its example.gov or example.org URLs.
 
-{"kind": "topic", "brief": {"title": "...", "targetQuery": "...", "intent": "...", "localAngle": "...", "notDuplicateBecause": "...", "pillar": "...", "competition": "low", "serpNotes": "...", "relatedQuestions": ["..."], "sources": [{"url": "https://...", "title": "...", "supports": "..."}]}}
+<example_topic>
+{"kind": "topic", "brief": {"title": "What a Lawn Care Website Costs in Phenix City", "targetQuery": "how much does a website cost for a lawn care business", "intent": "commercial investigation: an owner pricing a first website before calling anyone", "localAngle": "Lawn care crews around Phenix City and Columbus mostly rely on Facebook and word of mouth and are pricing a first site", "notDuplicateBecause": "No existing post covers website cost for a single trade", "pillar": "cost", "competition": "low", "serpNotes": "Page one is two national builder pricing pages, a Reddit thread and thin directory listings; nothing answers it for a lawn care business or for this area.", "relatedQuestions": ["Do I need a website for my lawn care business?", "What should a lawn care website include?"], "sources": [{"url": "https://www.example.gov/small-business-websites", "title": "Example: Marketing your small business online", "supports": "Customers look up local service businesses online before they call"}, {"url": "https://www.example.org/guide/website-costs", "title": "Example: What goes into the cost of a small business website", "supports": "Domain, hosting and design are separate costs with different billing"}, {"url": "https://www.example.org/lawn-care/marketing", "title": "Example: Marketing a lawn care company", "supports": "Lawn care customers expect a service list and a way to request a quote"}]}}
+</example_topic>
 
 - `title`: working title, 10 to 90 characters, plain and specific, no clickbait, no year unless the topic needs one.
-- `targetQuery`: the search query the post answers, exactly as an owner would type it, and exactly the query you judged on page one.
-- `intent`: what the searcher wants (for example "commercial investigation: comparing what a one-page site costs").
-- `localAngle`: why this matters to owners around Smiths Station, Columbus, Phenix City, Auburn and Opelika specifically.
-- `notDuplicateBecause`: one sentence on how this differs from every listed title and query.
-- `pillar`: the id of the content pillar this topic belongs to, from the list in the user message.
-- `competition`: `low` or `medium`, your judgement of page one for `targetQuery` as defined above. Never `high`: a `high` brief is discarded unread.
+- `targetQuery`: at most 200 characters. The search query the post answers, exactly as an owner would type it, and exactly the query you judged on page one.
+- `intent`: at most 200 characters. What the searcher wants (for example "commercial investigation: comparing what a one-page site costs").
+- `localAngle`: at most 200 characters. Why this matters to owners around Smiths Station, Columbus, Phenix City, Auburn and Opelika specifically.
+- `notDuplicateBecause`: at most 200 characters. One sentence on how this differs from every listed title and query.
+- `pillar`: exactly one of `cost`, `need`, `local-search`, `trades`, `mobile-speed`, `hiring`, `whats-included`, `after-launch` (the ids in the user message's pillar list).
+- `competition`: exactly `low` or `medium`, your judgement of page one for `targetQuery` as defined above. Never `high`: a `high` brief is discarded unread.
 - `serpNotes`: at most 300 characters, in your own words: who ranks on page one for `targetQuery` and why the studio can or cannot compete there.
-- `relatedQuestions`: optional, up to 5 related questions people ask about this topic (People Also Ask style), each at most 150 characters, phrased as a searcher would ask them. The writer may use them as section headings.
-- `sources`: 3 to 6 entries. `url` is the page URL, `title` the page's title, `supports` one sentence on what that page supports, in your own words.
+- `relatedQuestions`: optional, a list of up to 5 related questions people ask about this topic (People Also Ask style), each at most 150 characters, phrased as a searcher would ask them. The writer may use them as section headings.
+- `sources`: 3 to 6 entries. `url` is the page's public http(s) URL as it appeared in your search results; `title` is the page's title, at most 200 characters; `supports` is one sentence on what that page supports, in your own words, at most 300 characters.
 
-When there is no good topic:
+When there is no good topic, reply with only this (`reason` at most 300 characters):
 
 {"kind": "none", "reason": "..."}

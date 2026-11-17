@@ -63,6 +63,13 @@ const RESERVED_IDS = [
   'website-schema',
   'faq-schema',
   'city-service-schema',
+  // An element id becomes a window global (named access). These are globals the page's
+  // scripts read before assigning (Vercel Analytics: window.va, vaq, vam; Next:
+  // window.next), so a heading must never take them (DOM clobbering).
+  'va',
+  'vaq',
+  'vam',
+  'next',
 ];
 
 /** Kebab-case id for a heading's (already sanitized) inner HTML; "section" if nothing is left. */

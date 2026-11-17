@@ -174,3 +174,10 @@ test('resolveContentDir uses BLOG_CONTENT_DIR only outside Vercel production', (
     def,
   );
 });
+
+test('heading ids never clobber window globals the page reads (Vercel Analytics, Next)', () => {
+  const html = renderMarkdown('## VA\n\n## VAQ\n\n### vam\n\n## Next');
+  const ids = [...html.matchAll(/ id="([^"]*)"/g)].map((m) => m[1]);
+  for (const bad of ['va', 'vaq', 'vam', 'next']) assert.equal(ids.includes(bad), false, bad);
+  assert.deepEqual(ids, ['va-2', 'vaq-2', 'vam-2', 'next-2']);
+});

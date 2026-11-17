@@ -74,7 +74,8 @@ test('a post has one untruncated title, its own meta, heading anchors and relate
   await page.goto('/blog', { waitUntil: 'networkidle' });
   const links = page.locator('main a[href^="/blog/"]:not([href$="feed.xml"])');
   const count = await links.count();
-  if (process.env.CI) expect(count, 'fixture post link').toBeGreaterThan(0);
+  // CI builds with the fixture dir, which has two related posts, so the block must render there.
+  if (process.env.CI) expect(count, 'two fixture post links').toBeGreaterThan(1);
   test.skip(count === 0, 'no posts in this build');
   const href = (await links.first().getAttribute('href'))!;
   await page.goto(href, { waitUntil: 'networkidle' });

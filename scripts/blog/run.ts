@@ -159,7 +159,7 @@ export function buildPrBody(input: {
     '',
     ...(rv.notes.length ? rv.notes.map((n) => `- ${inline(n)}`) : ['- (no notes)']),
     '',
-    'Code checks: all passed (frontmatter, word count, banned phrases, raw HTML, tokens, literal prices, unsourced dollar amounts, overlap with existing posts and sources, source URLs reachable).',
+    'Code checks: all passed, run before the review (frontmatter, word count, banned phrases, raw HTML, tokens, literal prices, unsourced dollar amounts, overlap with existing posts and sources, source URLs reachable).',
     '',
     '## Sources',
     '',
@@ -204,6 +204,29 @@ function failureDetail(failures: CheckFailure[]): string {
   return `codes: ${codes}; ${failures[0].message}`;
 }
 
+/** Most check-failure notes one rewrite carries, and the longest one. */
+const CHECK_NOTES_MAX = 12;
+const CHECK_NOTE_MAX = 300;
+export const CHECK_NOTE_PREFIX = 'MUST FIX (automatic check)';
+
+/**
+ * Revision notes for a rewrite after failed checks: one per failure, built only from
+ * the checks' own fixed messages (which quote at most a short draft snippet), each a
+ * capped single line, at most CHECK_NOTES_MAX of them.
+ */
+export function checkRevisionNotes(failures: CheckFailure[]): string[] {
+  return failures
+    .slice(0, CHECK_NOTES_MAX)
+    .map((f) => clip(`${CHECK_NOTE_PREFIX}: ${f.code}: ${f.message}`, CHECK_NOTE_MAX));
+}
+
+/** Failures no rewrite can fix: the sources are fixed for the run. */
+const UNFIXABLE_CODES = new Set(['source-url']);
+
+/** Why a rewrite happened: the checks failed, or the reviewer asked for changes. */
+export type RewriteTrigger =
+  { kind: 'checks'; failures: CheckFailure[] } | { kind: 'review'; notes: string[] };
+
 /** Longest single note, message or detail line in a rejected draft's header. */
 const REJECTED_LINE_MAX = 500;
 /** Longest rejected-draft header (the comment, before the post). */
@@ -218,8 +241,9 @@ function commentLine(s: string): string {
 }
 
 /**
- * A rejected draft for a dry run: an HTML comment header (outcome, failing checks,
- * reviewer verdict and notes) followed by the post exactly as the writer produced it.
+ * A rejected draft for a dry run: an HTML comment header (outcome, which attempt it is
+ * and what triggered the rewrite, failing checks, reviewer verdict and notes) followed
+ * by the post exactly as the writer produced it.
  */
 export function rejectedDraft(input: {
   markdown: string;
@@ -227,18 +251,36 @@ export function rejectedDraft(input: {
   detail: string;
   failures?: CheckFailure[];
   review?: ReviewResult;
+  /** Set when the draft is a rewrite; absent for a first draft. */
+  rewriteTrigger?: RewriteTrigger;
 }): string {
-  const { failures, review: rv } = input;
+  const { failures, review: rv, rewriteTrigger: trigger } = input;
   const lines = [
     '<!--',
     'Dry run: this draft was NOT published and would not have opened a PR.',
     `Outcome: skipped (${input.reason})`,
     `Detail: ${commentLine(input.detail)}`,
+    `Attempt: ${trigger ? 'rewritten draft' : 'first draft'}`,
+    ...(trigger?.kind === 'checks'
+      ? [
+          'Rewrite triggered by check failures:',
+          ...trigger.failures.map((f) => `- ${commentLine(f.code)}: ${commentLine(f.message)}`),
+        ]
+      : trigger?.kind === 'review'
+        ? [
+            'Rewrite triggered by reviewer notes:',
+            ...(trigger.notes.length
+              ? trigger.notes.map((n) => `- ${commentLine(n)}`)
+              : ['- (no notes)']),
+          ]
+        : []),
     '',
     'Failing checks:',
     ...(failures?.length
       ? failures.map((f) => `- ${commentLine(f.code)}: ${commentLine(f.message)}`)
-      : ['- (checks not run)']),
+      : failures
+        ? ['- (none)']
+        : ['- (checks not run)']),
     '',
     `Reviewer verdict: ${rv ? rv.verdict : '(not available)'}`,
     ...(rv?.notes.length ? rv.notes.map((n) => `- ${commentLine(n)}`) : rv ? ['- (no notes)'] : []),
@@ -334,7 +376,12 @@ async function runStages(deps: RunDeps, state: { logFailure?: string }): Promise
   async function reject(
     reason: 'checks-failed' | 'reviewer-reject',
     detail: string,
-    draft: { markdown: string; failures?: CheckFailure[]; review: ReviewResult },
+    draft: {
+      markdown: string;
+      failures?: CheckFailure[];
+      review?: ReviewResult;
+      rewriteTrigger?: RewriteTrigger;
+    },
   ): Promise<RunOutcome> {
     if (dryRun) {
       let slug = '';
@@ -405,43 +452,73 @@ async function runStages(deps: RunDeps, state: { logFailure?: string }): Promise
     }
     const linkablePosts = deps.existingPosts.map((p) => ({ slug: p.slug, title: p.title }));
 
-    // 2–3. Write and review, with at most MAX_REVISIONS rewrites.
-    let markdown = await write(call, brief, { date, existingPosts: linkablePosts });
-    let verdict = await review(call, brief, markdown);
-    let rewrites = 0;
-    while (verdict.verdict === 'revise' && rewrites < MAX_REVISIONS) {
-      rewrites++;
-      markdown = await write(call, brief, {
-        date,
-        revisionNotes: verdict.notes,
-        existingPosts: linkablePosts,
-      });
-      verdict = await review(call, brief, markdown);
-    }
-    if (verdict.verdict !== 'pass') {
-      const notes = verdict.notes.join(' | ') || '(no notes)';
-      return await reject('reviewer-reject', `${verdict.verdict}: ${notes}`, {
-        markdown,
-        review: verdict,
-      });
+    // 2–4. Write, run the free deterministic checks, and only then the paid review.
+    // One rewrite budget (MAX_REVISIONS) is shared by failed checks and a reviewer
+    // "revise"; a draft that fails the checks is never reviewed.
+    const urls = brief.sources.map((s) => s.url);
+    const existingBodies = deps.existingPosts.map((p) => ({ slug: p.slug, body: p.body }));
+    // Sources do not change between drafts: fetch and verify them once per run.
+    let sourceResults: { texts: Record<string, string>; urlFailures: CheckFailure[] } | undefined;
+    async function checkDraft(md: string): Promise<CheckFailure[]> {
+      sourceResults ??= {
+        texts: await fetchSourceTexts(urls, deps.fetchFn),
+        urlFailures: await checkSourceUrls(urls, deps.fetchFn),
+      };
+      return [
+        ...runChecks({
+          markdown: md,
+          existingPosts: existingBodies,
+          sourceTexts: sourceResults.texts,
+        }),
+        ...sourceResults.urlFailures,
+      ];
     }
 
-    // 4. Deterministic checks.
-    const urls = brief.sources.map((s) => s.url);
-    const failures = [
-      ...runChecks({
-        markdown,
-        existingPosts: deps.existingPosts.map((p) => ({ slug: p.slug, body: p.body })),
-        sourceTexts: await fetchSourceTexts(urls, deps.fetchFn),
-      }),
-      ...(await checkSourceUrls(urls, deps.fetchFn)),
-    ];
-    if (failures.length) {
-      return await reject('checks-failed', failureDetail(failures), {
-        markdown,
-        failures,
-        review: verdict,
-      });
+    let markdown = await write(call, brief, { date, existingPosts: linkablePosts });
+    let rewrites = 0;
+    let trigger: RewriteTrigger | undefined;
+    let verdict: ReviewResult;
+    for (;;) {
+      const failures = await checkDraft(markdown);
+      if (failures.length) {
+        const fixable = !failures.some((f) => UNFIXABLE_CODES.has(f.code));
+        if (fixable && rewrites < MAX_REVISIONS) {
+          rewrites++;
+          trigger = { kind: 'checks', failures };
+          markdown = await write(call, brief, {
+            date,
+            revisionNotes: checkRevisionNotes(failures),
+            existingPosts: linkablePosts,
+          });
+          continue;
+        }
+        return await reject('checks-failed', failureDetail(failures), {
+          markdown,
+          failures,
+          rewriteTrigger: trigger,
+        });
+      }
+      verdict = await review(call, brief, markdown);
+      if (verdict.verdict === 'revise' && rewrites < MAX_REVISIONS) {
+        rewrites++;
+        trigger = { kind: 'review', notes: verdict.notes };
+        markdown = await write(call, brief, {
+          date,
+          revisionNotes: verdict.notes,
+          existingPosts: linkablePosts,
+        });
+        continue;
+      }
+      if (verdict.verdict !== 'pass') {
+        const notes = verdict.notes.join(' | ') || '(no notes)';
+        return await reject('reviewer-reject', `${verdict.verdict}: ${notes}`, {
+          markdown,
+          failures: [],
+          review: verdict,
+          rewriteTrigger: trigger,
+        });
+      }
+      break;
     }
 
     // Slug and title come from the frontmatter write() produced, never recomputed.

@@ -540,7 +540,7 @@ export async function write(
       .map((n) => n.slice(0, MAX_REVISION_NOTE_CHARS));
     parts.push(
       '',
-      'This is a rewrite. An editor reviewed your previous draft of this brief. Fix every note below and keep everything else true to the rules:',
+      'This is a rewrite. Your previous draft of this brief was checked (by automatic checks or by an editor). Fix every note below and keep everything else true to the rules:',
       fence('revision_notes', bulletList(notes)),
     );
   }

@@ -5,9 +5,10 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { CallModel, ModelRequest } from './models';
-import { LOG_ISSUE_TITLE } from './config';
+import { LOG_ISSUE_TITLE, MAX_REVISIONS } from './config';
 import { createGitHubClient, type DraftPr, type GitHubClient, type LogEntry } from './github';
 import {
+  checkRevisionNotes,
   formatLogLines,
   loadExistingPosts,
   LogWriteError,
@@ -428,22 +429,20 @@ test('reject on the first review -> reviewer-reject without a rewrite', async ()
 
 // ---------- checks ----------
 
-test('a banned phrase -> checks-failed with its code, no PR', async () => {
-  const { call } = scripted([
-    TOPIC,
-    writerReply(validBody('Results are guaranteed within a week.')),
-    reviewReply('pass'),
-  ]);
+test('a banned phrase in both drafts -> checks-failed with its code, no PR, no review', async () => {
+  const banned = writerReply(validBody('Results are guaranteed within a week.'));
+  const { call, calls } = scripted([TOPIC, banned, banned]);
   const { gh, calls: ghCalls, logged } = fakeGh();
   const outcome = await runPipeline(deps(call, gh));
   assert.equal(outcome.kind === 'skipped' && outcome.reason, 'checks-failed');
   if (outcome.kind === 'skipped') assert.match(outcome.detail, /banned-phrase/);
+  assert.equal(calls.filter((c) => c.role === 'reviewer').length, 0);
   assert.equal(methods(ghCalls).includes('createDraftPr'), false);
   assert.equal(logged[0].outcome, 'checks-failed');
 });
 
 test('a dead source URL -> checks-failed with source-url', async () => {
-  const { call } = scripted([TOPIC, writerReply(), reviewReply('pass')]);
+  const { call } = scripted([TOPIC, writerReply()]);
   const { gh } = fakeGh();
   const outcome = await runPipeline(deps(call, gh, { fetchFn: sourceFetch(404) }));
   assert.equal(outcome.kind === 'skipped' && outcome.reason, 'checks-failed');
@@ -524,14 +523,12 @@ test('dry run checks-failed: the draft is kept as <slug>.rejected.md with the fa
   const outDir = mkdtempSync(join(tmpdir(), 'blog-dry-'));
   try {
     const bad = writerReply(validBody('Our Starter package is $997.'));
-    const { call } = scripted([TOPIC, bad, reviewReply('pass', ['reads well'])]);
+    const { call } = scripted([TOPIC, bad, bad]);
     const { gh, calls: ghCalls } = fakeGh();
     const outcome = await runPipeline(deps(call, gh, { dryRun: true, outDir }));
 
     // Same outcome as a real run would report.
-    const real = await runPipeline(
-      deps(scripted([TOPIC, bad, reviewReply('pass', ['reads well'])]).call, fakeGh().gh),
-    );
+    const real = await runPipeline(deps(scripted([TOPIC, bad, bad]).call, fakeGh().gh));
     assert.deepEqual(outcome, real);
     assert.equal(outcome.kind === 'skipped' && outcome.reason, 'checks-failed');
 
@@ -543,8 +540,9 @@ test('dry run checks-failed: the draft is kept as <slug>.rejected.md with the fa
       kept,
       /studio-literal: Studio price amount 997 typed literally; use a \{\{TOKEN\}\}\./,
     );
-    assert.match(kept, /Reviewer verdict: pass/);
-    assert.match(kept, /reads well/);
+    // Checks run before the review, so a draft that fails them is never reviewed.
+    assert.match(kept, /Reviewer verdict: \(not available\)/);
+    assert.match(kept, /Attempt: rewritten draft/);
     // The post itself follows the header unchanged.
     assert.ok(kept.includes(`slug: "${SLUG}"`));
     assert.ok(kept.includes('Our Starter package is $997.'));
@@ -615,7 +613,7 @@ test('a dry run that cannot write the rejected draft still skips with the same o
   console.error = (...a: unknown[]) => errors.push(a.join(' '));
   try {
     const bad = writerReply(validBody('Our Starter package is $997.'));
-    const { call } = scripted([TOPIC, bad, reviewReply('pass')]);
+    const { call } = scripted([TOPIC, bad, bad]);
     const { out, err, sink } = capture();
     const code = await reportRun(
       () => runPipeline(deps(call, fakeGh().gh, { dryRun: true, outDir: notADir })),
@@ -624,9 +622,7 @@ test('a dry run that cannot write the rejected draft still skips with the same o
     assert.equal(code, 0);
     assert.deepEqual(err, []);
     const outcome = JSON.parse(out[0]);
-    const real = await runPipeline(
-      deps(scripted([TOPIC, bad, reviewReply('pass')]).call, fakeGh().gh),
-    );
+    const real = await runPipeline(deps(scripted([TOPIC, bad, bad]).call, fakeGh().gh));
     assert.deepEqual(outcome, real);
     assert.equal(errors.length, 1);
     assert.match(errors[0], /rejected draft/);
@@ -641,7 +637,11 @@ test('a real run that fails checks or is rejected writes no files', async () => 
   const outDir = mkdtempSync(join(tmpdir(), 'blog-real-'));
   try {
     for (const replies of [
-      [TOPIC, writerReply(validBody('Our Starter package is $997.')), reviewReply('pass')],
+      [
+        TOPIC,
+        writerReply(validBody('Our Starter package is $997.')),
+        writerReply(validBody('Our Starter package is $997.')),
+      ],
       [TOPIC, writerReply(), reviewReply('reject')],
     ]) {
       const { call } = scripted(replies);
@@ -1077,6 +1077,250 @@ test('formatLogLines caps long fields from an edited comment and drops oversized
   assert.equal(lines.length, 1);
   assert.ok(lines[0].length <= 600);
   assert.equal(lines[0].includes('\n'), false);
+});
+
+// ---------- checks run before the review and feed the one shared rewrite ----------
+
+/** The live dry run's failure: an unsourced dollar amount in an H2. */
+const DOLLAR_HEADING = '## Is a $10-a-month website builder good enough?';
+const badDraft = () => writerReply(validBody(DOLLAR_HEADING));
+const roles = (calls: ModelRequest[], role: ModelRequest['role']) =>
+  calls.filter((c) => c.role === role);
+const MAX_WRITES = 1 + MAX_REVISIONS;
+
+/** sourceFetch that counts calls. */
+function countingFetch(status = 200): { fetchFn: typeof fetch; count: () => number } {
+  let n = 0;
+  const inner = sourceFetch(status);
+  const fetchFn = (async (...a: Parameters<typeof fetch>) => {
+    n++;
+    return inner(...a);
+  }) as typeof fetch;
+  return { fetchFn, count: () => n };
+}
+/** One text fetch plus one reachability check per source, once per run. */
+const FETCHES_PER_RUN = BRIEF.sources.length * 2;
+
+test('checks fail, check-driven rewrite passes checks, reviewer passes -> PR', async () => {
+  const { call, calls } = scripted([TOPIC, badDraft(), writerReply(), reviewReply('pass')]);
+  const { gh, calls: ghCalls, logged } = fakeGh();
+  const f = countingFetch();
+  const outcome = await runPipeline(deps(call, gh, { fetchFn: f.fetchFn }));
+  assert.deepEqual(outcome, { kind: 'pr', url: 'https://github.com/acme/site/pull/1' });
+  const writes = roles(calls, 'writer');
+  assert.equal(writes.length, 2);
+  assert.ok(writes.length <= MAX_WRITES);
+  assert.equal(roles(calls, 'reviewer').length, 1);
+  assert.equal(writes[0].user.includes('MUST FIX'), false);
+  assert.ok(writes[1].user.includes('MUST FIX (automatic check)'));
+  assert.ok(writes[1].user.includes('unsourced-dollar'));
+  assert.ok(writes[1].user.includes('Dollar amount without an http(s) source link'));
+  assert.equal(ghCalls.filter((c) => c.method === 'createDraftPr').length, 1);
+  assert.equal(logged[0].outcome, 'pr');
+  assert.equal(f.count(), FETCHES_PER_RUN);
+  const body = (ghCalls.find((c) => c.method === 'createDraftPr')!.args[0] as { body: string })
+    .body;
+  assert.match(body, /after 1 rewrite/);
+  assert.match(body, /Code checks: all passed/);
+});
+
+test('checks fail, rewrite still fails -> checks-failed, reviewer never called', async () => {
+  const outDir = mkdtempSync(join(tmpdir(), 'blog-dry-'));
+  try {
+    const { call, calls } = scripted([TOPIC, badDraft(), badDraft()]);
+    const { gh, calls: ghCalls } = fakeGh();
+    const f = countingFetch();
+    const outcome = await runPipeline(deps(call, gh, { fetchFn: f.fetchFn, dryRun: true, outDir }));
+    assert.equal(outcome.kind === 'skipped' && outcome.reason, 'checks-failed');
+    if (outcome.kind === 'skipped') assert.match(outcome.detail, /^codes: unsourced-dollar; /);
+    assert.equal(roles(calls, 'writer').length, 2);
+    assert.equal(roles(calls, 'reviewer').length, 0);
+    assert.equal(methods(ghCalls).includes('createDraftPr'), false);
+    assert.equal(f.count(), FETCHES_PER_RUN);
+    const kept = readFileSync(join(outDir, `${SLUG}.rejected.md`), 'utf8');
+    const header = kept.slice(0, kept.indexOf('-->'));
+    assert.match(header, /Attempt: rewritten draft/);
+    assert.match(header, /Rewrite triggered by check failures:\n- unsourced-dollar: /);
+    assert.match(header, /Reviewer verdict: \(not available\)/);
+  } finally {
+    rmSync(outDir, { recursive: true, force: true });
+  }
+});
+
+test('checks fail, rewrite fails, real run: same outcome, logged as checks-failed', async () => {
+  const { call, calls } = scripted([TOPIC, badDraft(), badDraft()]);
+  const { gh, logged } = fakeGh();
+  const outcome = await runPipeline(deps(call, gh));
+  assert.equal(outcome.kind === 'skipped' && outcome.reason, 'checks-failed');
+  assert.deepEqual(
+    logged.map((l) => l.outcome),
+    ['checks-failed'],
+  );
+  assert.equal(roles(calls, 'reviewer').length, 0);
+});
+
+test('checks pass, reviewer revise, rewrite passes checks and review -> PR (writer 2, reviewer 2)', async () => {
+  const { call, calls } = scripted([
+    TOPIC,
+    writerReply(),
+    reviewReply('revise', ['Tighten the opening']),
+    writerReply(),
+    reviewReply('pass'),
+  ]);
+  const { gh, calls: ghCalls } = fakeGh();
+  const f = countingFetch();
+  const outcome = await runPipeline(deps(call, gh, { fetchFn: f.fetchFn }));
+  assert.equal(outcome.kind, 'pr');
+  const writes = roles(calls, 'writer');
+  assert.equal(writes.length, 2);
+  assert.ok(writes.length <= MAX_WRITES);
+  assert.equal(roles(calls, 'reviewer').length, 2);
+  assert.ok(writes[1].user.includes('Tighten the opening'));
+  assert.equal(writes[1].user.includes('MUST FIX'), false);
+  assert.equal(ghCalls.filter((c) => c.method === 'createDraftPr').length, 1);
+  assert.equal(f.count(), FETCHES_PER_RUN);
+});
+
+test('checks pass, reviewer revise, rewrite fails checks -> checks-failed, reviewer once', async () => {
+  const outDir = mkdtempSync(join(tmpdir(), 'blog-dry-'));
+  try {
+    const { call, calls } = scripted([
+      TOPIC,
+      writerReply(),
+      reviewReply('revise', ['Add a cost section']),
+      badDraft(),
+    ]);
+    const { gh, logged } = fakeGh();
+    const f = countingFetch();
+    const outcome = await runPipeline(deps(call, gh, { fetchFn: f.fetchFn }));
+    assert.equal(outcome.kind === 'skipped' && outcome.reason, 'checks-failed');
+    assert.equal(logged[0].outcome, 'checks-failed');
+    assert.equal(roles(calls, 'writer').length, 2);
+    assert.equal(roles(calls, 'reviewer').length, 1);
+    assert.equal(f.count(), FETCHES_PER_RUN);
+
+    // Dry run: the header marks the rewritten draft.
+    const dry = scripted([
+      TOPIC,
+      writerReply(),
+      reviewReply('revise', ['Add a cost section']),
+      badDraft(),
+    ]);
+    await runPipeline(deps(dry.call, fakeGh().gh, { dryRun: true, outDir }));
+    const kept = readFileSync(join(outDir, `${SLUG}.rejected.md`), 'utf8');
+    const header = kept.slice(0, kept.indexOf('-->'));
+    assert.match(header, /Attempt: rewritten draft/);
+    assert.match(header, /Rewrite triggered by reviewer notes:\n- Add a cost section/);
+    assert.match(header, /- unsourced-dollar: /);
+  } finally {
+    rmSync(outDir, { recursive: true, force: true });
+  }
+});
+
+test('checks pass, reviewer revise, rewrite passes checks, reviewer revise -> reviewer-reject', async () => {
+  const { call, calls } = scripted([
+    TOPIC,
+    writerReply(),
+    reviewReply('revise'),
+    writerReply(),
+    reviewReply('revise', ['still thin']),
+  ]);
+  const { gh, logged } = fakeGh();
+  const outcome = await runPipeline(deps(call, gh));
+  assert.equal(outcome.kind === 'skipped' && outcome.reason, 'reviewer-reject');
+  if (outcome.kind === 'skipped') assert.equal(outcome.detail, 'revise: still thin');
+  assert.equal(logged[0].outcome, 'reviewer-reject');
+  assert.ok(roles(calls, 'writer').length <= MAX_WRITES);
+  assert.equal(roles(calls, 'reviewer').length, 2);
+});
+
+test('checks fail, rewrite passes checks, reviewer revise -> reviewer-reject, no third write', async () => {
+  const outDir = mkdtempSync(join(tmpdir(), 'blog-dry-'));
+  try {
+    const { call, calls } = scripted([
+      TOPIC,
+      badDraft(),
+      writerReply(),
+      reviewReply('revise', ['needs more']),
+      writerReply(),
+    ]);
+    const outcome = await runPipeline(deps(call, fakeGh().gh, { dryRun: true, outDir }));
+    assert.equal(outcome.kind === 'skipped' && outcome.reason, 'reviewer-reject');
+    assert.equal(roles(calls, 'writer').length, MAX_WRITES);
+    assert.equal(roles(calls, 'reviewer').length, 1);
+    const kept = readFileSync(join(outDir, `${SLUG}.rejected.md`), 'utf8');
+    const header = kept.slice(0, kept.indexOf('-->'));
+    assert.match(header, /Attempt: rewritten draft/);
+    assert.match(header, /Rewrite triggered by check failures:\n- unsourced-dollar: /);
+    assert.match(header, /Reviewer verdict: revise/);
+  } finally {
+    rmSync(outDir, { recursive: true, force: true });
+  }
+});
+
+test('reviewer reject on the first draft ends at once: writer once, reviewer once', async () => {
+  const outDir = mkdtempSync(join(tmpdir(), 'blog-dry-'));
+  try {
+    const { call, calls } = scripted([TOPIC, writerReply(), reviewReply('reject', ['off topic'])]);
+    const outcome = await runPipeline(deps(call, fakeGh().gh, { dryRun: true, outDir }));
+    assert.equal(outcome.kind === 'skipped' && outcome.reason, 'reviewer-reject');
+    assert.equal(roles(calls, 'writer').length, 1);
+    assert.equal(roles(calls, 'reviewer').length, 1);
+    const kept = readFileSync(join(outDir, `${SLUG}.rejected.md`), 'utf8');
+    const header = kept.slice(0, kept.indexOf('-->'));
+    assert.match(header, /Attempt: first draft/);
+    assert.equal(header.includes('Rewrite triggered'), false);
+  } finally {
+    rmSync(outDir, { recursive: true, force: true });
+  }
+});
+
+test('a dead source URL cannot be fixed by the writer: checks-failed with no rewrite and no review', async () => {
+  const { call, calls } = scripted([TOPIC, writerReply(), writerReply(), reviewReply('pass')]);
+  const f = countingFetch(404);
+  const outcome = await runPipeline(deps(call, fakeGh().gh, { fetchFn: f.fetchFn }));
+  assert.equal(outcome.kind === 'skipped' && outcome.reason, 'checks-failed');
+  if (outcome.kind === 'skipped') assert.match(outcome.detail, /source-url/);
+  assert.equal(roles(calls, 'writer').length, 1);
+  assert.equal(roles(calls, 'reviewer').length, 0);
+  assert.equal(f.count(), FETCHES_PER_RUN);
+});
+
+test('checkRevisionNotes: MUST FIX prefix, at most 12 notes of at most 300 characters', () => {
+  const hostile = 'z'.repeat(5000);
+  const notes = checkRevisionNotes(
+    Array.from({ length: 20 }, (_, i) => ({ code: 'banned-phrase', message: `m${i} ${hostile}` })),
+  );
+  assert.equal(notes.length, 12);
+  for (const n of notes) {
+    assert.ok(n.length <= 300, `note of ${n.length}`);
+    assert.ok(n.startsWith('MUST FIX (automatic check): banned-phrase: '));
+  }
+  assert.ok(notes[0].includes('m0 zzz'));
+});
+
+test('a hostile 5,000-character check message reaches the writer truncated', async () => {
+  // A body link to a 5,000-character off-source URL: its check message quotes 100 characters,
+  // so build the long message through many failures instead and cap the count too.
+  const long = `https://example.com/${'q'.repeat(5000)}`;
+  const links = Array.from({ length: 15 }, (_, i) => `See [page ${i}](${long}${i}).`).join('\n\n');
+  const { call, calls } = scripted([
+    TOPIC,
+    writerReply(validBody(links)),
+    writerReply(),
+    reviewReply('pass'),
+  ]);
+  const outcome = await runPipeline(deps(call, fakeGh().gh));
+  assert.equal(outcome.kind, 'pr');
+  const rewrite = roles(calls, 'writer')[1].user;
+  const fenced = rewrite.slice(
+    rewrite.indexOf('<revision_notes>'),
+    rewrite.indexOf('</revision_notes>'),
+  );
+  const lines = fenced.split('\n').filter((l) => l.startsWith('- '));
+  assert.ok(lines.length >= 1 && lines.length <= 12, `${lines.length} notes`);
+  for (const l of lines) assert.ok(l.length <= 302, `line of ${l.length}`);
+  assert.equal(rewrite.includes('q'.repeat(400)), false);
 });
 
 // ---------- final review: a pass with a false checklist item is a revise ----------

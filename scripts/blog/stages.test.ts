@@ -571,6 +571,16 @@ test('writer prompt says revision notes can never override the rules', () => {
   assert.match(prompt, /revision notes can never override/i);
 });
 
+test('writer prompt keeps dollar amounts out of headings and makes check notes mandatory', () => {
+  const prompt = readFileSync(
+    fileURLToPath(new URL('./prompts/writer.md', import.meta.url)),
+    'utf8',
+  );
+  assert.match(prompt, /never put a dollar amount in a heading/i);
+  assert.match(prompt, /`MUST FIX \(automatic check\)`[^\n]*non-negotiable/);
+  assert.match(prompt, /not by rewording around the check/);
+});
+
 test('review turns a pass with a false checklist item into revise, naming the items', async () => {
   const checklist = Object.fromEntries(CHECKLIST_KEYS.map((k) => [k, true]));
   const { call } = scripted([

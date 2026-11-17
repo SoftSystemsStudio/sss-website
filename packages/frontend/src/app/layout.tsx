@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import { Analytics } from '@vercel/analytics/next';
+import { SITE_TITLE_SUFFIX } from '@/lib/blog-format';
 import '../fonts/fallbacks.css';
 import '../styles/globals.css';
 
@@ -56,7 +57,7 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://softsystemsstudiollc.com'),
   title: {
     default: 'Soft Systems Studio | Web Design in Columbus, Phenix City & Auburn',
-    template: '%s | Soft Systems Studio',
+    template: `%s${SITE_TITLE_SUFFIX}`,
   },
   description:
     'Hey, I’m Austin. From right here in Smiths Station, AL, I design and write websites for local businesses around Columbus, Phenix City, Auburn and Opelika.',

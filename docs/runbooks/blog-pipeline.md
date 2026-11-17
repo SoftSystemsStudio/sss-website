@@ -4,11 +4,25 @@
 
 1. `.github/workflows/blog-draft.yml` runs daily at 11:17 UTC and runs `scripts/blog/cli.ts`.
 2. An agent researches and picks a topic, a second writes the post, a third reviews it.
-3. If the draft passes the checks, the run opens a pull request with the post and a short brief. Core CI runs on it.
+3. If the draft passes the checks, the run opens a pull request with the post, a short brief and an SEO scorecard. Core CI runs on it.
 4. Austin reads the PR and merges it (or closes it). Merging is the only way a post goes live.
 5. `.github/workflows/blog-published.yml` waits for the new page to return 200, then pings IndexNow for `/blog` and the post.
 
 Every outcome (opened, skipped, failed) is logged on the issue titled **Blog pipeline log**.
+
+## How topics are picked (SEO)
+
+The site's Domain Rating is about 7, so the researcher only goes after questions it can win: narrow, local, question-form queries a local owner would type, with a town or trade modifier where natural, and tied to what the studio offers. National platform-policy topics (Google Business Profile rules, algorithm updates, "what is SEO") are out.
+
+- **Pillars.** `TOPIC_PILLARS` in `scripts/blog/config.ts` lists 8 content pillars (cost, do-I-need-a-website, a website that brings in nearby customers, websites by trade, mobile and speed, choosing a designer, what a build includes, after-launch care). The order is decided in code (`scripts/blog/pillars.ts`): each draft PR body carries a `**Pillar:**` line, merged and open drafts count as coverage (closed ones do not), the least covered pillars come first, and ties (including no posts yet) rotate by the run date's day of the year. The researcher is told to use the first pillar in that order where it finds a `low` or `medium` topic and never to skip ahead because a later one feels easier; the brief records the pillar actually used. That last step is still the model's choice, so check the pillar in the PR. Published posts carry no pillar in their frontmatter, so only PR history counts. Add or rename a pillar in `config.ts` (keep it on narrow, local questions, not Google Business Profile or review ground); the town and trade modifiers are `TOPIC_TOWNS` and `TOPIC_TRADES`.
+- **Competition.** For each candidate the researcher searches the exact query and rates page one `low` (forums, thin or local pages), `medium` (a mix) or `high` (Google's own docs, national publishers, big agencies, directories, established specialists). The brief carries `competition` and `serpNotes` (who ranks and why). A `high` brief is never written: the run skips it as `no-topic` with a "high competition" detail, logged with the topic so it is not proposed again.
+- **Related questions.** The brief may carry up to 5 People-Also-Ask-style `relatedQuestions`; the writer uses them as H2s or a short FAQ.
+
+The PR's **Research brief** section shows the pillar, competition, SERP notes and related questions. The competition gate acts on the model's own rating, so read the SERP notes and close the PR if the call looks wrong.
+
+## SEO scorecard
+
+Every draft PR has an **SEO scorecard** section (`scripts/blog/seo.ts`): title at most 60 characters; description 120 to 155; every significant query word in the title or the first 100 words; the query (or all its words) in the first 100 words; at least 3 H2s; at least 2 internal links; at least 2 external source links; a list or table; a first paragraph of 30 to 70 words; average sentence at most 22 words; no repeated heading. It is advisory: a cross never blocks the draft; tighten that item in the PR (or ignore it) before merging.
 
 ## Pause and resume
 
@@ -40,12 +54,12 @@ GitHub disables scheduled workflows after 60 days of repo inactivity; if the dai
 A skipped run logs one of these (`SkipReason` in `scripts/blog/types.ts`):
 
 - `gate-full`: three draft PRs are already open; review or close one.
-- `no-topic`: the researcher found nothing worth writing about today.
+- `no-topic`: the researcher found nothing worth writing about today, or proposed a topic rated `high` competition (the detail starts "high competition for ...").
 - `reviewer-reject`: the reviewer rejected the draft, or asked for changes twice (one rewrite is allowed). A "pass" with any checklist item false counts as a request for changes.
 - `checks-failed`: the draft failed a code check; the detail lists the codes.
 - `slug-collision`: a post, an open draft PR or today's branch already uses the slug.
 
-Check codes (`scripts/blog/checks.ts`): `frontmatter`, `word-count`, `banned-phrase` (title, description and body), `raw-html`, `off-source-link` (a body link that is not one of the draft's sources or `/pricing`, `/blog`, `/intake`, a `/web-design/<town>` page; mailto links count), `unknown-token`, `studio-literal` (title, description and body), `unsourced-dollar`, `duplicate`, `copied`, `source-url`.
+Check codes (`scripts/blog/checks.ts`): `frontmatter`, `word-count`, `banned-phrase` (title, description and body), `raw-html`, `off-source-link` (a body link that is not one of the draft's sources or `/pricing`, `/blog`, `/intake`, a `/web-design/<town>` page, or `/blog/<slug>` for a post already on main; mailto links count), `unknown-token`, `studio-literal` (title, description and body), `unsourced-dollar`, `duplicate`, `copied`, `source-url`.
 
 ## Take a post down
 
@@ -53,4 +67,4 @@ Revert the merge commit of the post's PR (PR page, **Revert**, or `git revert -m
 
 ## Cost
 
-Roughly $0.30 to $1 per attempted run, about $10 to $30 a month. Keep a **monthly spend limit** set on the Anthropic key (console, Limits) as the hard cap, and check it once a month. Each model call prints one `blog model call:` line to the Actions log with the role, model and token counts (and web searches), never prompts or outputs.
+Roughly $0.30 to $1 per attempted run, about $10 to $30 a month. Keep a **monthly spend limit** set on the Anthropic key (console, Limits) as the hard cap, and check it once a month. Each model call prints one `blog model call:` line to the Actions log with the role, model and token counts (and web searches), never prompts or outputs. The line also names the stop reason: `stop=pause_turn` followed by a second line for the same role is one long web-search turn being resumed, not a retry. When a stage's reply cannot be parsed or validated it prints one `blog stage retry: role=<role> mode=<full|reformat> reason=<...>` line (the reason is built only from schema field paths and fixed error kinds, never reply text). For the researcher, `mode=reformat` means the model was asked once, with web search off, to re-emit its own draft as valid JSON (cheap, and it may not add a source URL the draft did not have); `mode=full` means the reply had no JSON at all and the research ran again. If the reformat retry also fails, the run fails (exit 1, logged as an error) with no fallback to a full re-research; a repaired brief whose source URL is not exactly one already in the draft counts as a failure.

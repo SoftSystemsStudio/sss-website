@@ -64,8 +64,15 @@ const stderrLogger: UsageLogger = (line) =>
  * One line per API call for cost visibility: role, model id and the token counts from
  * `usage`. Never prompts, outputs, URLs or keys.
  */
-function usageLine(role: ModelRole, model: string, usage: Message['usage'] | undefined): string {
+function usageLine(
+  role: ModelRole,
+  model: string,
+  usage: Message['usage'] | undefined,
+  stop: Message['stop_reason'],
+): string {
   const parts = [`blog model call: role=${role}`, `model=${model}`];
+  // A pause_turn continuation is a second line for the same call, not a retry.
+  if (typeof stop === 'string' && /^[a-z_]{1,40}$/.test(stop)) parts.push(`stop=${stop}`);
   const num = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : undefined);
   const fields: [string, number | undefined][] = [
     ['input', num(usage?.input_tokens)],
@@ -95,13 +102,14 @@ export function createCallModelWithClient(
         ...(webSearch ? { tools: [WEB_SEARCH_TOOL] } : {}),
       };
       const msg = await messages.stream(params).finalMessage();
-      logUsage(usageLine(role, params.model, msg.usage));
+      logUsage(usageLine(role, params.model, msg.usage, msg.stop_reason));
       for (const block of msg.content) if (block.type === 'text') texts.push(block.text);
 
       if (msg.stop_reason === 'pause_turn') {
-        // A long server-tool turn paused; send it back so the server resumes it.
+        // A long server-tool turn paused; send it back so the server resumes it. Its text
+        // is kept: the resumed turn only adds new blocks, so dropping it could cut an
+        // answer that began before the pause (extractJson skips any prose around it).
         history.push({ role: 'assistant', content: msg.content });
-        texts.length = 0;
         continue;
       }
       if (msg.stop_reason === 'end_turn' || msg.stop_reason === 'stop_sequence') {

@@ -25,6 +25,7 @@ import {
   FACEBOOK_URL,
 } from '@/lib/business';
 import { jsonLd } from '@/lib/json-ld';
+import { postOgImage } from '@/lib/blog-format';
 
 const SITE_URL = 'https://softsystemsstudiollc.com';
 /** One `@id` for the business, so every schema on the site describes the same entity. */
@@ -275,23 +276,29 @@ export function ArticleSchema({
   description,
   path,
   datePublished,
+  wordCount,
 }: {
   title: string;
   description: string;
   path: string;
   datePublished: string;
+  wordCount: number;
 }) {
+  const url = `${SITE_URL}${path}`;
   const schema = {
     '@context': 'https://schema.org',
     '@type': 'Article',
-    '@id': `${SITE_URL}${path}#article`,
+    '@id': `${url}#article`,
     headline: title,
     description,
-    url: `${SITE_URL}${path}`,
-    mainEntityOfPage: `${SITE_URL}${path}`,
+    url,
+    mainEntityOfPage: { '@type': 'WebPage', '@id': url },
     datePublished,
     dateModified: datePublished,
-    image: `${SITE_URL}/api/og?title=${encodeURIComponent(title)}`,
+    // The same OG image the page's metadata uses.
+    image: `${SITE_URL}${postOgImage(title)}`,
+    wordCount,
+    inLanguage: 'en-US',
     author: {
       '@type': 'Organization',
       '@id': `${SITE_URL}/#organization`,

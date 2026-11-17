@@ -15,7 +15,12 @@ export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
   alternates: { canonical: '/blog', types: { 'application/rss+xml': '/blog/feed.xml' } },
+  // A page's openGraph replaces the layout's, so url, siteName and locale are repeated here.
   openGraph: {
+    type: 'website',
+    url: '/blog',
+    siteName: 'Soft Systems Studio',
+    locale: 'en_US',
     title: TITLE,
     description: DESCRIPTION,
     images: [{ url: OG_IMAGE, width: 1200, height: 630 }],

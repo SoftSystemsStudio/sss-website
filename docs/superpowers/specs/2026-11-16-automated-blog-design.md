@@ -219,3 +219,32 @@ skip days. Austin sets a monthly spend limit on the Anthropic key as a hard cap.
   (kept in one config file); similarity thresholds; PR token mechanism (PAT vs
   GitHub App) if Austin prefers one; test strategy for the pipeline (unit tests
   with recorded model output are enough; no live-API tests in CI).
+
+## SEO upgrade 2026-11-16
+
+The first live draft picked a national query ("should I hide my home address on
+google business profile") whose page one belongs to Google's help pages and
+established local-SEO specialists, for an audience that is not the studio's. With a
+Domain Rating around 7 that post could not rank. What changed, where it now differs
+from the design above:
+
+- **Researcher.** Besides the fields in step 1, the brief carries `pillar` (one of
+  `TOPIC_PILLARS` in `scripts/blog/config.ts`; code orders them least covered first from
+  the draft PRs' `**Pillar:**` lines, ties rotating by date, and the researcher takes the
+  first with a winnable topic),
+  `competition` (`low`, `medium` or `high`, from judging page one for the exact target
+  query), `serpNotes` (who ranks and why the studio can or cannot compete) and optional
+  `relatedQuestions`. It prefers narrow, local, question-form queries with a town or
+  trade modifier, and national platform-policy topics are out. When the model rates its own brief
+  `high`, code skips it as `no-topic`; the rating is still the model's judgement, so Austin
+  should read `serpNotes` in the PR.
+- **Writer.** On-page search rules (60-character title, 120-155 character
+  description, a direct 40-60 word answer first, question-style H2s, a practical next
+  step) and 2-3 internal links to `/pricing`, a `/web-design/<town>` page or an earlier
+  post (`/blog/<slug>` of an existing post is now allowed by the off-source-link check).
+- **PR body.** Adds the new brief fields and an advisory SEO scorecard
+  (`scripts/blog/seo.ts`); it never blocks a draft.
+- **Post pages.** "More notes" links to up to 3 related posts, h2/h3 carry
+  code-generated anchor ids, the `Article` JSON-LD adds `wordCount`, `inLanguage` and a
+  `WebPage` `mainEntityOfPage`, and a long post title is used alone as the `<title>`
+  (no site suffix) so it is not cut off in results.

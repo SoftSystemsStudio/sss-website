@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { LABEL_DRAFT, LOG_ISSUE_TITLE } from './config';
+import { pillarOf } from './pillars';
 import type { SkipReason } from './types';
 
 /** A pull request labelled `blog-draft` (open, merged or closed). */
@@ -8,6 +9,8 @@ export interface DraftPr {
   title: string;
   /** From the body's first line, `Target query: <q>`; '' when absent. */
   targetQuery: string;
+  /** From the body's strict `**Pillar:**` line (pillarOf); '' when absent or unknown. */
+  pillar: string;
   state: 'open' | 'closed';
   merged: boolean;
   createdAt: string;
@@ -248,6 +251,7 @@ export function createGitHubClient(
             number: i.number,
             title: i.title.replace(/\s+/g, ' ').trim().slice(0, LOG_TOPIC_MAX),
             targetQuery: targetQueryOf(i.body),
+            pillar: pillarOf(i.body),
             state: i.state,
             merged: Boolean(i.pull_request?.merged_at),
             createdAt: i.created_at,
@@ -287,6 +291,7 @@ export function createGitHubClient(
               number: p.number,
               title: p.title.replace(/\s+/g, ' ').trim().slice(0, LOG_TOPIC_MAX),
               targetQuery: targetQueryOf(p.body),
+              pillar: pillarOf(p.body),
               state: 'open',
               merged: false,
               createdAt: p.created_at,

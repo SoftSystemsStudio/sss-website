@@ -33,3 +33,22 @@ export function formatPostDate(date: string): string {
   const [y, m, d] = date.split('-').map(Number);
   return `${MONTHS[m - 1]} ${d}, ${y}`;
 }
+
+/** What the root layout's title template appends (`%s | Soft Systems Studio`). */
+export const SITE_TITLE_SUFFIX = ' | Soft Systems Studio';
+/** Roughly what Google shows of a `<title>` before cutting it off. */
+export const TITLE_BUDGET = 60;
+
+/**
+ * A post's metadata title: the template (with the site suffix) when the whole thing
+ * fits in TITLE_BUDGET, otherwise the post title alone, so search results never cut
+ * the post's own words off to make room for the site name.
+ */
+export function postTitle(title: string): string | { absolute: string } {
+  return title.length + SITE_TITLE_SUFFIX.length <= TITLE_BUDGET ? title : { absolute: title };
+}
+
+/** Site-relative OG image for a post; the page metadata and the Article JSON-LD share it. */
+export function postOgImage(title: string): string {
+  return `/api/og?title=${encodeURIComponent(title)}`;
+}

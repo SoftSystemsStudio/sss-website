@@ -514,9 +514,11 @@ test('a banned phrase in the description only fails banned-phrase', () => {
   assert.ok(codes(runChecks({ markdown: md, ...base })).includes('banned-phrase'));
 });
 
-test('a studio price literal in the description only fails studio-literal', () => {
+test('a studio price literal in the description fails studio-literal and, with no link there, unsourced-dollar', () => {
   const md = withFront('A plain-English look', `From ${BUILD_FROM}, a plain-English look`);
-  assert.ok(codes(runChecks({ markdown: md, ...base })).includes('studio-literal'));
+  const r = codes(runChecks({ markdown: md, ...base }));
+  assert.ok(r.includes('studio-literal'));
+  assert.ok(r.includes('unsourced-dollar'));
 });
 
 test('a token in a tag fails unknown-token', () => {
@@ -550,25 +552,54 @@ test('a distinct package price fails studio-literal in any context, link or not'
   }
 });
 
-test('an ambiguous amount with studio-context wording fails studio-literal, link or not', () => {
+test('an ambiguous amount with a studio signal fails studio-literal, link or not', () => {
   for (const p of [
-    'We charge $500 for a store setup.',
-    `We charge $500 for a store setup, per ${COST_SOURCE}.`,
-    'A care plan runs $200 a month.',
-    `Our care plan is $200 ${COST_SOURCE}.`,
-    `The Soft Systems team adds a blog for $300 ${COST_SOURCE}.`,
+    'The studio adds a blog for $300.',
     `The studio adds a blog for $300 ${COST_SOURCE}.`,
-    `Booking is a $250 add-on ${COST_SOURCE}.`,
-    `Booking is a $250 add on ${COST_SOURCE}.`,
-    `A retainer of $150 ${COST_SOURCE}.`,
-    `The hosting plan is $150 ${COST_SOURCE}.`,
+    `The Soft Systems team adds a blog for $300 ${COST_SOURCE}.`,
+    `soft systems adds a blog for $300 ${COST_SOURCE}.`,
+    'A Care Plan runs $200 a month.',
+    `Care Plans run $150 to $200 a month ${COST_SOURCE}.`,
     `The Custom package starts at $5,000 ${COST_SOURCE}.`,
-    `The Business plan includes a $150 extra page ${COST_SOURCE}.`,
-    `I charge $350 for payments ${COST_SOURCE}.`,
-    `My price is $350 ${COST_SOURCE}.`,
-    `Call us: $500 setup ${COST_SOURCE}.`,
+    `The Business plan includes booking for $250 ${COST_SOURCE}.`,
+    `The Starter plan adds a $150 page ${COST_SOURCE}.`,
   ]) {
     assert.ok(has(withPara(p), 'studio-literal'), p);
+  }
+});
+
+test('a studio token in the paragraph makes a typed ambiguous amount a studio price', () => {
+  for (const p of [
+    `The {{name:business}} package adds booking for $250, per ${COST_SOURCE}.`,
+    `Builds start at {{BUILD_FROM}}, and booking adds $250, per ${COST_SOURCE}.`,
+    `Online payments cost $350 extra on top of {{price:starter}} ${COST_SOURCE}.`,
+    `Care costs $150 within {{ RETAINER_RANGE }} ${COST_SOURCE}.`,
+  ]) {
+    assert.ok(has(withPara(p), 'studio-literal'), p);
+  }
+});
+
+test('a Plus Care Plan price ($175) is guarded', () => {
+  assert.ok(has(withPara('Our Plus Care Plan is $175 a month.'), 'studio-literal'));
+  assert.ok(has(withPara(`Our Plus Care Plan is $175 a month ${COST_SOURCE}.`), 'studio-literal'));
+});
+
+test('realistic sourced market paragraphs with ordinary words pass (review probes)', () => {
+  for (const p of [
+    `Start with a business plan that lists what the site must do; agencies quote $500 to $2,000 for that, according to ${COST_SOURCE}.`,
+    `Hosting plans and add-ons from builders like Wix run $100 to $300 a month, according to ${COST_SOURCE}.`,
+    `A Small Business Plan from the SBA budgets $1,500 for marketing, according to ${COST_SOURCE}.`,
+    `One agency told the survey "We usually charge $500 to $2,000" for a small site, according to ${COST_SOURCE}.`,
+    `If a quote is above $150 a page, let us know what it covers, says ${COST_SOURCE}.`,
+    `Booking add-ons from Squarespace run $250 a year, according to ${COST_SOURCE}.`,
+    `A shared hosting plan costs about $300 a year, according to ${COST_SOURCE}.`,
+    `Agency retainers start around $500 a month, according to ${COST_SOURCE}.`,
+    `WordPress care plans typically cost $150 to $300 a month, according to ${COST_SOURCE}.`,
+    `Shopify's Growth Plan costs about $300 a month, according to ${COST_SOURCE}.`,
+    `A photo studio charges $500 for headshots, according to ${COST_SOURCE}.`,
+    `One owner in the survey said "I paid $500 and my site still looks dated", according to ${COST_SOURCE}.`,
+  ]) {
+    assert.deepEqual(ok(p), [], p);
   }
 });
 
@@ -579,9 +610,9 @@ test('an ambiguous amount with no link and no context fails unsourced-dollar, no
 });
 
 test('studio context in a different paragraph does not taint a market-price paragraph', () => {
-  const body = `${words(790)}\n\nOur notes cover this below.\n\nMany agencies quote $500 to $2,000, according to ${COST_SOURCE}.`;
+  const body = `${words(790)}\n\nThe studio builds from {{BUILD_FROM}}.\n\nMany agencies quote $500 to $2,000, according to ${COST_SOURCE}.`;
   assert.deepEqual(runChecks({ markdown: doc(body), ...base }), []);
-  const same = `${words(790)}\n\nOur notes cover this. Many agencies quote $500 to $2,000, according to ${COST_SOURCE}.`;
+  const same = `${words(790)}\n\nThe studio notes this. Many agencies quote $500 to $2,000, according to ${COST_SOURCE}.`;
   assert.ok(has(doc(same), 'studio-literal'));
 });
 
@@ -599,11 +630,11 @@ test('title and description: studio context decides, and no link means unsourced
   );
   assert.ok(ambiguousNoContext.includes('unsourced-dollar'));
   assert.ok(!ambiguousNoContext.includes('studio-literal'));
-  assert.ok(has(desc('Our $500 setup, a plain-English look'), 'studio-literal'));
+  assert.ok(has(desc('The studio $500 setup, a plain-English look'), 'studio-literal'));
   assert.ok(has(desc('From $997, a plain-English look'), 'studio-literal'));
   const title = withFront(
     'title: How local businesses can plan a simple website',
-    'title: Our care plan at $200 explained',
+    'title: The Care Plan at $200 explained',
   );
   assert.ok(has(title, 'studio-literal'));
 });

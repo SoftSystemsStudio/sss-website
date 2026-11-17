@@ -167,14 +167,18 @@ const AMBIGUOUS_AMOUNTS = new Set(
 );
 
 /**
- * Wording that makes an amount in the same paragraph a claim about the studio's own
- * price. Pronouns are matched in normal casing only, so "US" (the country) and the "i"
- * of "i.e." do not count.
+ * Signals that make an amount in the same paragraph a claim about the studio's own
+ * price. The writer must name the studio's packages and prices through tokens, so a
+ * token is the strong signal; typed product words are kept narrow (branded, capitalised
+ * forms only) so ordinary market wording ("care plans", "hosting plan", "we", "I paid")
+ * never counts.
  */
 const STUDIO_CONTEXT_RES: RegExp[] = [
-  /\b(?:studio|soft systems|care plans?|add[- ]ons?|retainers?|hosting plans?)\b/i,
-  /\b(?:starter|business|growth|custom)\s+(?:package|plan)s?\b/i,
-  /\b(?:[Ww]e|WE|[Oo]ur|OUR|[Uu]s|[Mm]y|MY|I)\b/,
+  /\{\{\s*[A-Za-z_]+(?::[A-Za-z0-9_-]+)?\s*\}\}/, // any studio token
+  /\bsoft systems\b/i,
+  /\bthe studio\b/i,
+  /\b(?:Starter|Business|Growth|Custom) (?:package|plan)\b/,
+  /\bCare Plans?\b/,
 ];
 
 function hasStudioContext(text: string): boolean {

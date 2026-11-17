@@ -3,6 +3,7 @@ import {
   BUILD_ADD_ONS,
   BUILD_FROM,
   BUILD_PACKAGES,
+  CARE_PLANS,
   HOME_BASE,
   RETAINER_MAX,
   RETAINER_MIN,
@@ -62,6 +63,7 @@ export const STUDIO_LITERALS: string[] = Array.from(
     RETAINER_MAX,
     RETAINER_RANGE,
     SECURE_CARE_PLAN_RANGE,
+    ...CARE_PLANS.map((p) => p.price),
   ]),
 );
 

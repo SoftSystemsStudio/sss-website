@@ -523,3 +523,87 @@ test('a token in a tag fails unknown-token', () => {
   const md = withFront('  - websites', '  - "{{BUILD_FROM}}"');
   assert.ok(codes(runChecks({ markdown: md, ...base })).includes('unknown-token'));
 });
+
+// ---- studio-literal: distinct package prices vs ambiguous amounts (dry run 44030434491) ----
+
+const COST_SOURCE = '[Source](https://example.com/a)';
+const ok = (p: string) => runChecks({ markdown: withPara(p), ...base });
+
+test('a market range that contains a studio amount passes when sourced and not about the studio', () => {
+  const p = `Many agencies quote $500 to $2,000 for a small business site, according to ${COST_SOURCE}.`;
+  assert.deepEqual(ok(p), []);
+});
+
+test('an ambiguous studio amount without studio context is a generic sourced number', () => {
+  assert.deepEqual(ok(`Online ordering from $500 ${COST_SOURCE}`), []);
+  assert.deepEqual(ok(`Typical care fees run $150-$200/month, per ${COST_SOURCE}.`), []);
+});
+
+test('a distinct package price fails studio-literal in any context, link or not', () => {
+  for (const p of [
+    'Our Starter package is $997.',
+    `The starter site costs $997 according to ${COST_SOURCE}.`,
+    `Agencies charge $1,997 to $3,497, per ${COST_SOURCE}.`,
+    `It costs US$997, per ${COST_SOURCE}.`,
+  ]) {
+    assert.ok(has(withPara(p), 'studio-literal'), p);
+  }
+});
+
+test('an ambiguous amount with studio-context wording fails studio-literal, link or not', () => {
+  for (const p of [
+    'We charge $500 for a store setup.',
+    `We charge $500 for a store setup, per ${COST_SOURCE}.`,
+    'A care plan runs $200 a month.',
+    `Our care plan is $200 ${COST_SOURCE}.`,
+    `The Soft Systems team adds a blog for $300 ${COST_SOURCE}.`,
+    `The studio adds a blog for $300 ${COST_SOURCE}.`,
+    `Booking is a $250 add-on ${COST_SOURCE}.`,
+    `Booking is a $250 add on ${COST_SOURCE}.`,
+    `A retainer of $150 ${COST_SOURCE}.`,
+    `The hosting plan is $150 ${COST_SOURCE}.`,
+    `The Custom package starts at $5,000 ${COST_SOURCE}.`,
+    `The Business plan includes a $150 extra page ${COST_SOURCE}.`,
+    `I charge $350 for payments ${COST_SOURCE}.`,
+    `My price is $350 ${COST_SOURCE}.`,
+    `Call us: $500 setup ${COST_SOURCE}.`,
+  ]) {
+    assert.ok(has(withPara(p), 'studio-literal'), p);
+  }
+});
+
+test('an ambiguous amount with no link and no context fails unsourced-dollar, not studio-literal', () => {
+  const r = codes(ok('Expect about $500 for that.'));
+  assert.ok(r.includes('unsourced-dollar'));
+  assert.ok(!r.includes('studio-literal'));
+});
+
+test('studio context in a different paragraph does not taint a market-price paragraph', () => {
+  const body = `${words(790)}\n\nOur notes cover this below.\n\nMany agencies quote $500 to $2,000, according to ${COST_SOURCE}.`;
+  assert.deepEqual(runChecks({ markdown: doc(body), ...base }), []);
+  const same = `${words(790)}\n\nOur notes cover this. Many agencies quote $500 to $2,000, according to ${COST_SOURCE}.`;
+  assert.ok(has(doc(same), 'studio-literal'));
+});
+
+test('"US" (country) and "i.e." are not studio context', () => {
+  assert.deepEqual(
+    ok(`In the US, agencies quote $500 to $2,000, i.e. a wide range ${COST_SOURCE}.`),
+    [],
+  );
+});
+
+test('title and description: studio context decides, and no link means unsourced-dollar', () => {
+  const desc = (to: string) => withFront('A plain-English look', to);
+  const ambiguousNoContext = codes(
+    runChecks({ markdown: desc('From $500, a plain-English look'), ...base }),
+  );
+  assert.ok(ambiguousNoContext.includes('unsourced-dollar'));
+  assert.ok(!ambiguousNoContext.includes('studio-literal'));
+  assert.ok(has(desc('Our $500 setup, a plain-English look'), 'studio-literal'));
+  assert.ok(has(desc('From $997, a plain-English look'), 'studio-literal'));
+  const title = withFront(
+    'title: How local businesses can plan a simple website',
+    'title: Our care plan at $200 explained',
+  );
+  assert.ok(has(title, 'studio-literal'));
+});

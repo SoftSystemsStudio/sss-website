@@ -204,12 +204,17 @@ function failureDetail(failures: CheckFailure[]): string {
   return `codes: ${codes}; ${failures[0].message}`;
 }
 
-/** HTML-comment-safe single line: "-->" in model text must not close the header early. */
+/** Longest single note, message or detail line in a rejected draft's header. */
+const REJECTED_LINE_MAX = 500;
+/** Longest rejected-draft header (the comment, before the post). */
+const REJECTED_HEADER_MAX = 4000;
+
+/**
+ * HTML-comment-safe single line, capped: "-->" in model text must not close the
+ * header early.
+ */
 function commentLine(s: string): string {
-  return s
-    .replace(/\s+/g, ' ')
-    .trim()
-    .replace(/--+/g, (m) => m.split('').join(' '));
+  return clip(s, REJECTED_LINE_MAX).replace(/--+/g, (m) => m.split('').join(' '));
 }
 
 /**
@@ -237,10 +242,12 @@ export function rejectedDraft(input: {
     '',
     `Reviewer verdict: ${rv ? rv.verdict : '(not available)'}`,
     ...(rv?.notes.length ? rv.notes.map((n) => `- ${commentLine(n)}`) : rv ? ['- (no notes)'] : []),
-    '-->',
-    '',
   ];
-  return `${lines.join('\n')}${input.markdown}`;
+  const truncated = '\n(header truncated)';
+  const room = REJECTED_HEADER_MAX - '\n-->\n'.length - truncated.length;
+  let inner = lines.join('\n');
+  if (inner.length > room) inner = `${inner.slice(0, room)}${truncated}`;
+  return `${inner}\n-->\n${input.markdown}`;
 }
 
 /**
@@ -337,13 +344,19 @@ async function runStages(deps: RunDeps, state: { logFailure?: string }): Promise
       } catch {
         // unparseable frontmatter: fall back to the date
       }
-      const dir = resolve(deps.outDir ?? DEFAULT_DRY_RUN_DIR);
-      mkdirSync(dir, { recursive: true });
-      writeFileSync(
-        join(dir, `${slug || `draft-${date}`}.rejected.md`),
-        rejectedDraft({ ...draft, reason, detail }),
-        'utf8',
-      );
+      try {
+        const dir = resolve(deps.outDir ?? DEFAULT_DRY_RUN_DIR);
+        mkdirSync(dir, { recursive: true });
+        writeFileSync(
+          join(dir, `${slug || `draft-${date}`}.rejected.md`),
+          rejectedDraft({ ...draft, reason, detail }),
+          'utf8',
+        );
+      } catch (err) {
+        // Best effort: the skip below is the outcome either way. No path in the line.
+        const code = (err as NodeJS.ErrnoException | null)?.code ?? 'write error';
+        console.error(`blog pipeline: could not keep the rejected draft (${code})`);
+      }
     }
     return skip(reason, detail, topic);
   }

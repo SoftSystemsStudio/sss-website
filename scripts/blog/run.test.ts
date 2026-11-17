@@ -7,10 +7,17 @@ import { fileURLToPath } from 'node:url';
 import type { CallModel, ModelRequest } from './models';
 import { LOG_ISSUE_TITLE } from './config';
 import { createGitHubClient, type DraftPr, type GitHubClient, type LogEntry } from './github';
-import { formatLogLines, loadExistingPosts, LogWriteError, reportRun, runPipeline } from './run';
+import {
+  formatLogLines,
+  loadExistingPosts,
+  LogWriteError,
+  rejectedDraft,
+  reportRun,
+  runPipeline,
+} from './run';
 import { ModelOutputError, slugify } from './stages';
 import { pillarOf } from './pillars';
-import { CHECKLIST_KEYS, type Brief } from './types';
+import { CHECKLIST_KEYS, type Brief, type ReviewResult } from './types';
 
 const NOW = new Date('2026-11-16T09:00:00Z');
 const DAY = 86_400_000;
@@ -570,6 +577,63 @@ test('dry run reviewer-reject: the draft is kept with the verdict and notes', as
     assert.equal(methods(ghCalls).includes('appendLog'), false);
   } finally {
     rmSync(outDir, { recursive: true, force: true });
+  }
+});
+
+test('rejectedDraft caps each note and message at 500 characters and the header at about 4,000', () => {
+  const long = 'x'.repeat(2000);
+  const one = rejectedDraft({
+    markdown: 'POST',
+    reason: 'checks-failed',
+    detail: long,
+    failures: [{ code: 'studio-literal', message: long }],
+    review: { verdict: 'pass', notes: [long], checklist: {} } as unknown as ReviewResult,
+  });
+  for (const line of one.split('\n')) assert.ok(line.length <= 520, `line of ${line.length}`);
+  const many = rejectedDraft({
+    markdown: 'POST',
+    reason: 'reviewer-reject',
+    detail: 'reject',
+    failures: Array.from({ length: 40 }, () => ({ code: 'copied', message: long })),
+    review: {
+      verdict: 'reject',
+      notes: Array.from({ length: 40 }, () => long),
+      checklist: {},
+    } as unknown as ReviewResult,
+  });
+  const header = many.slice(0, many.indexOf('-->') + 3);
+  assert.ok(header.length <= 4100, `header of ${header.length}`);
+  assert.ok(many.endsWith('-->\nPOST'), 'the post follows the closed header unchanged');
+});
+
+test('a dry run that cannot write the rejected draft still skips with the same outcome and exit 0', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'blog-dry-'));
+  const notADir = join(dir, 'a-file');
+  writeFileSync(notADir, 'x');
+  const errors: string[] = [];
+  const original = console.error;
+  console.error = (...a: unknown[]) => errors.push(a.join(' '));
+  try {
+    const bad = writerReply(validBody('Our Starter package is $997.'));
+    const { call } = scripted([TOPIC, bad, reviewReply('pass')]);
+    const { out, err, sink } = capture();
+    const code = await reportRun(
+      () => runPipeline(deps(call, fakeGh().gh, { dryRun: true, outDir: notADir })),
+      sink,
+    );
+    assert.equal(code, 0);
+    assert.deepEqual(err, []);
+    const outcome = JSON.parse(out[0]);
+    const real = await runPipeline(
+      deps(scripted([TOPIC, bad, reviewReply('pass')]).call, fakeGh().gh),
+    );
+    assert.deepEqual(outcome, real);
+    assert.equal(errors.length, 1);
+    assert.match(errors[0], /rejected draft/);
+    assert.ok(!errors[0].includes(dir), 'the stderr line names no path');
+  } finally {
+    console.error = original;
+    rmSync(dir, { recursive: true, force: true });
   }
 });
 

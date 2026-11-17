@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -508,6 +508,83 @@ test('dry run skip outcomes write nothing and touch no log', async () => {
     assert.equal(outcome.kind === 'skipped' && outcome.reason, 'no-topic');
     assert.equal(methods(ghCalls).includes('appendLog'), false);
     assert.equal(existsSync(join(outDir, `${SLUG}.md`)), false);
+  } finally {
+    rmSync(outDir, { recursive: true, force: true });
+  }
+});
+
+test('dry run checks-failed: the draft is kept as <slug>.rejected.md with the failing checks', async () => {
+  const outDir = mkdtempSync(join(tmpdir(), 'blog-dry-'));
+  try {
+    const bad = writerReply(validBody('Our Starter package is $997.'));
+    const { call } = scripted([TOPIC, bad, reviewReply('pass', ['reads well'])]);
+    const { gh, calls: ghCalls } = fakeGh();
+    const outcome = await runPipeline(deps(call, gh, { dryRun: true, outDir }));
+
+    // Same outcome as a real run would report.
+    const real = await runPipeline(
+      deps(scripted([TOPIC, bad, reviewReply('pass', ['reads well'])]).call, fakeGh().gh),
+    );
+    assert.deepEqual(outcome, real);
+    assert.equal(outcome.kind === 'skipped' && outcome.reason, 'checks-failed');
+
+    assert.equal(existsSync(join(outDir, `${SLUG}.md`)), false);
+    const kept = readFileSync(join(outDir, `${SLUG}.rejected.md`), 'utf8');
+    assert.ok(kept.startsWith('<!--'), 'header is an HTML comment before the post');
+    assert.match(kept, /checks-failed/);
+    assert.match(
+      kept,
+      /studio-literal: Studio price amount 997 typed literally; use a \{\{TOKEN\}\}\./,
+    );
+    assert.match(kept, /Reviewer verdict: pass/);
+    assert.match(kept, /reads well/);
+    // The post itself follows the header unchanged.
+    assert.ok(kept.includes(`slug: "${SLUG}"`));
+    assert.ok(kept.includes('Our Starter package is $997.'));
+    for (const m of methods(ghCalls)) {
+      assert.ok(['listDraftPrs', 'readLog'].includes(m), `unexpected ${m}`);
+    }
+  } finally {
+    rmSync(outDir, { recursive: true, force: true });
+  }
+});
+
+test('dry run reviewer-reject: the draft is kept with the verdict and notes', async () => {
+  const outDir = mkdtempSync(join(tmpdir(), 'blog-dry-'));
+  try {
+    const { call } = scripted([
+      TOPIC,
+      writerReply(),
+      reviewReply('reject', ['claim not in sources', 'closes with -->']),
+    ]);
+    const { gh, calls: ghCalls } = fakeGh();
+    const outcome = await runPipeline(deps(call, gh, { dryRun: true, outDir }));
+    assert.equal(outcome.kind === 'skipped' && outcome.reason, 'reviewer-reject');
+    const kept = readFileSync(join(outDir, `${SLUG}.rejected.md`), 'utf8');
+    assert.match(kept, /reviewer-reject/);
+    assert.match(kept, /Reviewer verdict: reject/);
+    assert.match(kept, /claim not in sources/);
+    // A note cannot close the header comment early.
+    assert.equal(kept.indexOf('-->'), kept.lastIndexOf('-->'));
+    assert.ok(kept.includes(`slug: "${SLUG}"`));
+    assert.equal(methods(ghCalls).includes('appendLog'), false);
+  } finally {
+    rmSync(outDir, { recursive: true, force: true });
+  }
+});
+
+test('a real run that fails checks or is rejected writes no files', async () => {
+  const outDir = mkdtempSync(join(tmpdir(), 'blog-real-'));
+  try {
+    for (const replies of [
+      [TOPIC, writerReply(validBody('Our Starter package is $997.')), reviewReply('pass')],
+      [TOPIC, writerReply(), reviewReply('reject')],
+    ]) {
+      const { call } = scripted(replies);
+      const outcome = await runPipeline(deps(call, fakeGh().gh, { outDir }));
+      assert.equal(outcome.kind, 'skipped');
+    }
+    assert.deepEqual(readdirSync(outDir), []);
   } finally {
     rmSync(outDir, { recursive: true, force: true });
   }

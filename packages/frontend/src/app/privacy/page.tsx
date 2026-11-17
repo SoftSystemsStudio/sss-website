@@ -89,7 +89,19 @@ export default function PrivacyPage() {
             When a business lists an Instagram account, we may look up its public numbers
             (followers, number of posts, when it last posted, and its bio) through Instagram&apos;s
             official business API from Meta. That only works for business and creator accounts, and
-            the only thing we send Meta is the account&apos;s public username.
+            the only thing we send Meta is the account&apos;s public username. Through the same API
+            we may also read the pictures and captions of the account&apos;s most recent public
+            posts, to find facts a business has posted for its customers, such as a menu, opening
+            hours or a special. An AI service (Anthropic) reads the pictures.
+          </p>
+          <p>
+            Facebook doesn&apos;t give us an official way to read a business&apos;s page, so we
+            don&apos;t fetch it automatically. Instead, we may take screenshots of a business&apos;s
+            public Facebook or other social media posts ourselves and have the same AI service read
+            them for the same kind of facts. A screenshot can show other people&apos;s comments or
+            names. We ask the AI service to ignore them and to report only what the business itself
+            published. We don&apos;t keep the pictures or the screenshots, only the text we read
+            from them, such as a menu or opening hours, with the business&apos;s record.
           </p>
           <p>
             Every marketing email we send includes an unsubscribe link. Use it, or just reply and
@@ -165,13 +177,16 @@ export default function PrivacyPage() {
             <li>Google Workspace: our email</li>
             <li>Google Places: finding businesses we might contact</li>
             <li>
-              Meta (Instagram): looking up the public numbers of a business&apos;s Instagram account
-              through Meta&apos;s official API
+              Meta (Instagram): looking up the public numbers, and reading the recent public posts,
+              of a business&apos;s Instagram account through Meta&apos;s official API
             </li>
             <li>Discord: our own notifications</li>
             <li>Stripe: payments</li>
             <li>Sentry: error monitoring</li>
-            <li>Anthropic: AI assistance, as described above</li>
+            <li>
+              Anthropic: AI assistance, including reading the pictures and screenshots of a
+              business&apos;s public posts, as described above
+            </li>
             <li>Web3Forms: delivering form messages on sites we build for clients</li>
           </ul>
           <p>We may also disclose information if the law requires it.</p>
@@ -181,7 +196,8 @@ export default function PrivacyPage() {
             We keep quote requests and client records while we&apos;re talking or working together.
             After that, we keep them only as long as we need them for our business and tax records,
             or until you ask us to delete them. Payment records are kept as long as tax law
-            requires. Preview visit records are deleted along with the business&apos;s record.
+            requires. Preview visit records are deleted along with the business&apos;s record, and
+            so is the text we read from a business&apos;s public posts.
           </p>
 
           <h2 className={H2}>Your rights</h2>
@@ -207,10 +223,11 @@ export default function PrivacyPage() {
             file for you. We answer within 45 days.
           </p>
           <p>
-            A deletion request covers our tool&apos;s database (your sign-up, questionnaire answers
-            and preview visits), our email inbox, the email records at Resend, and our Discord
-            notifications. Stripe keeps the payment records tax law requires, and we keep your email
-            address on our do-not-contact list so we don&apos;t write to you again.
+            A deletion request covers our tool&apos;s database (your sign-up, questionnaire answers,
+            preview visits and anything we read from your public posts), our email inbox, the email
+            records at Resend, and our Discord notifications. Stripe keeps the payment records tax
+            law requires, and we keep your email address on our do-not-contact list so we don&apos;t
+            write to you again.
           </p>
 
           <h2 className={H2}>Children</h2>

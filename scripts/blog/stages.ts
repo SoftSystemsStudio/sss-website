@@ -109,7 +109,8 @@ function hasKind(v: unknown): boolean {
  * of them that has a `kind` key (the researcher's shape), else simply the last one, so
  * a trailing `{}` or a stray source object after the answer is ignored. If an object
  * that starts like JSON (`{"`) after the last parsed one never closes, the final answer
- * was cut off: that fails rather than falling back to an earlier draft. Failures throw
+ * was cut off (wherever the cut fell, even right after an inner `}`): that fails rather
+ * than falling back to an earlier draft. Failures throw
  * StageParseError with a fixed kind.
  */
 export function extractJson(text: string): unknown {
@@ -122,9 +123,13 @@ export function extractJson(text: string): unknown {
     const end = closingBrace(text, i);
     if (end !== -1) {
       try {
-        found.push(JSON.parse(text.slice(i, end)));
+        const value: unknown = JSON.parse(text.slice(i, end));
+        // Once an unclosed object has started, everything after it is inside it (its
+        // closing brace never came), so a later object that parses is a nested one, not
+        // a new top-level answer: it neither counts nor clears the truncation.
+        if (truncated) break;
+        found.push(value);
         lastEnd = end;
-        truncated = false;
         i = text.indexOf('{', end);
         continue;
       } catch (err) {

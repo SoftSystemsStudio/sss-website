@@ -908,7 +908,11 @@ test('the prompt example cannot be reused as is: town in the query, non-default 
     'uses some other trade',
   );
   assert.match(text, /shape only/i);
-  assert.match(text, /never propose its topic, pillar, trade or town/i);
+  assert.match(text, /never copy its topic, wording or example values/i);
+  // Its pillar, trade and town are allowed when the order and research lead there, so a
+  // pillar that heads the code's order is never banned by the example.
+  assert.match(text, /pillar, trade and town are not forbidden/i);
+  assert.equal(/never propose its (topic, )?pillar/i.test(text), false);
 });
 
 test('the researcher prompt says to return none for a high candidate, not that high is pointless', () => {
@@ -987,5 +991,27 @@ test('a truncated final answer fails instead of falling back to an earlier draft
   assert.throws(
     () => extractJson(truncated),
     (e: Error) => /^invalid json/.test(e.message) && !e.message.includes('cut off'),
+  );
+});
+
+test('a final answer cut between two sources does not fall back to an earlier draft', () => {
+  const draft = JSON.stringify({ kind: 'none', reason: 'early draft' });
+  const full = JSON.stringify({ kind: 'topic', brief: BRIEF });
+  const cut = full.slice(0, full.indexOf('},{"url"') + 2); // ends with "},"
+  assert.ok(cut.endsWith('},'));
+  assert.throws(
+    () => extractJson(`${draft}\n\nFinal answer:\n${cut}`),
+    (e: Error) => e.message === 'invalid json: unexpected end',
+  );
+});
+
+test('a final answer cut right after the brief closes does not fall back to an earlier draft', () => {
+  const draft = JSON.stringify({ kind: 'none', reason: 'early draft' });
+  const full = JSON.stringify({ kind: 'topic', brief: BRIEF });
+  const cut = full.slice(0, -1); // the brief's "}" is there, the outer one is not
+  assert.ok(cut.endsWith(']}'));
+  assert.throws(
+    () => extractJson(`${draft}\n\nFinal answer:\n${cut}`),
+    (e: Error) => e.message === 'invalid json: unexpected end',
   );
 });

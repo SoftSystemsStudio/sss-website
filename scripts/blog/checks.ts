@@ -111,9 +111,16 @@ function normalizeUrl(u: string): string | null {
   }
 }
 
-function isAllowedLink(dest: string, sources: Set<string>): boolean {
+/** An allowed site path, or `/blog/<slug>` for a slug in `postSlugs` (existing posts). */
+function isAllowedSitePath(path: string, postSlugs: Set<string>): boolean {
+  if (ALLOWED_SITE_PATHS.has(path)) return true;
+  const post = /^\/blog\/([a-z0-9]+(?:-[a-z0-9]+)*)$/.exec(path);
+  return post !== null && postSlugs.has(post[1]);
+}
+
+function isAllowedLink(dest: string, sources: Set<string>, postSlugs: Set<string>): boolean {
   if (dest.startsWith('/') && !dest.startsWith('//')) {
-    return ALLOWED_SITE_PATHS.has(dest.split('#')[0].replace(/\/$/, ''));
+    return isAllowedSitePath(dest.split('#')[0].replace(/\/$/, ''), postSlugs);
   }
   const n = normalizeUrl(dest);
   if (!n) return false;
@@ -123,22 +130,23 @@ function isAllowedLink(dest: string, sources: Set<string>): boolean {
     url.protocol === 'https:' &&
     url.host === SITE_HOST &&
     !url.search &&
-    ALLOWED_SITE_PATHS.has(url.pathname.replace(/\/$/, ''))
+    isAllowedSitePath(url.pathname.replace(/\/$/, ''), postSlugs)
   );
 }
 
 /**
  * Link destinations that are neither one of the draft's frontmatter sources nor an
- * allowed site page. Anything unparseable fails closed, and mailto links are not allowed.
+ * allowed site page (including `/blog/<slug>` of an existing post). Anything
+ * unparseable fails closed, and mailto links are not allowed.
  */
-function offSourceLinks(body: string, sourceUrls: string[]): string[] {
+function offSourceLinks(body: string, sourceUrls: string[], postSlugs: Set<string>): string[] {
   const sources = new Set(sourceUrls.map(normalizeUrl).filter((u): u is string => u !== null));
   const dests = linkDestinations(body);
   for (const m of body.matchAll(BARE_URL_RE)) {
     const bare = m[0].replace(/[.,;:!?*_~'"]+$/, '');
     dests.push(/^www\./i.test(bare) ? `http://${bare}` : bare);
   }
-  return [...new Set(dests.filter((d) => !isAllowedLink(d.trim(), sources)))];
+  return [...new Set(dests.filter((d) => !isAllowedLink(d.trim(), sources, postSlugs)))];
 }
 
 /** Every distinct studio price amount (digits only, no commas), derived from STUDIO_LITERALS. */
@@ -229,7 +237,8 @@ export function runChecks(input: {
 
   const rawSources: unknown[] = Array.isArray(parsed.data.sources) ? parsed.data.sources : [];
   const sourceUrls = rawSources.map((s) => str((s as { url?: unknown } | null)?.url));
-  for (const u of offSourceLinks(body, sourceUrls)) {
+  const postSlugs = new Set(input.existingPosts.map((p) => p.slug));
+  for (const u of offSourceLinks(body, sourceUrls, postSlugs)) {
     failures.push({
       code: 'off-source-link',
       message: `Link is not one of the draft's sources or an allowed site page: "${u.slice(0, 100)}".`,

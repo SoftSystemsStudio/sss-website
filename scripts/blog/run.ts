@@ -4,7 +4,7 @@ import { pathToFileURL } from 'node:url';
 import { z } from 'zod';
 import { parseFrontmatter } from '../../packages/frontend/src/lib/blog-frontmatter';
 import { checkSourceUrls, fetchSourceTexts, runChecks, type CheckFailure } from './checks';
-import { MAX_OPEN_DRAFTS, MAX_REVISIONS, STALE_DAYS } from './config';
+import { MAX_OPEN_DRAFTS, MAX_REVISIONS, STALE_DAYS, TOPIC_PILLARS } from './config';
 import {
   clip,
   LOG_DETAIL_MAX,
@@ -14,6 +14,7 @@ import {
   type LogEntry,
 } from './github';
 import type { CallModel } from './models';
+import { seoReport, type SeoItem } from './seo';
 import { research, review, write } from './stages';
 import type { Brief, ReviewResult, RunOutcome, SkipReason } from './types';
 
@@ -105,13 +106,39 @@ function linkText(s: string): string {
   return inline(s).replace(/([[\]\\])/g, '\\$1');
 }
 
+const SEO_LABELS: Record<string, string> = {
+  'title-length': 'Title length',
+  'description-length': 'Meta description length',
+  'query-in-title-or-opening': 'Query words in the title or first 100 words',
+  'query-in-opening': 'Query in the first 100 words',
+  'h2-count': 'At least 3 H2s',
+  'internal-links': 'Internal links',
+  'source-links': 'External source links',
+  list: 'A list or table',
+  'first-paragraph': 'First paragraph answers in 30 to 70 words',
+  'sentence-length': 'Sentence length',
+  'unique-headings': 'No repeated headings',
+};
+
+function seoLines(items: SeoItem[]): string[] {
+  return items.map(
+    (i) => `- ${i.ok ? '✅' : '❌'} **${SEO_LABELS[i.key] ?? i.key}:** ${inline(i.note)}`,
+  );
+}
+
+function pillarLabel(id: string): string {
+  return TOPIC_PILLARS.find((p) => p.id === id)?.label ?? id;
+}
+
 export function buildPrBody(input: {
   brief: Brief;
   date: string;
   review: ReviewResult;
   rewrites: number;
+  seo: SeoItem[];
 }): string {
   const { brief, review: rv } = input;
+  const questions = brief.relatedQuestions ?? [];
   return [
     `Target query: ${inline(brief.targetQuery)}`,
     '',
@@ -123,6 +150,11 @@ export function buildPrBody(input: {
     `- **Intent:** ${inline(brief.intent)}`,
     `- **Local angle:** ${inline(brief.localAngle)}`,
     `- **Not a duplicate because:** ${inline(brief.notDuplicateBecause)}`,
+    `- **Pillar:** ${inline(pillarLabel(brief.pillar))}`,
+    `- **Competition:** ${brief.competition}`,
+    `- **SERP notes:** ${inline(brief.serpNotes)}`,
+    `- **Related questions:** ${questions.length ? '' : '(none)'}`,
+    ...questions.map((q) => `  - ${inline(q)}`),
     '',
     '## Reviewer',
     '',
@@ -137,6 +169,12 @@ export function buildPrBody(input: {
     ...brief.sources.map(
       (s, i) => `${i + 1}. [${linkText(s.title)}](${new URL(s.url).href}): ${inline(s.supports)}`,
     ),
+    '',
+    '## SEO scorecard',
+    '',
+    'Advisory only: a cross never blocks the draft, it shows what to tighten before merging.',
+    '',
+    ...seoLines(input.seo),
     '',
     '## Compliance checklist (before merging)',
     '',
@@ -278,14 +316,27 @@ async function runStages(deps: RunDeps, state: { logFailure?: string }): Promise
     if (found.kind === 'none') return await skip('no-topic', found.reason);
     const brief = found.brief;
     topic = `${brief.title} (query: ${brief.targetQuery})`;
+    // The prompt forbids high-competition topics; this gate makes the rule hold anyway.
+    if (brief.competition === 'high') {
+      return await skip(
+        'no-topic',
+        `high competition for "${brief.targetQuery}": ${brief.serpNotes}`,
+        topic,
+      );
+    }
+    const linkablePosts = deps.existingPosts.map((p) => ({ slug: p.slug, title: p.title }));
 
     // 2–3. Write and review, with at most MAX_REVISIONS rewrites.
-    let markdown = await write(call, brief, { date });
+    let markdown = await write(call, brief, { date, existingPosts: linkablePosts });
     let verdict = await review(call, brief, markdown);
     let rewrites = 0;
     while (verdict.verdict === 'revise' && rewrites < MAX_REVISIONS) {
       rewrites++;
-      markdown = await write(call, brief, { date, revisionNotes: verdict.notes });
+      markdown = await write(call, brief, {
+        date,
+        revisionNotes: verdict.notes,
+        existingPosts: linkablePosts,
+      });
       verdict = await review(call, brief, markdown);
     }
     if (verdict.verdict !== 'pass') {
@@ -306,7 +357,8 @@ async function runStages(deps: RunDeps, state: { logFailure?: string }): Promise
     if (failures.length) return await skip('checks-failed', failureDetail(failures), topic);
 
     // Slug and title come from the frontmatter write() produced, never recomputed.
-    const fm = parseFrontmatter(markdown).data;
+    const parsed = parseFrontmatter(markdown);
+    const fm = parsed.data;
     const slug = typeof fm.slug === 'string' ? fm.slug : '';
     const title = typeof fm.title === 'string' ? fm.title : '';
     if (!SLUG_RE.test(slug) || !title) {
@@ -332,7 +384,14 @@ async function runStages(deps: RunDeps, state: { logFailure?: string }): Promise
     }
 
     // 6. Open the PR (or write files on a dry run).
-    const body = buildPrBody({ brief, date, review: verdict, rewrites });
+    const seo = seoReport({
+      title,
+      description: typeof fm.description === 'string' ? fm.description : '',
+      body: parsed.content,
+      targetQuery: brief.targetQuery,
+      existingSlugs: deps.existingPosts.map((p) => p.slug),
+    }).items;
+    const body = buildPrBody({ brief, date, review: verdict, rewrites, seo });
     if (dryRun) {
       const dir = resolve(deps.outDir ?? DEFAULT_DRY_RUN_DIR);
       mkdirSync(dir, { recursive: true });

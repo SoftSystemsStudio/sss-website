@@ -20,6 +20,10 @@ const BRIEF: Brief = {
   intent: 'informational: owner deciding whether a website is worth it',
   localAngle: 'Owners around Columbus who rely on Facebook and word of mouth',
   notDuplicateBecause: 'No existing post covers whether a website is needed at all',
+  pillar: 'need',
+  competition: 'medium',
+  serpNotes: 'Mix of national guides and small agency posts; nothing written for Columbus owners',
+  relatedQuestions: ['Is a Facebook page enough for a small business?'],
   sources: [
     {
       url: 'https://www.sba.gov/business-guide/manage-your-business/marketing-sales',
@@ -280,6 +284,67 @@ test('none -> no-topic is logged and no PR', async () => {
   assert.deepEqual(outcome, { kind: 'skipped', reason: 'no-topic', detail: 'nothing strong' });
   assert.equal(methods(ghCalls).includes('createDraftPr'), false);
   assert.equal(logged[0].outcome, 'no-topic');
+});
+
+test('a high-competition brief -> no-topic skip naming high competition, nothing written', async () => {
+  const high = JSON.stringify({
+    kind: 'topic',
+    brief: { ...BRIEF, competition: 'high', serpNotes: 'Google help pages and Whitespark own it' },
+  });
+  const { call, calls } = scripted([high]);
+  const { gh, calls: ghCalls, logged } = fakeGh();
+  const outcome = await runPipeline(deps(call, gh));
+  assert.equal(outcome.kind, 'skipped');
+  if (outcome.kind === 'skipped') {
+    assert.equal(outcome.reason, 'no-topic');
+    assert.match(outcome.detail, /high competition/i);
+    assert.ok(outcome.detail.includes(BRIEF.targetQuery));
+  }
+  assert.equal(calls.length, 1);
+  assert.equal(methods(ghCalls).includes('createDraftPr'), false);
+  assert.equal(logged.length, 1);
+  assert.equal(logged[0].outcome, 'no-topic');
+  // Logged with its topic, so the researcher sees the query in the recent log next time.
+  assert.ok(logged[0].topic?.includes(BRIEF.targetQuery));
+});
+
+test('low and medium briefs go on to the writer', async () => {
+  for (const competition of ['low', 'medium']) {
+    const reply = JSON.stringify({ kind: 'topic', brief: { ...BRIEF, competition } });
+    const { call, calls } = scripted([reply, writerReply(), reviewReply('pass')]);
+    const { gh } = fakeGh();
+    const outcome = await runPipeline(deps(call, gh));
+    assert.equal(outcome.kind, 'pr', competition);
+    assert.equal(calls[1].role, 'writer');
+  }
+});
+
+test('the PR body shows competition, SERP notes, pillar, related questions and the SEO scorecard', async () => {
+  const { call } = scripted([TOPIC, writerReply(), reviewReply('pass')]);
+  const { gh, calls: ghCalls } = fakeGh();
+  await runPipeline(deps(call, gh));
+  const input = ghCalls.find((c) => c.method === 'createDraftPr')!.args[0] as { body: string };
+  const body = input.body;
+  assert.ok(body.includes('**Competition:** medium'));
+  assert.ok(body.includes(`**SERP notes:** ${BRIEF.serpNotes}`));
+  assert.ok(body.includes('**Pillar:** Do I need a website'));
+  assert.ok(body.includes('Is a Facebook page enough for a small business?'));
+  const seo = body.slice(body.indexOf('## SEO scorecard'));
+  assert.ok(body.includes('## SEO scorecard'));
+  assert.match(seo, /advisory/i);
+  // validBody has one h2, no internal links and one source link: crosses, but the PR still opens.
+  assert.match(seo, /❌ .*H2/);
+  assert.match(seo, /❌ .*[Ii]nternal links/);
+  assert.match(seo, /✅ .*[Tt]itle/);
+  // The scorecard sits before the compliance checklist.
+  assert.ok(body.indexOf('## SEO scorecard') < body.indexOf('## Compliance checklist'));
+});
+
+test('the writer gets the existing posts so it can link to them', async () => {
+  const { call, calls } = scripted([TOPIC, writerReply(), reviewReply('pass')]);
+  const { gh } = fakeGh();
+  await runPipeline(deps(call, gh));
+  assert.ok(calls[1].user.includes('/blog/website-cost-phenix-city'));
 });
 
 test('revise then pass -> PR, with write called twice and the notes passed on', async () => {

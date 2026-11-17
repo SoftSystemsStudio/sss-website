@@ -318,6 +318,9 @@ test('briefSchema rejects unsafe source urls at parse time', () => {
     intent: 'i',
     localAngle: 'l',
     notDuplicateBecause: 'n',
+    pillar: 'cost',
+    competition: 'low',
+    serpNotes: 's',
     sources: [{ url, title: 's', supports: 'x' }],
   });
   assert.ok(briefSchema.safeParse(mk('https://example.com/a')).success);
@@ -459,6 +462,33 @@ test('other site paths, unknown towns, mailto and other hosts fail off-source-li
   ]) {
     assert.ok(offSource(p), p);
   }
+});
+
+test('a /blog/<slug> link passes only for an existing post', () => {
+  const posts = [{ slug: 'website-cost-phenix-city', body: 'unrelated older post body text' }];
+  const offWith = (p: string) =>
+    codes(runChecks({ markdown: withPara(p), existingPosts: posts, sourceTexts: {} })).includes(
+      'off-source-link',
+    );
+  for (const p of [
+    'See [costs](/blog/website-cost-phenix-city).',
+    'See [costs](/blog/website-cost-phenix-city/).',
+    'See [costs](/blog/website-cost-phenix-city#what-drives-the-price).',
+    'See [costs](https://softsystemsstudiollc.com/blog/website-cost-phenix-city).',
+  ]) {
+    assert.ok(!offWith(p), p);
+  }
+  for (const p of [
+    'See [x](/blog/not-a-post).',
+    'See [x](/blog/website-cost-phenix-city/extra).',
+    'See [x](/blog/website-cost-phenix-city?ref=x).',
+    'See [x](/blog/feed.xml).',
+    'See [x](https://softsystemsstudiollc.com/blog/not-a-post).',
+  ]) {
+    assert.ok(offWith(p), p);
+  }
+  // Without existing posts no /blog/<slug> is allowed at all.
+  assert.ok(offSource('See [costs](/blog/website-cost-phenix-city).'));
 });
 
 test('the off-source failure names the URL', () => {

@@ -10,6 +10,8 @@ import {
   postFrontmatterSchema,
   type PostFrontmatter,
 } from '../../packages/frontend/src/lib/blog-schema';
+import { CITY_PAGES, cityLabel } from '../../packages/frontend/src/lib/cities';
+import { TOPIC_PILLARS, TOPIC_TOWNS, TOPIC_TRADES } from './config';
 import type { CallModel, ModelRequest } from './models';
 import {
   CHECKLIST_KEYS,
@@ -140,6 +142,9 @@ function briefForPrompt(brief: Brief, includeDuplicateReason: boolean): string {
     `Intent: ${brief.intent}`,
     `Local angle: ${brief.localAngle}`,
     ...(includeDuplicateReason ? [`Not a duplicate because: ${brief.notDuplicateBecause}`] : []),
+    `Competition on page one: ${brief.competition} (${brief.serpNotes})`,
+    'Related questions people also ask (use as H2s or a short FAQ where they fit):',
+    bulletList(brief.relatedQuestions ?? []),
     'Sources:',
     ...brief.sources.map(
       (s, i) => `${i + 1}. ${s.url}\n   Title: ${s.title}\n   Supports: ${s.supports}`,
@@ -183,6 +188,12 @@ export async function research(
     '',
     'Recent pipeline log:',
     fence('recent_log', bulletList(ctx.recentLog)),
+    '',
+    'Content pillars (id: label, example subjects). Pick the pillar the existing titles above cover LEAST, and put its id in `pillar`:',
+    bulletList(TOPIC_PILLARS.map((p) => `${p.id}: ${p.label} (${p.examples})`)),
+    '',
+    `Town modifiers: ${TOPIC_TOWNS.join(', ')}.`,
+    `Trade modifiers: ${TOPIC_TRADES.join(', ')}.`,
     '',
     'About the studio (for context only; the post must be useful on its own):',
     studioFactsPlain(),
@@ -256,6 +267,15 @@ function stripLeadingH1(body: string): string {
   return body.replace(/^\s*#[ \t]+[^\n]*\n+/, '').trim();
 }
 
+/** Site pages the writer may link to, as `path: what it is` lines. */
+function internalLinkTargets(existingPosts: { slug: string; title: string }[]): string {
+  return bulletList([
+    '/pricing: every package, price and Care Plan',
+    ...CITY_PAGES.map((c) => `/web-design/${c.slug}: web design in ${cityLabel(c)}`),
+    ...existingPosts.map((p) => `/blog/${p.slug}: earlier post "${p.title}"`),
+  ]);
+}
+
 /**
  * Drafts the post. The model supplies only title, description, tags and body;
  * code assembles the frontmatter so the model can never add fields, and sets
@@ -264,7 +284,12 @@ function stripLeadingH1(body: string): string {
 export async function write(
   call: CallModel,
   brief: Brief,
-  opts: { date: string; revisionNotes?: string[] },
+  opts: {
+    date: string;
+    revisionNotes?: string[];
+    /** Published posts the body may link to as `/blog/<slug>`. */
+    existingPosts?: { slug: string; title: string }[];
+  },
 ): Promise<string> {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(opts.date)) throw new Error(`write: bad date ${opts.date}`);
   const slug = slugify(brief.title);
@@ -278,6 +303,9 @@ export async function write(
     '',
     'Studio facts you may use (write them exactly with these tokens):',
     studioFactsAsTokens(),
+    '',
+    'Studio pages you may link to as internal links (relative paths, exactly as written; pick the 2 or 3 that fit, no others):',
+    internalLinkTargets(opts.existingPosts ?? []),
   ];
   if (opts.revisionNotes?.length) {
     // Capped (truncated, never thrown): the notes are model output relayed into a prompt.

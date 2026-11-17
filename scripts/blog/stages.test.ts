@@ -6,7 +6,7 @@ import type Anthropic from '@anthropic-ai/sdk';
 import { parseFrontmatter } from '../../packages/frontend/src/lib/blog-frontmatter';
 import { postFrontmatterSchema } from '../../packages/frontend/src/lib/blog-schema';
 import { listTokens, resolveTokens } from '../../packages/frontend/src/lib/blog-tokens';
-import { MODELS } from './config';
+import { MODELS, TOPIC_PILLARS, TOPIC_TOWNS, TOPIC_TRADES } from './config';
 import { createCallModelWithClient, type CallModel, type ModelRequest } from './models';
 import { ModelOutputError, research, review, slugify, write } from './stages';
 import { CHECKLIST_KEYS, type Brief } from './types';
@@ -30,6 +30,13 @@ const BRIEF: Brief = {
   intent: 'informational: owner deciding whether a website is worth it',
   localAngle: 'Owners around Columbus and Phenix City who rely on Facebook and word of mouth',
   notDuplicateBecause: 'No existing post covers whether a website is needed at all',
+  pillar: 'need',
+  competition: 'low',
+  serpNotes: 'Page one is forum threads and thin directory pages; no local answer for Columbus',
+  relatedQuestions: [
+    'Is a Facebook page enough for a small business?',
+    'How much does a one-page website cost?',
+  ],
   sources: [
     {
       url: 'https://www.sba.gov/business-guide/manage-your-business/marketing-sales',
@@ -153,7 +160,90 @@ test('research system prompt treats page content as data and names the audience'
   }
 });
 
+test('research user prompt lists every content pillar and the town and trade modifiers', async () => {
+  const { call, calls } = scripted([JSON.stringify({ kind: 'none', reason: 'x' })]);
+  await research(call, CTX);
+  const user = calls[0].user;
+  for (const p of TOPIC_PILLARS) {
+    assert.ok(user.includes(p.id), p.id);
+    assert.ok(user.includes(p.label), p.label);
+  }
+  for (const t of [...TOPIC_TOWNS, ...TOPIC_TRADES]) assert.ok(user.includes(t), t);
+  assert.match(user, /least/i);
+});
+
+test('research system prompt makes the researcher judge page one and never propose high', async () => {
+  const { call, calls } = scripted([JSON.stringify({ kind: 'none', reason: 'x' })]);
+  await research(call, CTX);
+  const sys = calls[0].system;
+  assert.match(sys, /Domain Rating/);
+  assert.match(sys, /never propose a `high`/i);
+  for (const k of ['competition', 'serpNotes', 'relatedQuestions', 'pillar']) {
+    assert.ok(sys.includes(`\`${k}\``), k);
+  }
+  assert.match(sys, /Google Business Profile/);
+});
+
+test('research accepts a brief without relatedQuestions', async () => {
+  const brief: Record<string, unknown> = { ...BRIEF };
+  delete brief.relatedQuestions;
+  const { call } = scripted([JSON.stringify({ kind: 'topic', brief })]);
+  assert.equal((await research(call, CTX)).kind, 'topic');
+});
+
+test('research rejects briefs with missing or bad competition, pillar, serpNotes or questions', async () => {
+  const noCompetition: Record<string, unknown> = { ...BRIEF };
+  delete noCompetition.competition;
+  const cases: unknown[] = [
+    noCompetition,
+    { ...BRIEF, competition: 'very low' },
+    { ...BRIEF, pillar: 'crypto' },
+    { ...BRIEF, serpNotes: '' },
+    { ...BRIEF, serpNotes: 's'.repeat(301) },
+    { ...BRIEF, relatedQuestions: ['a?', 'b?', 'c?', 'd?', 'e?', 'f?'] },
+    { ...BRIEF, relatedQuestions: ['q'.repeat(151)] },
+  ];
+  for (const brief of cases) {
+    const reply = JSON.stringify({ kind: 'topic', brief });
+    const { call } = scripted([reply, reply]);
+    await assert.rejects(research(call, CTX), ModelOutputError, reply.slice(0, 120));
+  }
+  const atCap = {
+    ...BRIEF,
+    serpNotes: 's'.repeat(300),
+    relatedQuestions: Array.from({ length: 5 }, () => 'q'.repeat(150)),
+  };
+  const { call } = scripted([JSON.stringify({ kind: 'topic', brief: atCap })]);
+  assert.equal((await research(call, CTX)).kind, 'topic');
+});
+
 // ---------- write ----------
+
+test('write prompt carries the related questions and the internal pages it may link', async () => {
+  const { call, calls } = scripted([writerReply()]);
+  await write(call, BRIEF, {
+    date: '2026-11-16',
+    existingPosts: [{ slug: 'website-cost-phenix-city', title: 'What a Website Costs' }],
+  });
+  const user = calls[0].user;
+  for (const q of BRIEF.relatedQuestions ?? []) assert.ok(user.includes(q), q);
+  for (const path of ['/pricing', '/web-design/columbus-ga', '/blog/website-cost-phenix-city']) {
+    assert.ok(user.includes(path), path);
+  }
+  assert.ok(user.includes('What a Website Costs'));
+});
+
+test('writer prompt carries the SEO rules and the real title budget', () => {
+  const text = readFileSync(fileURLToPath(new URL('./prompts/writer.md', import.meta.url)), 'utf8');
+  assert.match(text, /60 characters/);
+  assert.match(text, /120 to 155 characters/);
+  assert.match(text, /40 to 60 words/);
+  assert.match(text, /keyword stuffing/i);
+  assert.match(text, /internal link/i);
+  // The existing safety rules stay.
+  assert.match(text, /No first-person experience claims/);
+  assert.match(text, /never a raw `<` character/);
+});
 
 test('write includes revision notes in the user prompt', async () => {
   const { call, calls } = scripted([writerReply()]);

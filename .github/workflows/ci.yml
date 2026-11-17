@@ -60,7 +60,13 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Unit tests
+        run: pnpm test:unit
+
+      # Pages read their posts from the e2e fixture, never from real content.
       - name: Build workspace
+        env:
+          BLOG_CONTENT_DIR: ${{ github.workspace }}/packages/frontend/e2e/fixtures/blog
         run: pnpm -w -r build
 
       - name: Lint

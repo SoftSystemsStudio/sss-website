@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next';
 import { CITY_PAGES } from '@/lib/cities';
+import { getAllPosts } from '@/lib/blog';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = 'https://softsystemsstudiollc.com';
@@ -24,6 +25,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: new Date(),
       changeFrequency: 'monthly' as const,
       priority: 0.8,
+    })),
+    { url: `${baseUrl}/blog`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.7 },
+    ...getAllPosts().map((post) => ({
+      url: `${baseUrl}/blog/${post.slug}`,
+      lastModified: new Date(post.date),
+      changeFrequency: 'monthly' as const,
+      priority: 0.6,
     })),
     // The /demo/* sites are fictional businesses: noindex (app/demo/layout.tsx)
     // and deliberately left out here.

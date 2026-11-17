@@ -64,6 +64,8 @@ month).
   [Auburn, AL](https://softsystemsstudiollc.com/web-design/auburn-al),
   [Opelika, AL](https://softsystemsstudiollc.com/web-design/opelika-al),
   [Smiths Station, AL](https://softsystemsstudiollc.com/web-design/smiths-station-al).
+- [Blog](https://softsystemsstudiollc.com/blog): short notes for local
+  business owners on websites, search and getting found (RSS at /blog/feed.xml).
 - [Get a quote](https://softsystemsstudiollc.com/intake): a one-minute form,
   then a private link by email to a detailed questionnaire about the site
   you need, so the quote fits it.

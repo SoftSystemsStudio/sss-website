@@ -18,6 +18,7 @@ const FOOTER_NAV = [
   { label: 'Work', href: '/#portfolio' },
   { label: 'Pricing', href: '/pricing' },
   { label: 'About', href: '/about' },
+  { label: 'Blog', href: '/blog' },
   { label: 'Get a quote', href: '/intake' },
 ];
 

@@ -8,25 +8,31 @@
     "start": "next start",
     "lint": "eslint . --ext .ts,.tsx",
     "test": "pnpm run test:e2e",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:unit": "node --import tsx --test src/lib/*.test.ts"
   },
   "dependencies": {
     "@sentry/nextjs": "^10.78.0",
     "@softsystems/ui-components": "workspace:^",
     "@vercel/analytics": "^2.0.1",
+    "gray-matter": "^4.0.3",
+    "marked": "^18.2.1",
     "next": "^16.4.5",
     "react": "18.3.1",
     "react-dom": "18.3.1",
+    "sanitize-html": "^2.18.2",
     "zod": "^4.6.7"
   },
   "devDependencies": {
     "@playwright/test": "^1.65.0",
     "@types/node": "^20.19.43",
     "@types/react": "^18.2.0",
+    "@types/sanitize-html": "^2.16.2",
     "autoprefixer": "^10.6.2",
     "eslint": "^8.46.0",
     "postcss": "^8.5.32",
     "tailwindcss": "^3.4.19",
+    "tsx": "^4.23.15",
     "typescript": "^5.4.2"
   }
 }

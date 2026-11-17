@@ -1,0 +1,88 @@
+# Daily blog draft (added 2026-11-16).
+#
+# Every morning this picks a topic, writes and reviews a post, and opens a pull
+# request for Austin to approve (`scripts/blog/`). Nothing goes live until that
+# PR is merged. Outcomes, including skips, are logged on the issue titled
+# "Blog pipeline log". Runbook: docs/runbooks/blog-pipeline.md
+#
+# Secrets (repo Settings -> Secrets and variables -> Actions):
+#   ANTHROPIC_API_KEY  Anthropic key with a monthly spend limit set
+#   BLOG_PR_TOKEN      fine-grained PAT (Contents, Pull requests, Issues: write)
+#                      so the PRs it opens still trigger Core CI
+#
+# To pause: Actions tab -> "Blog draft" -> ... -> Disable workflow.
+# Manual runs default to a dry run: no PR, no issue writes, drafts are uploaded
+# as the `blog-dry-run` artifact.
+
+name: Blog draft
+
+on:
+  schedule:
+    - cron: '17 11 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (write drafts to an artifact, make no GitHub changes)'
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: blog-draft
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: '24'
+  PNPM_VERSION: '8.11.0'
+
+jobs:
+  draft:
+    name: Draft a post
+    # Scheduled runs never fire on forks, which have no secrets.
+    if: github.repository == 'SoftSystemsStudio/sss-website'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Scheduled runs are real (event is `schedule`, so DRY_RUN stays empty
+      # and falls through to false); manual runs follow the dry_run input.
+      - name: Run blog pipeline
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          BLOG_PR_TOKEN: ${{ secrets.BLOG_PR_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+        run: |
+          if [ "$DRY_RUN" = "true" ]; then
+            pnpm exec tsx scripts/blog/cli.ts --dry-run
+          else
+            pnpm exec tsx scripts/blog/cli.ts
+          fi
+
+      - name: Upload dry-run drafts
+        if: ${{ always() && github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: blog-dry-run
+          path: blog-dry-run/
+          retention-days: 14
+          if-no-files-found: ignore

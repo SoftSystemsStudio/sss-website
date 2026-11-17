@@ -1,0 +1,432 @@
+import { z } from 'zod';
+import { LABEL_DRAFT, LOG_ISSUE_TITLE } from './config';
+import type { SkipReason } from './types';
+
+/** A pull request labelled `blog-draft` (open, merged or closed). */
+export interface DraftPr {
+  number: number;
+  title: string;
+  /** From the body's first line, `Target query: <q>`; '' when absent. */
+  targetQuery: string;
+  state: 'open' | 'closed';
+  merged: boolean;
+  createdAt: string;
+  /** Head branch; only looked up for open PRs ('' for closed ones). */
+  branch: string;
+}
+
+/** One run-log line. `error` marks a run that threw (exit 1). */
+export interface LogEntry {
+  date: string;
+  outcome: SkipReason | 'pr' | 'error';
+  topic?: string;
+  detail: string;
+}
+
+export interface GitHubClient {
+  listDraftPrs(): Promise<DraftPr[]>;
+  closeStale(pr: DraftPr, reason: string): Promise<void>;
+  branchExists(branch: string): Promise<boolean>;
+  createDraftPr(input: {
+    branch: string;
+    path: string;
+    content: string;
+    title: string;
+    body: string;
+  }): Promise<{ url: string }>;
+  /** The last `limit` run-log comment bodies (trusted authors only), oldest first. Never writes. */
+  readLog(limit: number): Promise<string[]>;
+  appendLog(entry: LogEntry): Promise<void>;
+}
+
+const API = 'https://api.github.com';
+/** REST API version header. 2022-11-28 is the long-standing stable version. */
+export const GITHUB_API_VERSION = '2022-11-28';
+const PER_PAGE = 100;
+/** Hard cap on listed draft PRs, so a misbehaving API can never loop forever. */
+export const MAX_LISTED_PRS = 300;
+/** Hard stop for the open-PR list (5,000 PRs): generous, but it can never loop forever. */
+export const MAX_OPEN_PR_PAGES = 50;
+const MAX_LOG_PAGES = 5;
+const MAX_COMMENT_CHARS = 4000;
+const BASE_BRANCH = 'main';
+const BLOG_BRANCH_RE = /^blog\/\d{4}-\d{2}-\d{2}-[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const BLOG_PATH_RE = /^packages\/frontend\/content\/blog\/[a-z0-9]+(?:-[a-z0-9]+)*\.md$/;
+/** Comments by anyone else on a public repo are ignored: they could be planted. */
+const TRUSTED = new Set(['OWNER', 'MEMBER', 'COLLABORATOR']);
+export const LOG_DETAIL_MAX = 300;
+export const LOG_TOPIC_MAX = 200;
+
+/** Error from a GitHub call. The message names method, path and status, never headers. */
+export class GitHubError extends Error {
+  constructor(
+    readonly status: number,
+    message: string,
+  ) {
+    super(message);
+    this.name = 'GitHubError';
+  }
+}
+
+// ---------- log line helpers (shared with run.ts) ----------
+
+const TOKEN_LIKE_RE = /\b(?:sk-ant-[\w-]+|github_pat_\w+|gh[pousr]_\w+|Bearer\s+[\w.-]+)/gi;
+
+/** Removes anything token-shaped. Belt and braces: no code path should ever pass a secret here. */
+export function redact(s: string): string {
+  return s.replace(TOKEN_LIKE_RE, '[redacted]');
+}
+
+/** Single line, no backticks (they would break the fence), token-like strings removed, capped. */
+export function clip(s: string, max: number): string {
+  const one = redact(s).replace(/`/g, "'").replace(/\s+/g, ' ').trim();
+  return one.length <= max ? one : `${one.slice(0, max - 1)}…`;
+}
+
+/** The comment body for one log entry: a single JSON line inside a json code fence. */
+export function toLogLine(entry: LogEntry): string {
+  const safe: LogEntry = {
+    date: clip(entry.date, 10),
+    outcome: entry.outcome,
+    ...(entry.topic ? { topic: clip(entry.topic, LOG_TOPIC_MAX) } : {}),
+    detail: clip(entry.detail, LOG_DETAIL_MAX),
+  };
+  return '```json\n' + JSON.stringify(safe) + '\n```';
+}
+
+// ---------- response schemas (GitHub JSON is untrusted) ----------
+
+const issueItemSchema = z.object({
+  number: z.number().int().positive(),
+  title: z.string(),
+  body: z.string().nullish(),
+  state: z.enum(['open', 'closed']),
+  created_at: z.string(),
+  pull_request: z.object({ merged_at: z.string().nullish() }).optional(),
+});
+const refSchema = z.object({ object: z.object({ sha: z.string().regex(/^[0-9a-f]{6,64}$/i) }) });
+const pullSchema = z.object({ number: z.number().int().positive(), html_url: z.string().url() });
+/** head.repo is null for a deleted fork; a missing or null repo is never treated as ours. */
+const headSchema = z.object({
+  ref: z.string(),
+  repo: z.object({ full_name: z.string() }).nullish(),
+});
+const pullHeadSchema = z.object({ head: headSchema });
+const openPullSchema = z.object({
+  number: z.number().int().positive(),
+  title: z.string(),
+  body: z.string().nullish(),
+  created_at: z.string(),
+  head: headSchema,
+});
+const searchSchema = z.object({ items: z.array(z.unknown()) });
+const logIssueSchema = z.object({
+  number: z.number().int().positive(),
+  title: z.string(),
+  author_association: z.string(),
+  pull_request: z.unknown().optional(),
+});
+const issueCountSchema = z.object({ comments: z.number().int().nonnegative() });
+const commentSchema = z.object({ body: z.string().nullish(), author_association: z.string() });
+
+function targetQueryOf(body: string | null | undefined): string {
+  const first = (body ?? '').split(/\r?\n/, 1)[0];
+  const m = /^Target query:(.*)$/.exec(first);
+  return m ? m[1].replace(/\s+/g, ' ').trim().slice(0, LOG_TOPIC_MAX) : '';
+}
+
+function encodePath(p: string): string {
+  return p.split('/').map(encodeURIComponent).join('/');
+}
+
+export function createGitHubClient(
+  token: string,
+  repo: string,
+  fetchFn: typeof fetch = fetch,
+): GitHubClient {
+  if (!token) throw new Error('GitHub token is empty');
+  if (!/^[A-Za-z0-9-]+\/[A-Za-z0-9_.-]+$/.test(repo) || repo.includes('..')) {
+    throw new Error('GITHUB_REPOSITORY must be owner/name');
+  }
+  const repoPath = `/repos/${repo}`;
+  let logIssue: number | null | undefined; // undefined = not looked up yet, null = none
+
+  async function request(
+    method: string,
+    path: string,
+    body?: unknown,
+    okStatuses: number[] = [],
+  ): Promise<{ status: number; json: unknown }> {
+    const res = await fetchFn(`${API}${path}`, {
+      method,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/vnd.github+json',
+        'X-GitHub-Api-Version': GITHUB_API_VERSION,
+        'User-Agent': 'sss-blog-pipeline',
+        ...(body === undefined ? {} : { 'Content-Type': 'application/json' }),
+      },
+      ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+    });
+    const text = await res.text();
+    let json: unknown = undefined;
+    try {
+      json = text ? JSON.parse(text) : undefined;
+    } catch {
+      json = undefined;
+    }
+    if (res.ok || okStatuses.includes(res.status)) return { status: res.status, json };
+    const msg =
+      json && typeof json === 'object' && 'message' in json && typeof json.message === 'string'
+        ? json.message
+        : '';
+    const where = path.split('?')[0];
+    throw new GitHubError(
+      res.status,
+      `GitHub ${method} ${where} failed: HTTP ${res.status}${msg ? ` ${clip(msg, 200)}` : ''}`,
+    );
+  }
+
+  function parse<T>(schema: z.ZodType<T>, json: unknown, what: string): T {
+    const r = schema.safeParse(json);
+    if (!r.success) throw new GitHubError(0, `GitHub returned an unexpected ${what} response`);
+    return r.data;
+  }
+
+  async function deleteBranch(branch: string): Promise<void> {
+    await request(
+      'DELETE',
+      `${repoPath}/git/refs/heads/${encodePath(branch)}`,
+      undefined,
+      [404, 422],
+    );
+  }
+
+  /** The oldest issue titled exactly LOG_ISSUE_TITLE opened by a trusted author, or null. */
+  async function findLogIssue(): Promise<number | null> {
+    if (logIssue !== undefined) return logIssue;
+    const q = `repo:${repo} is:issue in:title "${LOG_ISSUE_TITLE}"`;
+    const { json } = await request(
+      'GET',
+      `/search/issues?q=${encodeURIComponent(q)}&sort=created&order=asc&per_page=30`,
+    );
+    const items = parse(searchSchema, json, 'search').items;
+    const matches = items
+      .map((i) => logIssueSchema.safeParse(i))
+      .flatMap((r) => (r.success ? [r.data] : []))
+      .filter(
+        (i) =>
+          i.title === LOG_ISSUE_TITLE &&
+          i.pull_request === undefined &&
+          TRUSTED.has(i.author_association),
+      )
+      .sort((a, b) => a.number - b.number);
+    logIssue = matches[0]?.number ?? null;
+    return logIssue;
+  }
+
+  return {
+    async listDraftPrs() {
+      // 1. History: every PR labelled blog-draft (open, merged, closed), capped.
+      const out: DraftPr[] = [];
+      for (let page = 1; page * PER_PAGE <= MAX_LISTED_PRS; page++) {
+        const params = new URLSearchParams({
+          labels: LABEL_DRAFT,
+          state: 'all',
+          sort: 'created',
+          direction: 'desc',
+          per_page: String(PER_PAGE),
+          page: String(page),
+        });
+        const { json } = await request('GET', `${repoPath}/issues?${params}`);
+        const items = parse(z.array(z.unknown()), json, 'issue list');
+        for (const raw of items) {
+          const r = issueItemSchema.safeParse(raw);
+          if (!r.success || !r.data.pull_request) continue; // malformed or a plain issue
+          const i = r.data;
+          out.push({
+            number: i.number,
+            title: i.title.replace(/\s+/g, ' ').trim().slice(0, LOG_TOPIC_MAX),
+            targetQuery: targetQueryOf(i.body),
+            state: i.state,
+            merged: Boolean(i.pull_request?.merged_at),
+            createdAt: i.created_at,
+            branch: '',
+          });
+        }
+        if (items.length < PER_PAGE) break;
+      }
+
+      // 2. Every OPEN PR, without the history cap: open drafts are found by head branch
+      // too, so a draft whose label is missing (e.g. labelling failed and the rollback
+      // failed) is still gated, closed when stale and seen by the twin-slug check.
+      // Only PRs whose head branch lives in THIS repo are ours: anyone can open a fork PR
+      // with a blog/ branch name, and a deleted fork has head.repo null.
+      const ownRepo = repo.toLowerCase();
+      const isOurs = (head: { repo?: { full_name: string } | null }) =>
+        head.repo?.full_name.toLowerCase() === ownRepo;
+      const openByNumber = new Map<number, { ref: string; ours: boolean; draft: DraftPr }>();
+      for (let page = 1; page <= MAX_OPEN_PR_PAGES; page++) {
+        const params = new URLSearchParams({
+          state: 'open',
+          sort: 'created',
+          direction: 'desc',
+          per_page: String(PER_PAGE),
+          page: String(page),
+        });
+        const { json } = await request('GET', `${repoPath}/pulls?${params}`);
+        const items = parse(z.array(z.unknown()), json, 'pull list');
+        for (const raw of items) {
+          const r = openPullSchema.safeParse(raw);
+          if (!r.success) continue;
+          const p = r.data;
+          openByNumber.set(p.number, {
+            ref: p.head.ref,
+            ours: isOurs(p.head),
+            draft: {
+              number: p.number,
+              title: p.title.replace(/\s+/g, ' ').trim().slice(0, LOG_TOPIC_MAX),
+              targetQuery: targetQueryOf(p.body),
+              state: 'open',
+              merged: false,
+              createdAt: p.created_at,
+              branch: p.head.ref,
+            },
+          });
+        }
+        if (items.length < PER_PAGE) break;
+      }
+
+      const seen = new Set(out.map((p) => p.number));
+      const kept: DraftPr[] = [];
+      for (const pr of out) {
+        if (pr.state !== 'open') {
+          kept.push(pr); // closed history: only read for titles and queries, never acted on
+          continue;
+        }
+        let head = openByNumber.get(pr.number);
+        if (!head) {
+          // Labelled but not in the open list (a race or past the hard stop): look it up.
+          const { json } = await request('GET', `${repoPath}/pulls/${pr.number}`);
+          const h = parse(pullHeadSchema, json, 'pull').head;
+          head = { ref: h.ref, ours: isOurs(h), draft: pr };
+        }
+        // An open labelled PR from a fork is not ours: never counted, closed or branch-deleted.
+        if (!head.ours) continue;
+        pr.branch = head.ref;
+        kept.push(pr);
+      }
+      for (const { ref, ours, draft } of openByNumber.values()) {
+        if (ours && !seen.has(draft.number) && BLOG_BRANCH_RE.test(ref)) kept.push(draft);
+      }
+      return kept;
+    },
+
+    async closeStale(pr, reason) {
+      await request('POST', `${repoPath}/issues/${pr.number}/comments`, { body: reason });
+      await request('PATCH', `${repoPath}/pulls/${pr.number}`, { state: 'closed' });
+      // GitHub keeps a "Restore branch" button on the closed PR.
+      if (BLOG_BRANCH_RE.test(pr.branch)) await deleteBranch(pr.branch);
+    },
+
+    async branchExists(branch) {
+      const { status } = await request(
+        'GET',
+        `${repoPath}/git/ref/heads/${encodePath(branch)}`,
+        undefined,
+        [404],
+      );
+      return status !== 404;
+    },
+
+    async createDraftPr({ branch, path, content, title, body }) {
+      if (!BLOG_BRANCH_RE.test(branch)) throw new Error(`refusing branch ${branch}`);
+      if (!BLOG_PATH_RE.test(path)) throw new Error(`refusing path ${path}`);
+
+      const head = await request('GET', `${repoPath}/git/ref/heads/${BASE_BRANCH}`);
+      const sha = parse(refSchema, head.json, 'ref').object.sha;
+      await request('POST', `${repoPath}/git/refs`, { ref: `refs/heads/${branch}`, sha });
+
+      let pr: z.infer<typeof pullSchema>;
+      try {
+        await request('PUT', `${repoPath}/contents/${encodePath(path)}`, {
+          message: `${title}\n\nDrafted by the automated blog pipeline.`,
+          content: Buffer.from(content, 'utf8').toString('base64'),
+          branch,
+        });
+        const created = await request('POST', `${repoPath}/pulls`, {
+          title,
+          head: branch,
+          base: BASE_BRANCH,
+          body,
+          draft: false,
+        });
+        pr = parse(pullSchema, created.json, 'pull');
+      } catch (err) {
+        // No PR exists yet: remove the half-made branch so a rerun starts clean.
+        await deleteBranch(branch).catch(() => undefined);
+        throw err;
+      }
+      try {
+        await request('POST', `${repoPath}/issues/${pr.number}/labels`, { labels: [LABEL_DRAFT] });
+      } catch (err) {
+        // An unlabelled draft must not stay open: roll it back, best effort, and
+        // rethrow the original error (cleanup failures never mask it). If the
+        // rollback fails too, listDraftPrs still finds it by its blog/ branch.
+        const rollback = async (): Promise<void> => {
+          await request('POST', `${repoPath}/issues/${pr.number}/comments`, {
+            body: `Closed automatically: adding the \`${LABEL_DRAFT}\` label failed, so this draft was rolled back. The next run starts fresh.`,
+          }).catch(() => undefined);
+          await request('PATCH', `${repoPath}/pulls/${pr.number}`, { state: 'closed' }).catch(
+            () => undefined,
+          );
+          await deleteBranch(branch).catch(() => undefined);
+        };
+        await rollback().catch(() => undefined);
+        throw err;
+      }
+      return { url: pr.html_url };
+    },
+
+    async readLog(limit) {
+      if (limit <= 0) return [];
+      const issue = await findLogIssue();
+      if (issue === null) return [];
+      const { json } = await request('GET', `${repoPath}/issues/${issue}`);
+      const total = parse(issueCountSchema, json, 'issue').comments;
+      const lastPage = Math.ceil(total / PER_PAGE);
+      const collected: string[] = [];
+      for (let page = lastPage, n = 0; page >= 1 && n < MAX_LOG_PAGES; page--, n++) {
+        const res = await request(
+          'GET',
+          `${repoPath}/issues/${issue}/comments?per_page=${PER_PAGE}&page=${page}`,
+        );
+        const bodies = parse(z.array(z.unknown()), res.json, 'comment list')
+          .map((c) => commentSchema.safeParse(c))
+          .flatMap((r) =>
+            r.success && r.data.body && TRUSTED.has(r.data.author_association)
+              ? [r.data.body.slice(0, MAX_COMMENT_CHARS)]
+              : [],
+          );
+        collected.unshift(...bodies);
+        if (collected.length >= limit) break;
+      }
+      return collected.slice(-limit);
+    },
+
+    async appendLog(entry) {
+      let issue = await findLogIssue();
+      if (issue === null) {
+        const { json } = await request('POST', `${repoPath}/issues`, {
+          title: LOG_ISSUE_TITLE,
+          body:
+            'One comment per daily blog pipeline run that ended without a draft PR (and one per PR opened). ' +
+            'The pipeline reads the recent entries so it does not retry a failed topic. Keep this issue open; do not edit the entries.',
+        });
+        issue = parse(z.object({ number: z.number().int().positive() }), json, 'issue').number;
+        logIssue = issue;
+      }
+      await request('POST', `${repoPath}/issues/${issue}/comments`, { body: toLogLine(entry) });
+    },
+  };
+}

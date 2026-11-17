@@ -78,6 +78,8 @@ There is no backend deployed from this repo. `NEXT_PUBLIC_API_URL` (when set) po
 
 **Releases and rollback:** every green Core CI run on `main` is tagged and published as a GitHub Release (`.github/workflows/release.yml`, tags like `v2026.11.09.1`). How to roll back: `docs/runbooks/rollback.md`. Dependabot opens grouped dependency PRs monthly (`.github/dependabot.yml`).
 
+**Blog automation:** `.github/workflows/blog-draft.yml` runs daily (and on manual dispatch, dry run by default) and opens a draft-post PR for approval; `.github/workflows/blog-published.yml` runs on pushes to `main` that add a post, waits for the page to go live, then pings IndexNow. Runbook: `docs/runbooks/blog-pipeline.md`.
+
 ---
 
 ## Architecture Map
@@ -122,6 +124,7 @@ Native `fetch()` + Next.js API routes. No React Query, SWR, or tRPC.
 - **Location and search**: base town, in-person cities and the service-area label all come from `lib/business.ts` (`HOME_BASE`, `SERVICE_AREA_CITIES`, `SERVICE_AREA_LABEL`); JSON-LD in `components/StructuredData.tsx`, the AI-facing summary in `public/llms.txt` (plain text — update it by hand when facts change) and `app/robots.ts`, which names the search and AI crawlers explicitly
 - **Search engine notification (2026-11-12)**: Google Search Console and Bing Webmaster Tools both hold `https://softsystemsstudiollc.com/sitemap.xml` (Bing imported from Search Console). `www` 308-redirects to the bare domain at the Vercel domain level. IndexNow (Bing and others, not Google) uses the public key file `packages/frontend/public/<key>.txt`; after publishing new or changed pages run `node scripts/indexnow.mjs` (whole sitemap) or `node scripts/indexnow.mjs /path ...`
 - **Town pages and exact-match domains (2026-11-12)**: `/web-design/<slug>` has one indexed page per in-person town (`lib/cities.ts`, driven by `SERVICE_AREA_CITIES` in `lib/business.ts`; sitemap, footer links, `Service` + FAQ JSON-LD, `public/llms.txt`). Each town has its own copy: keep claims true and small, no rankings or numbers. `CITY_DOMAINS` in `next.config.mjs` maps exact-match domains (`columbusgawebdesign.com`, `phenixcitywebdesign.com`, `auburnalwebdesign.com`, `opelikawebdesign.com`, `smithsstationwebdesign.com`, bare and `www`) to a 308 redirect to their town's page. They only fire once the domain is added to this Vercel project, and DNS is on Cloudflare. A new town goes in `SERVICE_AREA_CITIES`, `COPY` in `lib/cities.ts`, `CITY_DOMAINS` if it has a domain, and `PAGES` in `e2e/pages.spec.ts`
+- **Blog (2026-11-16)**: `/blog` (index), `/blog/<slug>` and `/blog/feed.xml` (RSS) render markdown posts from `content/blog/*.md` (frontmatter validated by `lib/blog-schema.ts`, body through `lib/blog.ts`: marked then sanitize-html). Prices and facts in post bodies are tokens like `{{BUILD_FROM}}`, resolved from `lib/business.ts` by `lib/blog-tokens.ts`; an unknown token fails the build. Pages are static (`dynamicParams = false`), in the sitemap, with `Article` and `BreadcrumbList` JSON-LD. `BLOG_CONTENT_DIR` overrides the content dir and is for tests only: `playwright.config.ts` and the CI build set it to `e2e/fixtures/blog`, and production builds must not set it (a Vercel production build, `VERCEL_ENV=production`, ignores it anyway). `getAllPosts` throws if a frontmatter `slug` differs from its file name or two posts share a slug, and a unit test loads the real `content/blog`, so a bad draft PR fails Core CI. Posts are drafted daily by an automated pipeline and published only when its PR is merged: `docs/runbooks/blog-pipeline.md`
 - **Motion**: CSS classes in `globals.css` (`.rise` entrance, `.reveal` scroll reveal, `.parallax`, `.concept-pan`, `.nudge`, link underlines). All of it sits inside `@media (prefers-reduced-motion: no-preference)`, and scroll-driven effects use `animation-timeline` behind `@supports` — no JS, so content can never get stuck hidden. `ShowcaseParallax.tsx` is the only motion JS (pointer position → CSS vars). Keep new motion inside those guards.
 
 ### Key Conventions
@@ -160,6 +163,7 @@ pnpm typecheck         # tsc --noEmit across workspace packages
 pnpm format
 pnpm format:check
 pnpm test              # Playwright smoke tests (frontend e2e/); needs `pnpm build` first
+pnpm test:unit         # node:test unit tests (frontend src/lib, scripts/blog)
 pnpm build              # pnpm -r build (ui-components then frontend, dependency order)
 
 # Security / hygiene
@@ -201,7 +205,7 @@ pnpm scan-placeholders
 
 ### CI (`.github/workflows/ci.yml`)
 
-Install → build (`pnpm -w -r build`) → lint → typecheck `@softsystems/ui-components` → Playwright smoke tests (`pnpm --filter frontend test:e2e`, Chromium, against `next start` on port 3100; HTML report uploaded as an artifact on failure).
+Install → unit tests (`pnpm test:unit`: `node --test` over `packages/frontend/src/lib/*.test.ts` and `scripts/blog/**/*.test.ts`) → build (`pnpm -w -r build`) → lint → typecheck `@softsystems/ui-components` → Playwright smoke tests (`pnpm --filter frontend test:e2e`, Chromium, against `next start` on port 3100; HTML report uploaded as an artifact on failure).
 
 ### Browser smoke tests (`packages/frontend/e2e/`)
 
@@ -211,11 +215,11 @@ Every page route is listed in `PAGES` in `e2e/pages.spec.ts` (status 200, its `<
 
 ## Known Issues & Tech Debt
 
-| Issue                                                        | Impact | Notes                                                                                  |
-| ------------------------------------------------------------- | ------ | --------------------------------------------------------------------------------------- |
-| Smoke tests only                                               | Low    | `e2e/` checks every page renders cleanly; there are no unit tests and no visual checks |
-| `/api/cron/cleanup-tokens` and the `/api/v1/*` rewrite depend on a backend that no longer lives in this repo | Medium | They no-op gracefully without `NEXT_PUBLIC_API_URL`, but confirm the target service's URL before relying on either |
-| `docker-compose*.yml`, root `Dockerfile`, `railway.json`, `infra/` were removed 2026-08-31 | — | They existed only for the now-removed SaaS backend |
+| Issue                                                                                                        | Impact | Notes                                                                                                                         |
+| ------------------------------------------------------------------------------------------------------------ | ------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| Thin test coverage                                                                                           | Low    | `e2e/` checks every page renders cleanly; unit tests (`pnpm test:unit`, run by CI) cover the blog code only; no visual checks |
+| `/api/cron/cleanup-tokens` and the `/api/v1/*` rewrite depend on a backend that no longer lives in this repo | Medium | They no-op gracefully without `NEXT_PUBLIC_API_URL`, but confirm the target service's URL before relying on either            |
+| `docker-compose*.yml`, root `Dockerfile`, `railway.json`, `infra/` were removed 2026-08-31                   | —      | They existed only for the now-removed SaaS backend                                                                            |
 
 ---
 

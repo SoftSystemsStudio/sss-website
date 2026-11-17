@@ -24,6 +24,7 @@ import {
   BUSINESS_PHONE,
   FACEBOOK_URL,
 } from '@/lib/business';
+import { jsonLd } from '@/lib/json-ld';
 
 const SITE_URL = 'https://softsystemsstudiollc.com';
 /** One `@id` for the business, so every schema on the site describes the same entity. */
@@ -87,7 +88,7 @@ export function OrganizationSchema() {
     <script
       id="organization-schema"
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      dangerouslySetInnerHTML={{ __html: jsonLd(schema) }}
     />
   );
 }
@@ -168,7 +169,7 @@ export function LocalBusinessSchema() {
     <script
       id="local-business-schema"
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      dangerouslySetInnerHTML={{ __html: jsonLd(schema) }}
     />
   );
 }
@@ -194,7 +195,7 @@ export function FAQSchema({ faqs }: { faqs: FAQ[] }) {
     <script
       id="faq-schema"
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      dangerouslySetInnerHTML={{ __html: jsonLd(schema) }}
     />
   );
 }
@@ -234,7 +235,7 @@ export function CityServiceSchema({
     <script
       id="city-service-schema"
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      dangerouslySetInnerHTML={{ __html: jsonLd(schema) }}
     />
   );
 }
@@ -260,7 +261,76 @@ export function WebSiteSchema() {
     <script
       id="website-schema"
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      dangerouslySetInnerHTML={{ __html: jsonLd(schema) }}
+    />
+  );
+}
+
+/**
+ * Article Schema - one per blog post. Author and publisher are the studio's
+ * Organization (same @id as OrganizationSchema), so no personal byline is invented.
+ */
+export function ArticleSchema({
+  title,
+  description,
+  path,
+  datePublished,
+}: {
+  title: string;
+  description: string;
+  path: string;
+  datePublished: string;
+}) {
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    '@id': `${SITE_URL}${path}#article`,
+    headline: title,
+    description,
+    url: `${SITE_URL}${path}`,
+    mainEntityOfPage: `${SITE_URL}${path}`,
+    datePublished,
+    dateModified: datePublished,
+    image: `${SITE_URL}/api/og?title=${encodeURIComponent(title)}`,
+    author: {
+      '@type': 'Organization',
+      '@id': `${SITE_URL}/#organization`,
+      name: 'Soft Systems Studio',
+    },
+    publisher: {
+      '@type': 'Organization',
+      '@id': `${SITE_URL}/#organization`,
+      name: 'Soft Systems Studio',
+    },
+  };
+
+  return (
+    <script
+      id="article-schema"
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: jsonLd(schema) }}
+    />
+  );
+}
+
+/** BreadcrumbList Schema - `path` is site-relative (`/blog`). */
+export function BreadcrumbSchema({ items }: { items: { name: string; path: string }[] }) {
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: items.map((item, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: item.name,
+      item: `${SITE_URL}${item.path}`,
+    })),
+  };
+
+  return (
+    <script
+      id="breadcrumb-schema"
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: jsonLd(schema) }}
     />
   );
 }

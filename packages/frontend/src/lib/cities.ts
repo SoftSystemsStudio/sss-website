@@ -1,4 +1,4 @@
-import { SERVICE_AREA_CITIES } from '@/lib/business';
+import { SERVICE_AREA_CITIES } from './business';
 
 /**
  * City pages at /web-design/<slug> (added 2026-11-12), one per in-person

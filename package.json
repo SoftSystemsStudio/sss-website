@@ -13,7 +13,7 @@
     "start": "pnpm --filter frontend start",
     "lint:fix": "pnpm -r --if-present lint -- --fix",
     "lint": "pnpm -r --if-present lint",
-    "typecheck": "pnpm -r exec tsc --noEmit",
+    "typecheck": "pnpm -r exec tsc --noEmit && tsc --noEmit -p scripts/blog",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "test": "pnpm -r test",
@@ -26,9 +26,11 @@
     "security-audit": "bash scripts/security-audit.sh",
     "audit": "pnpm audit && bash scripts/security-audit.sh",
     "prepare": "husky",
-    "ci": "pnpm lint && pnpm typecheck && pnpm build && pnpm test"
+    "ci": "pnpm lint && pnpm typecheck && pnpm build && pnpm test",
+    "test:unit": "pnpm -r --if-present test:unit && node --import tsx --test \"scripts/blog/**/*.test.ts\""
   },
   "devDependencies": {
+    "@anthropic-ai/sdk": "^1.9.0",
     "@secretlint/secretlint-rule-preset-recommend": "13.1.0",
     "@types/node": "^20.19.43",
     "@types/react": "^18.2.21",
@@ -39,10 +41,13 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.7",
     "eslint-plugin-security": "^4.2.1",
+    "gray-matter": "^4.0.3",
     "husky": "^9.1.7",
     "next": "^16.4.5",
     "prettier": "^3.9.10",
     "secretlint": "13.1.0",
-    "typescript": "^5.3.0"
+    "tsx": "^4.23.15",
+    "typescript": "^5.3.0",
+    "zod": "^4.6.7"
   }
 }

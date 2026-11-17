@@ -162,6 +162,11 @@ Rough estimate: $0.30–$1 per attempted run (search plus three model calls, one
 possible rewrite), so about $10–$30 a month at a daily cadence, less because of
 skip days. Austin sets a monthly spend limit on the Anthropic key as a hard cap.
 
+_Update 2026-11-17:_ the code checks now run before the reviewer, and the one rewrite is
+shared by failed checks and a reviewer "revise", so a run has at most two writer and two
+reviewer stages; each stage may retry once on an unparseable reply (at most 4 calls
+each). Current flow and cost: `docs/runbooks/blog-pipeline.md`.
+
 ## Success and kill criteria
 
 - Success: first 10 posts live within about 3 weeks; Search Console shows the blog

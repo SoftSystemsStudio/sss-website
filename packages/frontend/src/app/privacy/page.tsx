@@ -104,6 +104,11 @@ export default function PrivacyPage() {
             from them, such as a menu or opening hours, with the business&apos;s record.
           </p>
           <p>
+            Under Anthropic&apos;s commercial terms, what we send the AI service isn&apos;t used to
+            train its models by default, and it deletes it from its own systems within 30 days,
+            unless it has to keep something longer for safety or legal reasons.
+          </p>
+          <p>
             Every marketing email we send includes an unsubscribe link. Use it, or just reply and
             ask, and we stop. We keep your email address on a do-not-contact list so we don&apos;t
             write to you again.

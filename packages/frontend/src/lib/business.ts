@@ -311,3 +311,6 @@ export const INSTAGRAM_URL = 'https://www.instagram.com/softsystemsstudioco';
 
 /** The studio's X account (@SoftSystemsCo) — linked from the footer, /hi and the Organization schema. */
 export const X_URL = 'https://x.com/SoftSystemsCo';
+
+/** The studio's LinkedIn company page — linked from the footer and the Organization schema. */
+export const LINKEDIN_URL = 'https://www.linkedin.com/company/soft-systems-studio-llc/';

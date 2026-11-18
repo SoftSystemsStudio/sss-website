@@ -83,8 +83,17 @@ export const reviewResultSchema = z.object({
 });
 export type ReviewResult = z.infer<typeof reviewResultSchema>;
 
+/**
+ * `already-ran-today` is only returned by a scheduled run's once-a-day gate; it is
+ * never written to the run log and never notified.
+ */
 export type SkipReason =
-  'gate-full' | 'no-topic' | 'reviewer-reject' | 'checks-failed' | 'slug-collision';
+  | 'gate-full'
+  | 'no-topic'
+  | 'reviewer-reject'
+  | 'checks-failed'
+  | 'slug-collision'
+  | 'already-ran-today';
 
 export type RunOutcome =
   { kind: 'pr'; url: string } | { kind: 'skipped'; reason: SkipReason; detail: string };

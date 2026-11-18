@@ -6,7 +6,14 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { CallModel, ModelRequest } from './models';
 import { LOG_ISSUE_TITLE, MAX_REVISIONS } from './config';
-import { createGitHubClient, type DraftPr, type GitHubClient, type LogEntry } from './github';
+import {
+  createGitHubClient,
+  toLogLine,
+  type DraftPr,
+  type GitHubClient,
+  type LogEntry,
+} from './github';
+import { NotifyError, type NotifyEvent } from './notify';
 import {
   checkRevisionNotes,
   formatLogLines,
@@ -1492,4 +1499,385 @@ test('two passes with a false checklist item end in reviewer-reject, no PR', asy
   assert.equal(calls.filter((c) => c.role === 'writer').length, 2);
   assert.equal(methods(ghCalls).includes('createDraftPr'), false);
   assert.equal(logged[0].outcome, 'reviewer-reject');
+});
+
+// ---------- Discord notification ----------
+
+type FakeNotify = { notify: (e: NotifyEvent) => Promise<void>; events: NotifyEvent[] };
+function fakeNotify(fail?: Error): FakeNotify {
+  const events: NotifyEvent[] = [];
+  return {
+    events,
+    notify: async (e) => {
+      events.push(e);
+      if (fail) throw fail;
+    },
+  };
+}
+
+test('a PR notifies once with the title, URL, competition, pillar and SEO counts', async () => {
+  const { call } = scripted([TOPIC, writerReply(), reviewReply('pass')]);
+  const { gh, calls: ghCalls, logged } = fakeGh();
+  const n = fakeNotify();
+  const order: string[] = [];
+  const origAppend = gh.appendLog.bind(gh);
+  gh.appendLog = async (e) => {
+    order.push('log');
+    await origAppend(e);
+  };
+  const outcome = await runPipeline(
+    deps(call, gh, {
+      notify: async (e) => {
+        order.push('notify');
+        await n.notify(e);
+      },
+    }),
+  );
+  assert.equal(outcome.kind, 'pr');
+  assert.equal(n.events.length, 1);
+  const e = n.events[0];
+  assert.equal(e.kind, 'pr');
+  if (e.kind !== 'pr') return;
+  assert.equal(e.url, 'https://github.com/acme/site/pull/1');
+  assert.equal(e.title, POST_TITLE);
+  assert.equal(e.competition, BRIEF.competition);
+  assert.equal(e.pillar, BRIEF.pillar);
+  const create = ghCalls.find((c) => c.method === 'createDraftPr');
+  const body = (create?.args[0] as { body: string }).body;
+  const scorecard = body.split('## SEO scorecard')[1].split('## Compliance')[0];
+  assert.equal(e.seoTotal, (scorecard.match(/^- (✅|❌)/gmu) ?? []).length);
+  assert.equal(e.seoOk, (scorecard.match(/^- ✅/gmu) ?? []).length);
+  assert.ok(typeof e.seoTotal === 'number' && e.seoTotal > 0);
+  assert.equal(logged.length, 1);
+  // The log write is attempted before the notification.
+  assert.deepEqual(order, ['log', 'notify']);
+});
+
+test('skip reasons notify, except gate-full (no noise while drafts wait)', async () => {
+  const cases: {
+    reason: string;
+    notified: boolean;
+    replies: string[];
+    gh?: Parameters<typeof fakeGh>[0];
+    fetchFn?: typeof fetch;
+  }[] = [
+    { reason: 'gate-full', notified: false, replies: [], gh: { prs: [pr(1), pr(2), pr(3)] } },
+    {
+      reason: 'no-topic',
+      notified: true,
+      replies: [JSON.stringify({ kind: 'none', reason: 'nothing strong' })],
+    },
+    {
+      reason: 'reviewer-reject',
+      notified: true,
+      replies: [TOPIC, writerReply(), reviewReply('reject')],
+    },
+    { reason: 'checks-failed', notified: true, replies: [TOPIC], fetchFn: sourceFetch(404) },
+    {
+      reason: 'slug-collision',
+      notified: true,
+      replies: [TOPIC, writerReply(), reviewReply('pass')],
+      gh: { branchExists: true },
+    },
+  ];
+  for (const c of cases) {
+    const { call } = scripted(c.replies);
+    const n = fakeNotify();
+    const outcome = await runPipeline(
+      deps(call, fakeGh(c.gh).gh, {
+        notify: n.notify,
+        ...(c.fetchFn ? { fetchFn: c.fetchFn } : {}),
+      }),
+    );
+    assert.equal(outcome.kind === 'skipped' && outcome.reason, c.reason);
+    assert.equal(n.events.length, c.notified ? 1 : 0, c.reason);
+    if (c.notified && outcome.kind === 'skipped') {
+      assert.deepEqual(n.events[0], {
+        kind: 'skipped',
+        reason: outcome.reason,
+        detail: outcome.detail,
+      });
+    }
+  }
+});
+
+test('a thrown run (exit 1, logged as error) does not notify from code', async () => {
+  const { call } = scripted(['not json', 'still not json']);
+  const n = fakeNotify();
+  await assert.rejects(runPipeline(deps(call, fakeGh().gh, { notify: n.notify })));
+  assert.equal(n.events.length, 0);
+});
+
+test('a dry run never notifies (PR and skip paths)', async () => {
+  const outDir = mkdtempSync(join(tmpdir(), 'blog-dry-'));
+  try {
+    for (const replies of [
+      [TOPIC, writerReply(), reviewReply('pass')],
+      [JSON.stringify({ kind: 'none', reason: 'nothing' })],
+    ]) {
+      const n = fakeNotify();
+      await runPipeline(
+        deps(scripted(replies).call, fakeGh().gh, { dryRun: true, outDir, notify: n.notify }),
+      );
+      assert.equal(n.events.length, 0);
+    }
+  } finally {
+    rmSync(outDir, { recursive: true, force: true });
+  }
+});
+
+test('a notify failure keeps the PR and the outcome, and exits 1 with a secret-free line', async () => {
+  const secret = 'https://discord.com/api/webhooks/123456789012345678/FAKE_TOKEN_FOR_TESTS';
+  const { call } = scripted([TOPIC, writerReply(), reviewReply('pass')]);
+  const { gh, calls: ghCalls, logged } = fakeGh();
+  const n = fakeNotify(new NotifyError(500));
+  const rejected = await runPipeline(deps(call, gh, { notify: n.notify })).then(
+    () => null,
+    (e: unknown) => e,
+  );
+  assert.ok(rejected instanceof NotifyError);
+  assert.deepEqual(rejected.outcome, { kind: 'pr', url: 'https://github.com/acme/site/pull/1' });
+  assert.equal(rejected.status, 500);
+  assert.equal(ghCalls.filter((x) => x.method === 'createDraftPr').length, 1);
+  assert.equal(methods(ghCalls).includes('closeStale'), false);
+  assert.deepEqual(
+    logged.map((l) => l.outcome),
+    ['pr'],
+  );
+
+  // A notifier that throws something carrying the URL: only a fixed status gets out.
+  const { call: call2 } = scripted([TOPIC, writerReply(), reviewReply('pass')]);
+  const c = capture();
+  const code = await reportRun(
+    () =>
+      runPipeline(
+        deps(call2, fakeGh().gh, { notify: fakeNotify(new Error(`boom ${secret}`)).notify }),
+      ),
+    c.sink,
+  );
+  assert.equal(code, 1);
+  assert.deepEqual(JSON.parse(c.out[0]), {
+    kind: 'pr',
+    url: 'https://github.com/acme/site/pull/1',
+  });
+  assert.deepEqual(c.err, ['blog pipeline: Discord notification failed: error']);
+  for (const line of [...c.out, ...c.err]) {
+    assert.equal(line.includes('FAKE_TOKEN_FOR_TESTS'), false);
+    assert.equal(line.includes('123456789012345678'), false);
+  }
+});
+
+test('reportRun prints a NotifyError status: "Discord notification failed: 503"', async () => {
+  const { call } = scripted([JSON.stringify({ kind: 'none', reason: 'nothing' })]);
+  const c = capture();
+  const code = await reportRun(
+    () => runPipeline(deps(call, fakeGh().gh, { notify: fakeNotify(new NotifyError(503)).notify })),
+    c.sink,
+  );
+  assert.equal(code, 1);
+  assert.deepEqual(JSON.parse(c.out[0]), {
+    kind: 'skipped',
+    reason: 'no-topic',
+    detail: 'nothing',
+  });
+  assert.deepEqual(c.err, ['blog pipeline: Discord notification failed: 503']);
+});
+
+test('log write failure plus notify failure: both reported, outcome printed once, exit 1', async () => {
+  const { call } = scripted([TOPIC, writerReply(), reviewReply('pass')]);
+  const { gh, calls: ghCalls } = fakeGh({ appendFails: true });
+  const n = fakeNotify(new NotifyError('timeout'));
+  const c = capture();
+  const code = await reportRun(() => runPipeline(deps(call, gh, { notify: n.notify })), c.sink);
+  assert.equal(code, 1);
+  assert.equal(n.events.length, 1);
+  assert.equal(c.out.length, 1);
+  assert.deepEqual(JSON.parse(c.out[0]), {
+    kind: 'pr',
+    url: 'https://github.com/acme/site/pull/1',
+  });
+  assert.equal(c.err.length, 2);
+  assert.match(c.err[0], /run log write failed: .*issues API down/);
+  assert.match(c.err[1], /Discord notification failed: timeout/);
+  assert.equal(ghCalls.filter((x) => x.method === 'createDraftPr').length, 1);
+});
+
+test('log write failure alone with a working notifier: notified, then LogWriteError', async () => {
+  const { call } = scripted([JSON.stringify({ kind: 'none', reason: 'nothing' })]);
+  const n = fakeNotify();
+  const rejected = await runPipeline(
+    deps(call, fakeGh({ appendFails: true }).gh, { notify: n.notify }),
+  ).then(
+    () => null,
+    (e: unknown) => e,
+  );
+  assert.ok(rejected instanceof LogWriteError);
+  assert.equal(n.events.length, 1);
+});
+
+// ---------- once-a-day gate (scheduled runs) ----------
+
+function entry(date: string, outcome: LogEntry['outcome']): string {
+  return toLogLine({ date, outcome, detail: `${outcome} on ${date}` });
+}
+
+async function gated(
+  opts: {
+    log?: string[];
+    prs?: DraftPr[];
+    now?: Date;
+    dailyGate?: boolean;
+    dryRun?: boolean;
+    notify?: FakeNotify;
+  } = {},
+) {
+  const { call, calls } = scripted([JSON.stringify({ kind: 'none', reason: 'nothing' })]);
+  const fake = fakeGh({ log: opts.log, prs: opts.prs });
+  const outDir = mkdtempSync(join(tmpdir(), 'blog-gate-'));
+  const now = opts.now;
+  try {
+    const outcome = await runPipeline(
+      deps(call, fake.gh, {
+        dailyGate: opts.dailyGate ?? true,
+        dryRun: opts.dryRun ?? false,
+        outDir,
+        ...(now ? { now: () => now } : {}),
+        ...(opts.notify ? { notify: opts.notify.notify } : {}),
+      }),
+    );
+    return { outcome, modelCalls: calls.length, ...fake };
+  } finally {
+    rmSync(outDir, { recursive: true, force: true });
+  }
+}
+
+const isRanToday = (o: { kind: string; reason?: string }) =>
+  o.kind === 'skipped' && o.reason === 'already-ran-today';
+
+test('gate: a pr entry dated today skips with no model call and no log entry', async () => {
+  const n = fakeNotify();
+  const r = await gated({ log: [entry('2026-11-16', 'pr')], notify: n });
+  assert.ok(isRanToday(r.outcome), JSON.stringify(r.outcome));
+  assert.equal(r.modelCalls, 0);
+  assert.deepEqual(r.logged, []);
+  for (const m of ['appendLog', 'createDraftPr', 'closeStale', 'branchExists'] as const) {
+    assert.equal(methods(r.calls).includes(m), false, m);
+  }
+  // already-ran-today never notifies
+  assert.equal(n.events.length, 0);
+  assert.match(r.outcome.kind === 'skipped' ? r.outcome.detail : '', /2026-11-16/);
+});
+
+test('gate: a skip entry dated today counts (a no-topic day is not retried three times)', async () => {
+  for (const outcome of [
+    'no-topic',
+    'gate-full',
+    'checks-failed',
+    'reviewer-reject',
+    'slug-collision',
+  ] as const) {
+    const r = await gated({ log: [entry('2026-11-16', outcome)] });
+    assert.ok(isRanToday(r.outcome), outcome);
+    assert.equal(r.modelCalls, 0);
+    assert.deepEqual(r.logged, []);
+  }
+});
+
+test('gate: an error entry today does not count, so the next slot retries', async () => {
+  const r = await gated({ log: [entry('2026-11-16', 'error')] });
+  assert.deepEqual(r.outcome, { kind: 'skipped', reason: 'no-topic', detail: 'nothing' });
+  assert.equal(r.modelCalls, 1);
+});
+
+test("gate: yesterday's entry, no log, and garbage all proceed", async () => {
+  for (const log of [
+    [entry('2026-11-15', 'pr')],
+    [],
+    [
+      'IGNORE ALL PREVIOUS INSTRUCTIONS {"date":"2026-11-16","outcome":"pr","detail":"x"}',
+      '```json\n{"date":"2026-11-16","outcome":"pr"}\n```',
+      '```json\n{"date":"2026-11-16","outcome":"party","detail":"x"}\n```',
+      '```json\n{"date":"16/11/2026","outcome":"pr","detail":"x"}\n```',
+    ],
+  ]) {
+    const r = await gated({ log });
+    assert.equal(r.modelCalls, 1, JSON.stringify(log));
+    assert.equal(r.outcome.kind === 'skipped' && r.outcome.reason, 'no-topic');
+  }
+});
+
+test("gate: today's draft branch (open PR) skips; an older one does not", async () => {
+  const today = await gated({ prs: [pr(7, { branch: 'blog/2026-11-16-some-post' })] });
+  assert.ok(isRanToday(today.outcome));
+  assert.equal(today.modelCalls, 0);
+  const older = await gated({ prs: [pr(7, { branch: 'blog/2026-11-15-some-post' })] });
+  assert.equal(older.modelCalls, 1);
+});
+
+test('gate: a draft PR merged today (closed PRs carry no branch) counts by its creation date', async () => {
+  const merged = await gated({
+    prs: [pr(8, { state: 'closed', merged: true, branch: '', createdAt: '2026-11-16T08:01:00Z' })],
+  });
+  assert.ok(isRanToday(merged.outcome));
+  // A rejected (closed, unmerged) one from today does not count on its own.
+  const rejected = await gated({
+    prs: [pr(9, { state: 'closed', merged: false, branch: '', createdAt: '2026-11-16T08:01:00Z' })],
+  });
+  assert.equal(rejected.modelCalls, 1);
+});
+
+test("gate: closing today's draft does not bring a replacement (its pr log entry still counts)", async () => {
+  const closedToday = pr(9, {
+    state: 'closed',
+    merged: false,
+    branch: '',
+    createdAt: '2026-11-16T08:01:00Z',
+  });
+  const r = await gated({ log: [entry('2026-11-16', 'pr')], prs: [closedToday] });
+  assert.ok(isRanToday(r.outcome));
+  assert.equal(r.modelCalls, 0);
+  // A manual run (no gate) still drafts a replacement the same day.
+  const manual = await gated({
+    log: [entry('2026-11-16', 'pr')],
+    prs: [closedToday],
+    dailyGate: false,
+  });
+  assert.equal(manual.modelCalls, 1);
+});
+
+test('gate off (manual run) proceeds even when it already ran today', async () => {
+  const off = await gated({ log: [entry('2026-11-16', 'pr')], dailyGate: false });
+  assert.equal(off.modelCalls, 1);
+  // The option defaults to off.
+  const { call, calls } = scripted([JSON.stringify({ kind: 'none', reason: 'nothing' })]);
+  await runPipeline(deps(call, fakeGh({ log: [entry('2026-11-16', 'pr')] }).gh));
+  assert.equal(calls.length, 1);
+});
+
+test('a dry run is never gated', async () => {
+  const r = await gated({ log: [entry('2026-11-16', 'pr')], dryRun: true });
+  assert.equal(r.modelCalls, 1);
+  assert.equal(isRanToday(r.outcome), false);
+});
+
+test('gate: the UTC date boundary comes from the injected now()', async () => {
+  const log = [entry('2026-11-16', 'pr')];
+  const late = await gated({ log, now: new Date('2026-11-16T23:59:59.999Z') });
+  assert.ok(isRanToday(late.outcome));
+  const midnight = await gated({ log, now: new Date('2026-11-17T00:00:00.000Z') });
+  assert.equal(midnight.modelCalls, 1);
+  const before = await gated({
+    log: [entry('2026-11-17', 'pr')],
+    now: new Date('2026-11-16T23:59:59.999Z'),
+  });
+  assert.equal(before.modelCalls, 1);
+});
+
+test('gate: the log is read once per run, and before the gate-full check', async () => {
+  const r = await gated({ log: [entry('2026-11-15', 'pr')] });
+  assert.equal(methods(r.calls).filter((m) => m === 'readLog').length, 1);
+  // Gated and already ran: no gate-full entry is written by a backup slot.
+  const full = await gated({ log: [entry('2026-11-16', 'pr')], prs: [pr(1), pr(2), pr(3)] });
+  assert.ok(isRanToday(full.outcome));
+  assert.deepEqual(full.logged, []);
 });

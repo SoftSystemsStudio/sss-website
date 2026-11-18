@@ -78,7 +78,7 @@ There is no backend deployed from this repo. `NEXT_PUBLIC_API_URL` (when set) po
 
 **Releases and rollback:** every green Core CI run on `main` is tagged and published as a GitHub Release (`.github/workflows/release.yml`, tags like `v2026.11.09.1`). How to roll back: `docs/runbooks/rollback.md`. Dependabot opens grouped dependency PRs monthly (`.github/dependabot.yml`).
 
-**Blog automation:** `.github/workflows/blog-draft.yml` runs daily (and on manual dispatch, dry run by default) and opens a draft-post PR for approval; `.github/workflows/blog-published.yml` runs on pushes to `main` that add a post, waits for the page to go live, then pings IndexNow. Runbook: `docs/runbooks/blog-pipeline.md`.
+**Blog automation:** `.github/workflows/blog-draft.yml` runs daily (and on manual dispatch, dry run by default) and opens a draft-post PR for approval (scheduled at 11:17 UTC with two once-a-day-gated backup slots, and real runs post the result to Discord when the optional `DISCORD_WEBHOOK_URL` secret is set); `.github/workflows/blog-published.yml` runs on pushes to `main` that add a post, waits for the page to go live, then pings IndexNow. Runbook: `docs/runbooks/blog-pipeline.md`.
 
 ---
 

@@ -3,14 +3,18 @@
  *
  *   pnpm exec tsx scripts/blog/cli.ts            # opens a draft PR (or logs a skip)
  *   pnpm exec tsx scripts/blog/cli.ts --dry-run  # writes blog-dry-run/<slug>.md and .pr.md instead
+ *   pnpm exec tsx scripts/blog/cli.ts --daily-gate  # scheduled runs: stop if today already ran
  *
  * Env: ANTHROPIC_API_KEY (required), BLOG_PR_TOKEN and GITHUB_REPOSITORY (owner/name;
- * required for a real run; optional on a dry run, which then reads no GitHub history).
- * Exit 0 on any outcome, including skips; exit 1 when the run throws.
+ * required for a real run; optional on a dry run, which then reads no GitHub history),
+ * DISCORD_WEBHOOK_URL (optional secret: real runs post the outcome there).
+ * Exit 0 on any outcome, including skips; exit 1 when the run throws, or when the
+ * run-log write or the Discord notification failed (the outcome is printed first).
  */
 import { fileURLToPath } from 'node:url';
 import { createGitHubClient, type GitHubClient } from './github';
 import { createAnthropicCallModel } from './models';
+import { createDiscordNotifier, type Notify } from './notify';
 import { loadExistingPosts, reportRun, runPipeline } from './run';
 import type { RunOutcome } from './types';
 
@@ -40,9 +44,16 @@ function required(name: string): string {
 
 async function main(): Promise<RunOutcome> {
   const args = process.argv.slice(2);
-  const unknown = args.filter((a) => a !== '--dry-run');
+  const unknown = args.filter((a) => a !== '--dry-run' && a !== '--daily-gate');
   if (unknown.length) throw new Error(`unknown argument(s): ${unknown.join(' ')}`);
   const dryRun = args.includes('--dry-run');
+  const dailyGate = args.includes('--daily-gate');
+
+  // Built first so a bad URL fails before any paid call. Its error never quotes the URL.
+  const webhook = process.env.DISCORD_WEBHOOK_URL?.trim();
+  let notify: Notify | undefined;
+  if (webhook) notify = createDiscordNotifier(webhook);
+  else console.error('Discord notifications are off (DISCORD_WEBHOOK_URL not set)');
 
   const call = createAnthropicCallModel(required('ANTHROPIC_API_KEY'));
   const token = process.env.BLOG_PR_TOKEN;
@@ -58,10 +69,13 @@ async function main(): Promise<RunOutcome> {
     now: () => new Date(),
     existingPosts: loadExistingPosts(CONTENT_DIR),
     dryRun,
+    dailyGate,
+    notify,
   });
 }
 
-// Exit 0 on any outcome; 1 on a thrown error or a failed run-log write (outcome printed first).
+// Exit 0 on any outcome; 1 on a thrown error, a failed run-log write or a failed
+// notification (outcome printed first).
 void reportRun(main).then((code) => {
   process.exitCode = code;
 });

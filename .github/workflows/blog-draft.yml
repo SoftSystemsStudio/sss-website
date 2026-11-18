@@ -9,6 +9,12 @@
 #   ANTHROPIC_API_KEY  Anthropic key with a monthly spend limit set
 #   BLOG_PR_TOKEN      fine-grained PAT (Contents, Pull requests, Issues: write)
 #                      so the PRs it opens still trigger Core CI
+#   DISCORD_WEBHOOK_URL  optional Discord webhook; real runs post the new PR or
+#                      why there is none, and a failed or cancelled run posts its link
+#
+# Schedule: 11:17 UTC, with backups at 14:41 and 19:23 UTC because GitHub can
+# delay or skip scheduled runs. Scheduled runs pass --daily-gate, so a backup
+# slot exits cheaply (no model call, no log entry) once today has run.
 #
 # To pause: Actions tab -> "Blog draft" -> ... -> Disable workflow.
 # Manual runs default to a dry run: no PR, no issue writes, drafts are uploaded
@@ -19,6 +25,9 @@ name: Blog draft
 on:
   schedule:
     - cron: '17 11 * * *'
+    # Backups: each stops at the daily gate if an earlier slot already ran today.
+    - cron: '41 14 * * *'
+    - cron: '23 19 * * *'
   workflow_dispatch:
     inputs:
       dry_run:
@@ -65,15 +74,19 @@ jobs:
 
       # Scheduled runs are real (event is `schedule`, so DRY_RUN stays empty
       # and falls through to false); manual runs follow the dry_run input.
+      # Only scheduled runs pass --daily-gate: a manual run always runs.
       - name: Run blog pipeline
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           BLOG_PR_TOKEN: ${{ secrets.BLOG_PR_TOKEN }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
         run: |
           if [ "$DRY_RUN" = "true" ]; then
             pnpm exec tsx scripts/blog/cli.ts --dry-run
+          elif [ "$GITHUB_EVENT_NAME" = "schedule" ]; then
+            pnpm exec tsx scripts/blog/cli.ts --daily-gate
           else
             pnpm exec tsx scripts/blog/cli.ts
           fi
@@ -86,3 +99,30 @@ jobs:
           path: blog-dry-run/
           retention-days: 14
           if-no-files-found: ignore
+
+      # A failed or cancelled run (any step failing, or the 20-minute timeout;
+      # scheduled or manual, dry or real) posts the run link to Discord. Skipped
+      # quietly when the secret is not set or is not a plain Discord webhook URL
+      # (the same rule as scripts/blog/notify.ts). The webhook URL is a secret:
+      # no `set -x`, never echoed, the payload built by jq.
+      - name: Notify Discord of a failed run
+        if: failure() || cancelled()
+        shell: bash
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          SERVER_URL: ${{ github.server_url }}
+          REPOSITORY: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          webhook=$(printf '%s' "$DISCORD_WEBHOOK_URL" | tr -d '[:space:]')
+          re='^https://(discord|discordapp)\.com/api/webhooks/[0-9]+/[A-Za-z0-9_-]+(\?wait=true)?$'
+          if [[ ! "$webhook" =~ $re ]]; then
+            exit 0
+          fi
+          run_url="$SERVER_URL/$REPOSITORY/actions/runs/$RUN_ID"
+          payload=$(jq -n --arg content "Blog draft workflow failed or was cancelled: $run_url" \
+            '{username: "Blog pipeline", content: $content, allowed_mentions: {parse: []}, flags: 4}')
+          curl -sS --max-time 15 -f -o /dev/null \
+            -H 'Content-Type: application/json' \
+            --data "$payload" \
+            "$webhook"

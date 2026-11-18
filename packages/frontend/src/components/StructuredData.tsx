@@ -24,6 +24,7 @@ import {
   BUSINESS_PHONE,
   FACEBOOK_URL,
   INSTAGRAM_URL,
+  LINKEDIN_URL,
   X_URL,
 } from '@/lib/business';
 import { jsonLd } from '@/lib/json-ld';
@@ -77,7 +78,7 @@ export function OrganizationSchema() {
       INSTAGRAM_URL,
       X_URL,
       'https://nextdoor.com/page/soft-systems-studio-llc/',
-      'https://www.linkedin.com/company/soft-systems-studio-llc/',
+      LINKEDIN_URL,
       'https://www.yelp.com/biz/soft-systems-studio-smiths-station',
     ],
     contactPoint: {

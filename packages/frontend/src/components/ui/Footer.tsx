@@ -8,6 +8,7 @@ import {
   CONTACT_EMAIL,
   FACEBOOK_URL,
   INSTAGRAM_URL,
+  LINKEDIN_URL,
   X_URL,
   LEGAL_ENTITY,
   LEGAL_NAME,
@@ -101,7 +102,7 @@ export default function Footer() {
           <span>
             &copy; {new Date().getFullYear()} {LEGAL_NAME}, {LEGAL_ENTITY}.
           </span>
-          <span className="flex gap-6">
+          <span className="flex flex-wrap gap-x-6 gap-y-2">
             <a
               href={FACEBOOK_URL}
               target="_blank"
@@ -120,6 +121,14 @@ export default function Footer() {
             </a>
             <a href={X_URL} target="_blank" rel="noopener noreferrer" className="hover:text-paper">
               X
+            </a>
+            <a
+              href={LINKEDIN_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-paper"
+            >
+              LinkedIn
             </a>
             <Link href="/privacy" className="hover:text-paper">
               Privacy

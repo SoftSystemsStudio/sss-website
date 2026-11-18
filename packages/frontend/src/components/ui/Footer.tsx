@@ -9,7 +9,6 @@ import {
   FACEBOOK_URL,
   LEGAL_ENTITY,
   LEGAL_NAME,
-  MAILING_ADDRESS,
   SERVICE_AREA_CITIES,
   SERVICE_AREA_LABEL,
 } from '@/lib/business';
@@ -98,7 +97,7 @@ export default function Footer() {
         </div>
         <div className="mt-14 flex flex-col gap-3 text-sm sm:flex-row sm:justify-between">
           <span>
-            &copy; {new Date().getFullYear()} {LEGAL_NAME}, {LEGAL_ENTITY}. {MAILING_ADDRESS}.
+            &copy; {new Date().getFullYear()} {LEGAL_NAME}, {LEGAL_ENTITY}.
           </span>
           <span className="flex gap-6">
             <a

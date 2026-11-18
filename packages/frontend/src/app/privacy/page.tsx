@@ -1,12 +1,6 @@
 import type { Metadata } from 'next';
 import { Navbar, Footer } from '@/components/ui';
-import {
-  CONTACT_EMAIL,
-  HOME_BASE,
-  LEGAL_ENTITY,
-  LEGAL_NAME,
-  MAILING_ADDRESS,
-} from '@/lib/business';
+import { CONTACT_EMAIL, HOME_BASE, LEGAL_ENTITY, LEGAL_NAME } from '@/lib/business';
 
 const TITLE = 'Privacy Policy';
 const DESCRIPTION =
@@ -363,7 +357,7 @@ export default function PrivacyPage() {
             <a href={`mailto:${CONTACT_EMAIL}`} className={LINK}>
               {CONTACT_EMAIL}
             </a>
-            , or write to {LEGAL_NAME}, {MAILING_ADDRESS}.
+            .
           </p>
         </div>
       </main>

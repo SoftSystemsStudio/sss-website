@@ -10,7 +10,6 @@ import {
   HOME_BASE,
   LEGAL_ENTITY,
   LEGAL_NAME,
-  MAILING_ADDRESS,
   SECURE_CARE_PLAN_RANGE,
 } from '@/lib/business';
 
@@ -266,7 +265,7 @@ export default function TermsPage() {
             >
               {CONTACT_EMAIL}
             </a>
-            . Our mailing address is {LEGAL_NAME}, {MAILING_ADDRESS}.
+            .
           </p>
         </div>
       </main>

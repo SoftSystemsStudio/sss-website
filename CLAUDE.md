@@ -133,7 +133,7 @@ Native `fetch()` + Next.js API routes. No React Query, SWR, or tRPC.
 - 3D/heavy components: Use `dynamic()` with `ssr: false`
 - Forms: HTML forms + Zod validation on API routes
 - Demo sites (`/demo/*`) are fictional businesses: `app/demo/layout.tsx` makes them noindex, they stay out of `app/sitemap.ts`, and any review, rating or testimonial on them is visibly labelled as sample text
-- Legal name, state of formation and mailing address come from `LEGAL_NAME`, `LEGAL_ENTITY` and `MAILING_ADDRESS` in `lib/business.ts` (footer, terms, privacy)
+- Legal name and state of formation come from `LEGAL_NAME` and `LEGAL_ENTITY` in `lib/business.ts` (footer, terms, privacy). No mailing address is published (removed at Austin's request, 2026-11-18); don't add one back
 
 ---
 

@@ -23,6 +23,8 @@ import {
   SERVICE_AREA_CITIES,
   BUSINESS_PHONE,
   FACEBOOK_URL,
+  INSTAGRAM_URL,
+  X_URL,
 } from '@/lib/business';
 import { jsonLd } from '@/lib/json-ld';
 import { postOgImage } from '@/lib/blog-format';
@@ -72,10 +74,11 @@ export function OrganizationSchema() {
     address: ADDRESS,
     sameAs: [
       FACEBOOK_URL,
+      INSTAGRAM_URL,
+      X_URL,
       'https://nextdoor.com/page/soft-systems-studio-llc/',
       'https://www.linkedin.com/company/soft-systems-studio-llc/',
       'https://www.yelp.com/biz/soft-systems-studio-smiths-station',
-      // 'https://twitter.com/softsystems',
     ],
     contactPoint: {
       '@type': 'ContactPoint',

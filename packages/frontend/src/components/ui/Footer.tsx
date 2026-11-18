@@ -7,6 +7,8 @@ import {
   BUSINESS_PHONE_DISPLAY,
   CONTACT_EMAIL,
   FACEBOOK_URL,
+  INSTAGRAM_URL,
+  X_URL,
   LEGAL_ENTITY,
   LEGAL_NAME,
   SERVICE_AREA_CITIES,
@@ -107,6 +109,17 @@ export default function Footer() {
               className="hover:text-paper"
             >
               Facebook
+            </a>
+            <a
+              href={INSTAGRAM_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-paper"
+            >
+              Instagram
+            </a>
+            <a href={X_URL} target="_blank" rel="noopener noreferrer" className="hover:text-paper">
+              X
             </a>
             <Link href="/privacy" className="hover:text-paper">
               Privacy

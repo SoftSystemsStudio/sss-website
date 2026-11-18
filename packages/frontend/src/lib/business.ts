@@ -305,3 +305,9 @@ export const FREE_CHECKLIST_URL = 'https://softsystemsstudioco.gumroad.com/l/mxf
 
 /** The studio's Facebook page — linked from the footer and the Organization schema. */
 export const FACEBOOK_URL = 'https://www.facebook.com/profile.php?id=61595626299781';
+
+/** The studio's Instagram — linked from the footer, /hi and the Organization schema. */
+export const INSTAGRAM_URL = 'https://www.instagram.com/softsystemsstudioco';
+
+/** The studio's X account (@SoftSystemsCo) — linked from the footer, /hi and the Organization schema. */
+export const X_URL = 'https://x.com/SoftSystemsCo';

@@ -7,6 +7,7 @@ import {
   CONTACT_EMAIL,
   FACEBOOK_URL,
   INSTAGRAM_URL,
+  LINKEDIN_URL,
   X_URL,
   HOME_BASE,
   SERVICE_AREA_LABEL,
@@ -48,6 +49,7 @@ export default function HiPage() {
     { label: 'Facebook', value: 'Soft Systems Studio', href: FACEBOOK_URL },
     { label: 'Instagram', value: '@softsystemsstudioco', href: INSTAGRAM_URL },
     { label: 'X', value: '@SoftSystemsCo', href: X_URL },
+    { label: 'LinkedIn', value: 'Soft Systems Studio LLC', href: LINKEDIN_URL },
   ];
 
   return (

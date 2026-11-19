@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { OG_TITLES, ogImage } from '@/lib/og-titles';
 import Link from 'next/link';
 import { Navbar, Footer, Section, Button } from '@/components/ui';
 import QuoteCta from '@/components/QuoteCta';
@@ -24,7 +25,7 @@ const CUSTOM = getPackage('custom');
 
 const TITLE = 'Website pricing';
 const DESCRIPTION = `What a website costs here: ${BUILD_FROM} for one page, ${BUSINESS.price} for up to 5, ${GROWTH.price} for up to 12, bigger sites from ${CUSTOM.price}. And what each one comes with.`;
-const OG_IMAGE = `/api/og?title=${encodeURIComponent('What a website costs.')}`;
+const OG_IMAGE = ogImage(OG_TITLES.pricing);
 
 export const metadata: Metadata = {
   title: TITLE,

@@ -9,6 +9,7 @@ import { PhoneFrame } from '@/components/DeviceFrames';
 import { getConcept } from '@/lib/concepts';
 import { TRADES, getTrade, quoteHref } from '@/lib/trades';
 import { BUILD_FROM, HOME_BASE, RETAINER_MIN, WEBSITE_FEATURES } from '@/lib/business';
+import { ogImage as ogImageUrl, tradeOgTitle } from '@/lib/og-titles';
 
 // Only the trades in lib/trades.ts exist; anything else is a 404.
 export const dynamicParams = false;
@@ -26,7 +27,7 @@ export async function generateMetadata({
   if (!trade) return {};
   const title = `Websites for ${trade.audience}`;
   const description = `${trade.promise} I design and write websites for ${trade.audience}, built around how your customers decide.`;
-  const ogImage = `/api/og?title=${encodeURIComponent(`${title}.`)}`;
+  const ogImage = ogImageUrl(tradeOgTitle(trade));
   return {
     title,
     description,

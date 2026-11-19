@@ -6,6 +6,7 @@ import Faq from '@/components/Faq';
 import QuoteCta from '@/components/QuoteCta';
 import { CityServiceSchema, FAQSchema } from '@/components/StructuredData';
 import { CITY_PAGES, cityLabel, getCity } from '@/lib/cities';
+import { cityOgTitle, ogImage as ogImageUrl } from '@/lib/og-titles';
 import {
   ADD_ONS_FROM,
   BUILD_FROM,
@@ -31,7 +32,7 @@ export async function generateMetadata({
   if (!city) return {};
   const title = `Web design in ${cityLabel(city)}`;
   const description = `${city.promise} I design, write and build websites for ${city.name} businesses. One-page sites from ${BUILD_FROM}, every price published.`;
-  const ogImage = `/api/og?title=${encodeURIComponent(`Web design in ${city.name}`)}`;
+  const ogImage = ogImageUrl(cityOgTitle(city));
   return {
     title,
     description,

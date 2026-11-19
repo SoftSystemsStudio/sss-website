@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
+import { connection } from 'next/server';
 import { Analytics } from '@vercel/analytics/next';
 import { SITE_TITLE_SUFFIX } from '@/lib/blog-format';
 import '../fonts/fallbacks.css';
@@ -112,7 +113,11 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // Render every page per request: the CSP nonce (src/proxy.ts) only reaches
+  // Next's scripts on a dynamically rendered page. A prerendered page would
+  // ship scripts with no nonce, and the browser would block them all.
+  await connection();
   return (
     <html lang="en" className={`${sans.variable} ${serif.variable}`}>
       <body className="min-h-screen bg-paper font-sans text-ink">

@@ -78,6 +78,15 @@ const nextConfig = {
     ];
   },
 
+  // Pages render per request (the CSP nonce, src/proxy.ts), so the blog pages,
+  // the OG card's title allowlist and the sitemap read content/blog at runtime.
+  // lib/blog.ts reads it with turbopackIgnore, so it has to be traced by hand.
+  outputFileTracingIncludes: {
+    '/**': ['./content/blog/**/*.md'],
+    // The share card reads its logo from public/ (src/app/api/og/route.tsx).
+    '/api/og': ['./public/images/brand/logo-compact-color.svg'],
+  },
+
   // Production-only compression
   compress: true,
 
@@ -123,24 +132,7 @@ const nextConfig = {
                 },
               ]
             : []),
-          // CSP - customize based on your needs
-          {
-            key: 'Content-Security-Policy',
-            value: [
-              "default-src 'self'",
-              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://vercel.live",
-              "style-src 'self' 'unsafe-inline'",
-              "img-src 'self' data: https: blob:",
-              // Fonts are self-hosted (src/fonts via next/font/local); no Google Fonts origins.
-              "font-src 'self' data:",
-              "connect-src 'self' https: http://localhost:* ws://localhost:*",
-              "frame-src 'self'",
-              "worker-src 'self' blob:",
-              "frame-ancestors 'self'",
-              "base-uri 'self'",
-              "form-action 'self'",
-            ].join('; '),
-          },
+          // Content-Security-Policy is set per request, with a nonce, in src/proxy.ts.
         ],
       },
       // Cache static assets aggressively

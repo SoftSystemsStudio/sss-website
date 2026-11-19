@@ -100,6 +100,10 @@ jobs:
       - name: Lighthouse (frontend)
         working-directory: packages/frontend
         run: npx --yes @lhci/cli@0.14.0 autorun
+        # Pages render per request (CSP nonce, src/proxy.ts), so the server
+        # needs the fixture posts at runtime too, not only at build time.
+        env:
+          BLOG_CONTENT_DIR: ${{ github.workspace }}/packages/frontend/e2e/fixtures/blog
 
       - name: Upload Lighthouse report
         if: ${{ always() }}

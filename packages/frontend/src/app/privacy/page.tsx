@@ -69,6 +69,13 @@ export default function PrivacyPage() {
             link is sent through Resend, an email delivery service. We don&apos;t sell or rent what
             you send, and we don&apos;t add you to a mailing list.
           </p>
+          <p>
+            To keep automated spam out, the sign-up form may show a quick check from Cloudflare
+            Turnstile before you send it. To tell a person from a bot, Cloudflare looks at your IP
+            address and basic details about your browser and device. Cloudflare says it uses that
+            information only to run the check and keep its service secure, not for advertising. We
+            receive only a pass or fail.
+          </p>
 
           <h2 className={H2}>If we contacted you first</h2>
           <p>
@@ -171,6 +178,7 @@ export default function PrivacyPage() {
           <ul className="list-disc space-y-2 pl-6">
             <li>Vercel and Cloudflare: hosting and domains</li>
             <li>Vercel Web Analytics: counting page views on this site, without cookies</li>
+            <li>Cloudflare Turnstile: the anti-spam check on our quote sign-up form</li>
             <li>Supabase: the database behind our tool</li>
             <li>Resend: sending email from our tool</li>
             <li>Google Workspace: our email</li>

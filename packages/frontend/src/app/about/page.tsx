@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { OG_TITLES, ogImage } from '@/lib/og-titles';
 import Link from 'next/link';
 import { Navbar, Footer, Section } from '@/components/ui';
 import QuoteCta from '@/components/QuoteCta';
@@ -6,7 +7,7 @@ import { HOME_BASE, SERVICE_AREA_LABEL } from '@/lib/business';
 
 const TITLE = 'About Austin';
 const DESCRIPTION = `I’m Austin Hodges. I design, write and build websites for local businesses from ${HOME_BASE}. Here’s who I am and how I work.`;
-const OG_IMAGE = `/api/og?title=${encodeURIComponent('About Austin')}`;
+const OG_IMAGE = ogImage(OG_TITLES.about);
 
 export const metadata: Metadata = {
   title: TITLE,

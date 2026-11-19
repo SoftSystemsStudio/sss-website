@@ -1,7 +1,47 @@
+/* eslint-disable security/detect-non-literal-fs-filename -- fixed path under public/ */
+import fs from 'node:fs';
+import path from 'node:path';
 import { ImageResponse } from 'next/og';
 import type { NextRequest } from 'next/server';
+import { getAllPosts } from '@/lib/blog';
+import { knownOgTitles, resolveOgTitle } from '@/lib/og-titles';
 
-export const runtime = 'edge';
+// Node, not edge: the allowlist includes blog post titles, read from content/blog.
+export const runtime = 'nodejs';
+
+let known: Set<string> | undefined;
+let logo: string | undefined;
+
+/**
+ * The header logo as a data URI, read once from public/. The Node runtime's
+ * ImageResponse refuses to fetch images from private addresses (SSRF guard),
+ * so the old same-origin URL broke locally; reading the file is also one less
+ * round trip in production. Traced into the function by next.config.mjs.
+ */
+function logoDataUri(): string {
+  if (!logo) {
+    const svg = fs.readFileSync(
+      path.join(process.cwd(), 'public/images/brand/logo-compact-color.svg'),
+    );
+    logo = `data:image/svg+xml;base64,${svg.toString('base64')}`;
+  }
+  return logo;
+}
+
+/** The allowlist, built once per server instance (posts only change with a deploy). */
+function knownTitles(): Set<string> {
+  if (!known) {
+    let postTitles: string[] = [];
+    try {
+      postTitles = getAllPosts().map((post) => post.title);
+    } catch (e) {
+      // A broken post fails the build elsewhere; here, keep serving the other cards.
+      console.error('OG: could not read blog posts:', e);
+    }
+    known = knownOgTitles(postTitles);
+  }
+  return known;
+}
 
 const INK = '#17312B';
 const INK_SOFT = '#3F4B46';
@@ -32,8 +72,8 @@ async function loadFont(family: string, text: string): Promise<ArrayBuffer | nul
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const logo = new URL('/images/brand/logo-compact-color.svg', req.url).toString();
-    const title = searchParams.get('title');
+    // Only titles the site itself links to are drawn; anything else gets the default card.
+    const title = resolveOgTitle(searchParams.get('title'), knownTitles());
     const line1 = title ?? 'You built the business.';
     const line2 = title ? '' : 'I’ll build the website.';
     const footer = 'Austin Hodges · Websites for local businesses · Smiths Station, AL';
@@ -77,7 +117,7 @@ export async function GET(req: NextRequest) {
           fontFamily: 'Sans',
         }}
       >
-        <img src={logo} alt="Soft Systems Studio" width={261} height={71} />
+        <img src={logoDataUri()} alt="Soft Systems Studio" width={261} height={71} />
 
         <div style={{ display: 'flex', flexDirection: 'column', fontFamily: 'Serif' }}>
           <div style={{ display: 'flex', fontSize: 112, lineHeight: 1, letterSpacing: '-0.01em' }}>

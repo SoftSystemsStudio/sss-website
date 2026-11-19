@@ -5,11 +5,12 @@ import QuoteCta from '@/components/QuoteCta';
 import { BreadcrumbSchema } from '@/components/StructuredData';
 import { getAllPosts } from '@/lib/blog';
 import { formatPostDate } from '@/lib/blog-format';
+import { OG_TITLES, ogImage } from '@/lib/og-titles';
 
-const TITLE = 'Notes for local business owners';
+const TITLE = OG_TITLES.blog;
 const DESCRIPTION =
   'Plain-English notes on websites, search and getting found, for local business owners. Notes from Soft Systems Studio.';
-const OG_IMAGE = `/api/og?title=${encodeURIComponent(TITLE)}`;
+const OG_IMAGE = ogImage(TITLE);
 
 export const metadata: Metadata = {
   title: TITLE,

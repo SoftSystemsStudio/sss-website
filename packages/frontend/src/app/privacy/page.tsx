@@ -51,8 +51,9 @@ export default function PrivacyPage() {
           <p>
             &ldquo;We&rdquo; means {LEGAL_NAME}, {LEGAL_ENTITY} based in {HOME_BASE}. Austin Hodges
             runs it. This policy covers this site, the quote sign-up, questionnaire and previews at{' '}
-            <code className={CODE}>tool.softsystemsstudiollc.com</code>, and the information we
-            handle while we build or look after a client&apos;s site.
+            <code className={CODE}>tool.softsystemsstudiollc.com</code>, the daily specials page we
+            give restaurant clients, and the information we handle while we build or look after a
+            client&apos;s site.
           </p>
 
           <h2 className={H2}>Asking for a quote</h2>
@@ -143,6 +144,13 @@ export default function PrivacyPage() {
             the form working. Sites we build may also load their fonts from Google Fonts, which
             means a visitor&apos;s browser asks Google for the font files.
           </p>
+          <p>
+            If you run a restaurant and we set up our phone menu for you, you get a private link to
+            a daily specials page. What you save there (today&apos;s special, your weekly specials,
+            prices) is read to callers and can be shown on your website. It&apos;s stored in
+            Supabase. The page has no password: the private link is the key, and we store only a
+            scrambled form of it.
+          </p>
 
           <h2 className={H2}>Visit counts, error monitoring and hosting</h2>
           <p>
@@ -169,6 +177,15 @@ export default function PrivacyPage() {
             storage, and nothing else. We use no advertising or analytics cookies anywhere, so there
             is nothing to opt in to or out of.
           </p>
+          <p>
+            The daily specials page for restaurant clients sets one cookie, and only after you open
+            your private link: <code className={CODE}>ivr_portal</code>. It keeps you signed in to
+            your specials page so the private link doesn&apos;t stay in your address bar. It holds
+            the code from your link, is sent only to the specials page and only over a secure
+            connection, and can&apos;t be read by scripts. It lasts 30 days, and stops working
+            sooner if your link expires. It&apos;s strictly necessary for the page to work, so there
+            is no setting to turn it off.
+          </p>
 
           <h2 className={H2}>Services that handle your information</h2>
           <p>
@@ -179,7 +196,7 @@ export default function PrivacyPage() {
             <li>Vercel and Cloudflare: hosting and domains</li>
             <li>Vercel Web Analytics: counting page views on this site, without cookies</li>
             <li>Cloudflare Turnstile: the anti-spam check on our quote sign-up form</li>
-            <li>Supabase: the database behind our tool</li>
+            <li>Supabase: the database behind our tool and the daily specials page</li>
             <li>Resend: sending email from our tool</li>
             <li>Google Workspace: our email</li>
             <li>Google Places: finding businesses we might contact</li>

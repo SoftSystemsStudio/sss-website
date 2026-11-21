@@ -58,6 +58,9 @@ month).
   each one includes and doesn't, add-ons, payment, and Care Plans.
 - [About](https://softsystemsstudiollc.com/about): who Austin is and how he
   works.
+- [Shop](https://softsystemsstudiollc.com/shop): free checklists and
+  fill-in-the-blank templates for local business owners, downloaded from the
+  studio's Gumroad store.
 - Web design by town, each with the same prices and process:
   [Columbus, GA](https://softsystemsstudiollc.com/web-design/columbus-ga),
   [Phenix City, AL](https://softsystemsstudiollc.com/web-design/phenix-city-al),

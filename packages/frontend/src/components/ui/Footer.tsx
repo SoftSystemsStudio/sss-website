@@ -21,6 +21,7 @@ const FOOTER_NAV = [
   { label: 'Pricing', href: '/pricing' },
   { label: 'About', href: '/about' },
   { label: 'Blog', href: '/blog' },
+  { label: 'Shop', href: '/shop' },
   { label: 'Get a quote', href: '/intake' },
 ];
 

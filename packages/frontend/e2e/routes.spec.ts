@@ -1,4 +1,5 @@
 import { test, expect } from './fixtures';
+import { SHOP_PRODUCTS } from '../src/lib/business';
 
 /**
  * Non-page routes and the site's one lead entry point.
@@ -93,4 +94,21 @@ test('home page links to the free checklist and says what Gumroad asks for', asy
   const link = page.getByRole('link', { name: /Get the free checklist/ });
   await expect(link).toHaveAttribute('href', 'https://softsystemsstudioco.gumroad.com/l/mxftos');
   await expect(page.locator('#checklist')).toContainText('asks for your email address');
+});
+
+test('shop lists each product with a link to its own Gumroad page', async ({ page }) => {
+  await page.goto('/shop');
+  const products = page.getByTestId('shop-product');
+  await expect(products).toHaveCount(SHOP_PRODUCTS.length);
+  for (const [index, product] of SHOP_PRODUCTS.entries()) {
+    const card = products.nth(index);
+    await expect(card).toContainText(product.name);
+    await expect(card).toContainText(product.price);
+    await expect(card.getByRole('link', { name: product.cta })).toHaveAttribute(
+      'href',
+      product.url,
+    );
+    expect(product.url).toMatch(/^https:\/\/softsystemsstudioco\.gumroad\.com\/l\/[\w-]+$/);
+  }
+  await expect(page.getByRole('main')).toContainText('asks for your email address');
 });

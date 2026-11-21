@@ -16,6 +16,7 @@ export const OG_TITLES = {
   about: 'About Austin',
   pricing: 'What a website costs.',
   blog: 'Notes for local business owners',
+  shop: 'Templates and checklists',
 } as const;
 
 /** Longer than any real title; anything past this is rejected before the lookup. */

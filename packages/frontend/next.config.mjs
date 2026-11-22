@@ -25,22 +25,11 @@ const nextConfig = {
   // Stack section points at the bundled Next docs instead.
   agentRules: false,
 
-  // Image optimization with strict domain allowlist
+  // Image optimization: every image on the site is a local file under public/,
+  // so no remote host is allowed (2026-11 security audit). Add a host here only
+  // when a page really loads an image from it.
   images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'images.unsplash.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'avatars.githubusercontent.com',
-      },
-      {
-        protocol: 'https',
-        hostname: '*.vercel-storage.com',
-      },
-    ],
+    remotePatterns: [],
     // Optimize images at build time where possible
     unoptimized: process.env.NODE_ENV === 'development',
   },
@@ -166,33 +155,8 @@ const nextConfig = {
     ];
   },
 
-  // API rewrites - proxy /api/v1/* to backend API (Railway)
-  async rewrites() {
-    const raw = process.env.NEXT_PUBLIC_API_URL;
-    // Skip rewrites if no backend API URL is configured
-    if (!raw) {
-      return { afterFiles: [] };
-    }
-    // Normalize: ensure protocol, strip trailing slashes
-    let normalizedUrl = raw.startsWith('http') ? raw : `https://${raw}`;
-    normalizedUrl = normalizedUrl.replace(/\/+$/, '');
-    try {
-      // Validate it's actually a parseable URL
-      new URL(normalizedUrl);
-    } catch {
-      console.warn(`⚠ NEXT_PUBLIC_API_URL is not a valid URL: "${raw}", skipping API rewrites`);
-      return { afterFiles: [] };
-    }
-    return {
-      // afterFiles so Next.js API routes (/api/*) still work
-      afterFiles: [
-        {
-          source: '/api/v1/:path*',
-          destination: `${normalizedUrl}/api/v1/:path*`,
-        },
-      ],
-    };
-  },
+  // The /api/v1/* proxy to the old SaaS backend was removed (2026-11 security
+  // audit): nothing on this site called it, and the backend no longer lives here.
 
   // Redirect rules disabled: Vercel domain-level redirects handle canonicalization
   // (one-way: apex → www for LLC domain)

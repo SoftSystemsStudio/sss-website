@@ -27,10 +27,8 @@ promote that deployment in Vercel.
 
 ## 3. Things a rollback does not undo
 
-- The daily cron (`/api/cron/cleanup-tokens`) follows the deployment, so it
-  rolls back with it.
-- Emails already sent through Resend, and anything the separate SaaS backend
-  (`NEXT_PUBLIC_API_URL`) did, stay done.
+- Anything a third-party service already did (an email sent, a webhook
+  delivered) stays done.
 - Environment variable changes in the Vercel dashboard are not part of a
   deployment; change them back by hand if they were the cause, then redeploy.
 

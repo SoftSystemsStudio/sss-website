@@ -9,14 +9,7 @@ const envSchema = z.object({
   // Node environment
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
 
-  // API URLs (accept with or without protocol prefix)
-  NEXT_PUBLIC_API_URL: z
-    .string()
-    .optional()
-    .transform((val) => {
-      if (!val) return val;
-      return val.startsWith('http') ? val : `https://${val}`;
-    }),
+  // App URL (accepts with or without protocol prefix)
   NEXT_PUBLIC_APP_URL: z
     .string()
     .optional()
@@ -40,9 +33,6 @@ const envSchema = z.object({
   BLOG_CONTENT_DIR: z.string().optional(),
   // Set by Vercel ('production' | 'preview' | 'development'); production ignores BLOG_CONTENT_DIR
   VERCEL_ENV: z.string().optional(),
-
-  // Cron
-  CRON_SECRET: z.string().optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;
@@ -63,7 +53,6 @@ function validateEnv(): Env {
     // changes.
     const raw = {
       NODE_ENV: process.env.NODE_ENV,
-      NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
       NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
       NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
       SENTRY_ORG: process.env.SENTRY_ORG,
@@ -74,7 +63,6 @@ function validateEnv(): Env {
       ADMIN_EMAIL: process.env.ADMIN_EMAIL,
       BLOG_CONTENT_DIR: process.env.BLOG_CONTENT_DIR,
       VERCEL_ENV: process.env.VERCEL_ENV,
-      CRON_SECRET: process.env.CRON_SECRET,
     };
 
     // Strip empty-string env vars so .optional() treats them as undefined

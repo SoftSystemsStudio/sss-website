@@ -70,11 +70,10 @@ This file is the repo's operating runbook for Claude Code: how work is planned, 
 ```text
 Vercel
 ├── Next.js app at packages/frontend/
-├── Daily cron: /api/cron/cleanup-tokens (proxies to the SaaS backend, elsewhere)
-└── API routes (cron)
+└── API routes (/api/og share cards)
 ```
 
-There is no backend deployed from this repo. `NEXT_PUBLIC_API_URL` (when set) points at the separate SaaS platform's API for the `/api/v1/*` rewrite and the cleanup-tokens cron proxy — that's a runtime HTTP call, not a build dependency.
+There is no backend deployed from this repo, and nothing calls one: the `/api/cron/cleanup-tokens` cron and the `/api/v1/*` rewrite to the old SaaS backend were removed in the November 2026 security audit, along with `NEXT_PUBLIC_API_URL` and `CRON_SECRET`. `next/image` allows no remote hosts (`images.remotePatterns` is empty); every image is a local file.
 
 **Releases and rollback:** every green Core CI run on `main` is tagged and published as a GitHub Release (`.github/workflows/release.yml`, tags like `v2026.11.09.1`). How to roll back: `docs/runbooks/rollback.md`. Dependabot opens grouped dependency PRs monthly (`.github/dependabot.yml`).
 
@@ -199,12 +198,14 @@ pnpm scan-placeholders
 
 ### Pre-commit (Husky)
 
-- secretlint (secret scanning)
-- check-env-committed (prevent `.env` commits)
+`.husky/pre-commit` runs, in order (keep this list and the hook in step):
+
+- `.env` guard on staged files, then check-env-committed (prevent `.env` commits)
 - scan-placeholders (find placeholder values)
-- format:check (Prettier)
-- lint (ESLint)
-- typecheck (TypeScript)
+- secretlint on the staged files (secret scanning)
+- Prettier `--check` on the staged files (the whole-repo `format:check` still fails on older files)
+- lint (ESLint, whole workspace)
+- typecheck (TypeScript, whole workspace)
 
 ### CI (`.github/workflows/ci.yml`)
 
@@ -218,11 +219,10 @@ Every page route is listed in `PAGES` in `e2e/pages.spec.ts` (status 200, its `<
 
 ## Known Issues & Tech Debt
 
-| Issue                                                                                                        | Impact | Notes                                                                                                                         |
-| ------------------------------------------------------------------------------------------------------------ | ------ | ----------------------------------------------------------------------------------------------------------------------------- |
-| Thin test coverage                                                                                           | Low    | `e2e/` checks every page renders cleanly; unit tests (`pnpm test:unit`, run by CI) cover the blog code only; no visual checks |
-| `/api/cron/cleanup-tokens` and the `/api/v1/*` rewrite depend on a backend that no longer lives in this repo | Medium | They no-op gracefully without `NEXT_PUBLIC_API_URL`, but confirm the target service's URL before relying on either            |
-| `docker-compose*.yml`, root `Dockerfile`, `railway.json`, `infra/` were removed 2026-08-31                   | —      | They existed only for the now-removed SaaS backend                                                                            |
+| Issue                                                                                      | Impact | Notes                                                                                                                         |
+| ------------------------------------------------------------------------------------------ | ------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| Thin test coverage                                                                         | Low    | `e2e/` checks every page renders cleanly; unit tests (`pnpm test:unit`, run by CI) cover the blog code only; no visual checks |
+| `docker-compose*.yml`, root `Dockerfile`, `railway.json`, `infra/` were removed 2026-08-31 | —      | They existed only for the now-removed SaaS backend                                                                            |
 
 ---
 

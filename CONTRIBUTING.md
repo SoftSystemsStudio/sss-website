@@ -78,12 +78,12 @@ node scripts/check-env-committed.js
 
 ### Key Files
 
-| File                                  | Purpose                       |
-| -------------------------------------- | ------------------------------ |
-| `packages/frontend/src/app/`          | Next.js app router pages/routes |
-| `packages/frontend/src/lib/env.ts`    | Typed environment variable access |
-| `vercel.json`                         | Vercel build config            |
-| `tsconfig.json`                       | Root TypeScript config (extended by each package) |
+| File                               | Purpose                                           |
+| ---------------------------------- | ------------------------------------------------- |
+| `packages/frontend/src/app/`       | Next.js app router pages/routes                   |
+| `packages/frontend/src/lib/env.ts` | Typed environment variable access                 |
+| `vercel.json`                      | Vercel build config                               |
+| `tsconfig.json`                    | Root TypeScript config (extended by each package) |
 
 ---
 
@@ -140,7 +140,7 @@ pnpm typecheck    # tsc --noEmit across workspace packages
 
 ### Pre-Commit Hooks
 
-Husky runs these checks before each commit — a `.env`-pattern guard (added/modified files only, not deletions) and the build/lint checks defined in `.husky/pre-commit`.
+Husky runs these checks before each commit (`.husky/pre-commit`): a `.env`-pattern guard on added/modified files, check-env-committed, scan-placeholders, secretlint and Prettier on the staged files, then lint and typecheck across the workspace.
 
 Enable hooks after cloning:
 

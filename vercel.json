@@ -6,12 +6,6 @@
   "outputDirectory": "packages/frontend/.next",
   "installCommand": "pnpm install",
   "regions": ["iad1"],
-  "crons": [
-    {
-      "path": "/api/cron/cleanup-tokens",
-      "schedule": "0 2 * * *"
-    }
-  ],
   "headers": [
     {
       "source": "/(.*)",

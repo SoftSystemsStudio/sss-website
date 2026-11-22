@@ -273,18 +273,51 @@ function studioFactsPlain(): string {
   ]);
 }
 
+/**
+ * Phrases that only make sense as an instruction to a model. The brief is built from
+ * fetched web pages (2026-11 security audit), so a page could smuggle one into a field;
+ * they are replaced with a marker before the brief reaches the writer or reviewer.
+ */
+const INSTRUCTION_PATTERNS: RegExp[] = [
+  /\b(?:ignore|disregard|forget|override)\b[^.\n]{0,40}\b(?:instructions?|rules?|prompts?|guidelines?|directions?)\b/gi,
+  /\b(?:system|developer)\s+(?:prompt|message|instructions?)\b/gi,
+  /\byou\s+are\s+now\b/gi,
+  /\bnew\s+instructions?\b/gi,
+  /\b(?:assistant|system|user)\s*:/gi,
+];
+
+/** Marker that replaces an instruction-like phrase in brief data. */
+export const REMOVED_MARKER = '[removed]';
+
+/**
+ * Makes one brief field safe to quote as data: drops control, zero-width and
+ * bidi-override characters, flattens it to one line (so it cannot fake prompt
+ * structure), turns angle brackets into look-alikes (so it cannot open or close any
+ * data fence) and strips instruction-like phrases. URLs are passed through
+ * untouched by the caller, since the writer must copy them exactly.
+ */
+export function scrubBriefText(text: string): string {
+  let out = text
+    .replace(/[\u0000-\u001f\u007f-\u009f​-‏‪-‮⁠-⁩﻿]/g, ' ')
+    .replace(/</g, '‹')
+    .replace(/>/g, '›');
+  for (const re of INSTRUCTION_PATTERNS) out = out.replace(re, REMOVED_MARKER);
+  return out.replace(/\s+/g, ' ').trim();
+}
+
 function briefForPrompt(brief: Brief, includeDuplicateReason: boolean): string {
+  const t = scrubBriefText;
   const lines = [
-    `Title: ${brief.title}`,
-    `Target query: ${brief.targetQuery}`,
-    `Intent: ${brief.intent}`,
-    `Local angle: ${brief.localAngle}`,
-    ...(includeDuplicateReason ? [`Not a duplicate because: ${brief.notDuplicateBecause}`] : []),
+    `Title: ${t(brief.title)}`,
+    `Target query: ${t(brief.targetQuery)}`,
+    `Intent: ${t(brief.intent)}`,
+    `Local angle: ${t(brief.localAngle)}`,
+    ...(includeDuplicateReason ? [`Not a duplicate because: ${t(brief.notDuplicateBecause)}`] : []),
     'Related questions people also ask (use as H2s or a short FAQ where they fit):',
-    bulletList(brief.relatedQuestions ?? []),
+    bulletList((brief.relatedQuestions ?? []).map(t)),
     'Sources:',
     ...brief.sources.map(
-      (s, i) => `${i + 1}. ${s.url}\n   Title: ${s.title}\n   Supports: ${s.supports}`,
+      (s, i) => `${i + 1}. ${s.url}\n   Title: ${t(s.title)}\n   Supports: ${t(s.supports)}`,
     ),
   ];
   return lines.join('\n');

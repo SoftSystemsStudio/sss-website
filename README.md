@@ -41,15 +41,11 @@ pnpm --filter @softsystems/ui-components build
 pnpm --filter frontend build
 ```
 
-Production deploys are on **Vercel**, driven by the root [`vercel.json`](vercel.json) (`buildCommand: "pnpm --filter frontend build"`, output `packages/frontend/.next`). Vercel also runs the daily `/api/cron/cleanup-tokens` cron job, which proxies to the backend SaaS API's admin cleanup endpoint (`NEXT_PUBLIC_API_URL`) — that's a runtime call to a separate service, not a build dependency.
+Production deploys are on **Vercel**, driven by the root [`vercel.json`](vercel.json) (`buildCommand: "pnpm --filter frontend build"`, output `packages/frontend/.next`).
 
-## What's intentionally still wired to the old backend
+## Nothing is wired to the old backend
 
-A few routes call out to the SaaS platform's API at runtime over HTTP (not a source dependency — nothing here imports platform code):
-
-- `src/app/api/cron/cleanup-tokens/route.ts` — proxies to `{NEXT_PUBLIC_API_URL}/api/v1/admin/cleanup-tokens`.
-- The Next.js rewrite in `next.config.mjs` — proxies `/api/v1/*` to `NEXT_PUBLIC_API_URL`.
-If `NEXT_PUBLIC_API_URL` isn't configured, the rewrite and cron route no-op gracefully; they don't block the build.
+The `/api/cron/cleanup-tokens` cron route and the `/api/v1/*` rewrite to the old SaaS backend were removed in the November 2026 security audit: nothing on the site used them, and the backend no longer lives here.
 
 ## Voice demo (removed)
 

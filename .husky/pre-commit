@@ -1,20 +1,46 @@
 #!/bin/sh
+# Pre-commit checks. CLAUDE.md "Quality Gates" lists exactly these; keep the two in step.
+# Secret and format checks run on the staged files; lint and typecheck run on the
+# workspace, because a change in one file can break another.
+set -e
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "PRE-COMMIT CHECKS"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-# Security check: no .env files committed
-echo "\n🔒 Running security checks..."
-echo "  → Checking for committed .env files..."
-if git diff --cached --name-only --diff-filter=ACMR \
+STAGED=$(git diff --cached --name-only --diff-filter=ACMR)
+
+echo "→ .env guard (staged files)"
+if printf '%s\n' "$STAGED" \
     | grep -E '\.env($|\.)' \
     | grep -qvE '\.env\.(example|sample|template)$'; then
   echo "❌ Refusing to commit .env files"
   exit 1
 fi
-echo "✅ Security checks passed"
 
-echo "\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "→ check-env-committed"
+pnpm -s check-env-committed
+
+echo "→ scan-placeholders"
+pnpm -s scan-placeholders
+
+if [ -n "$STAGED" ]; then
+  echo "→ secretlint (staged files)"
+  printf '%s\n' "$STAGED" | tr '\n' '\0' \
+    | xargs -0 pnpm -s exec secretlint --secretlintignore .secretlintignore
+
+  FORMATTABLE=$(printf '%s\n' "$STAGED" | grep -E '\.(ts|tsx|js|jsx|json|md)$' || true)
+  if [ -n "$FORMATTABLE" ]; then
+    echo "→ prettier --check (staged files)"
+    printf '%s\n' "$FORMATTABLE" | tr '\n' '\0' \
+      | xargs -0 pnpm -s exec prettier --check --ignore-unknown
+  fi
+fi
+
+echo "→ lint"
+pnpm -s lint
+
+echo "→ typecheck"
+pnpm -s typecheck
+
 echo "✅ ALL PRE-COMMIT CHECKS PASSED"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

@@ -303,6 +303,54 @@ export const CONTACT_EMAIL = 'austin@softsystemsstudiollc.com';
  */
 export const FREE_CHECKLIST_URL = 'https://softsystemsstudioco.gumroad.com/l/mxftos';
 
+/** The studio's Gumroad storefront: every product, including any not listed in SHOP_PRODUCTS. */
+export const GUMROAD_STORE_URL = 'https://softsystemsstudioco.gumroad.com';
+
+export interface ShopProduct {
+  /** The product's name as it appears on Gumroad. */
+  name: string;
+  /** Shown on the card, e.g. "Free" or "$19". Keep it the same as the Gumroad page. */
+  price: string;
+  /** What the buyer gets, in a sentence or two. Only claims the Gumroad page backs up. */
+  description: string;
+  /** What arrives, e.g. "PDF, plus Word and plain-text copies". */
+  format: string;
+  /** The product's own Gumroad page (softsystemsstudioco.gumroad.com/l/...). */
+  url: string;
+  /** Button label. */
+  cta: string;
+}
+
+/**
+ * Products shown on /shop (2026-11-21). Each card is a plain outbound link to
+ * the product's Gumroad page, so checkout, delivery and refunds all happen on
+ * Gumroad and nothing is sent from this site. If a product is renamed,
+ * repriced or unpublished on Gumroad, change it here too: the card copy must
+ * match its Gumroad page. Older paid products on the store (AI Business in a
+ * Box, Solopreneur OS, SaaS Launch Kit) were taken off this site on
+ * 2026-09-02 and stay off unless Austin asks for them back.
+ */
+export const SHOP_PRODUCTS: ShopProduct[] = [
+  {
+    name: 'Get Found Locally Checklist',
+    price: 'Free',
+    description:
+      'A tick-box checklist for being easier to find and easier to choose: your Google Business Profile, your reviews, the basics your website needs (including who owns your domain), keeping your details the same everywhere, and what to have ready before you hire a web designer.',
+    format: 'PDF, plus Word and plain-text copies',
+    url: FREE_CHECKLIST_URL,
+    cta: 'Get the checklist',
+  },
+  {
+    name: 'AI Prompt Vault: 60 Business & Marketing Prompts',
+    price: 'Free, or pay what you want',
+    description:
+      'Sixty fill-in-the-blank prompts for ChatGPT, Claude and other AI tools: thirty for running your business and thirty for marketing it, with a short guide on getting started. Treat what the AI writes as a first draft and check it before you use it.',
+    format: 'PDF, plus Word and plain-text copies',
+    url: 'https://softsystemsstudioco.gumroad.com/l/ai-prompt-vault',
+    cta: 'Get the prompts',
+  },
+];
+
 /** The studio's Facebook page — linked from the footer and the Organization schema. */
 export const FACEBOOK_URL = 'https://www.facebook.com/profile.php?id=61595626299781';
 

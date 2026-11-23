@@ -451,6 +451,15 @@ export default function Home() {
               It’s free, a 15-page PDF. It’s hosted on Gumroad, which asks for your email address to
               send the file.
             </p>
+            <Link
+              href="/shop"
+              className="link-underline mt-6 inline-block text-[17px] font-semibold"
+            >
+              More templates in the shop{' '}
+              <span className="nudge" aria-hidden="true">
+                →
+              </span>
+            </Link>
           </div>
         </Section>
 

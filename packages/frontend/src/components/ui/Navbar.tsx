@@ -22,6 +22,7 @@ const SITE_NAV: NavItem[] = [
   { label: 'Pricing', href: '/pricing' },
   { label: 'How it goes', href: '/#process' },
   { label: 'About', href: '/about' },
+  { label: 'Shop', href: '/shop' },
 ];
 
 export default function Navbar({
